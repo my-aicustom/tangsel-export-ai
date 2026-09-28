@@ -1,0 +1,12 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { ExportReadinessView } from '../components/ExportReadinessView';
+---
+
+<DashboardLayout
+  title="Export Readiness Matrix (IKM Tangsel)"
+  subtitle="Audit Mandiri & Kurasi Kesiapan Regulasi Ekspor IKM Tangerang Selatan (Grade A / B / C)"
+  currentPath="/readiness"
+>
+  <ExportReadinessView client:load />
+</DashboardLayout>

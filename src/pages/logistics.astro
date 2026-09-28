@@ -1,0 +1,12 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { LogisticsSimulatorView } from '../components/LogisticsSimulatorView';
+---
+
+<DashboardLayout
+  title="AI Logistics & Forwarding Cost Simulator"
+  subtitle="Kalkulator Estimasi Biaya Kargo Ekspor Internasional (DEMO RATE - Kemitraan DHL Dalam Pembahasan)"
+  currentPath="/logistics"
+>
+  <LogisticsSimulatorView client:load />
+</DashboardLayout>

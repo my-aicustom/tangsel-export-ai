@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import { Sidebar } from '../components/Sidebar';
+import { Header } from '../components/Header';
+
+interface Props {
+  title: string;
+  subtitle: string;
+  currentPath: string;
+}
+
+const { title, subtitle, currentPath } = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — Tangsel Export AI (TEI 2026)</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-emerald-600 selection:text-white">
+    <div class="flex min-h-screen bg-slate-50">
+      <!-- Fixed Sidebar on Desktop, Off-canvas on Mobile -->
+      <Sidebar client:load currentPath={currentPath} />
+
+      <!-- Main Content Area -->
+      <div class="flex-1 lg:pl-72 flex flex-col min-w-0">
+        <Header client:load title={title} subtitle={subtitle} />
+
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          <slot />
+        </main>
+
+        <!-- Enterprise Public Service Footer -->
+        <footer class="mt-auto border-t border-slate-200 bg-white py-5 px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-600">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-7xl mx-auto font-medium">
+            <div class="flex items-center gap-2 text-slate-700">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              <span>© 2026 Dinas Perindustrian dan Perdagangan Kota Tangerang Selatan</span>
+            </div>
+            <div class="flex items-center gap-3 text-slate-600">
+              <span class="font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+                Trade Expo Indonesia 2026 Taskforce
+              </span>
+              <span>•</span>
+              <a href="https://veylo.163.61.44.41.sslip.io/app" target="_blank" rel="noreferrer" class="text-blue-700 hover:text-blue-900 font-bold hover:underline">
+                Veylo Trade Room ↗
+              </a>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

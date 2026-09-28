@@ -1,0 +1,12 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { CommandCenterView } from '../components/CommandCenterView';
+---
+
+<DashboardLayout
+  title="TEI 2026 Command Center"
+  subtitle="Monitoring Real-Time Kunjungan Booth, Pipeline Buyer Internasional, & Radar Peluang InaExport Kemendag"
+  currentPath="/command-center"
+>
+  <CommandCenterView client:load />
+</DashboardLayout>

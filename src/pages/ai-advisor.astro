@@ -1,0 +1,12 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { AiAdvisorView } from '../components/AiAdvisorView';
+---
+
+<DashboardLayout
+  title="AI Export Advisor (OpenRouter & RAG Kemendag)"
+  subtitle="Konsultasi Cerdas Regulasi Ekspor Internasional, HS Code, Sertifikasi Standar, & Prosedur PEB"
+  currentPath="/ai-advisor"
+>
+  <AiAdvisorView client:load />
+</DashboardLayout>

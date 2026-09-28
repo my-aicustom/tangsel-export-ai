@@ -77,18 +77,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath }) => {
     <>
       {/* Mobile Bar */}
       <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 sticky top-0 z-50 shadow-xs">
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <img 
             src="/branding/logo-tangsel.png" 
             alt="Logo Kota Tangerang Selatan" 
-            className="w-8 h-8 object-contain shrink-0 drop-shadow-xs" 
+            className="w-7 h-7 object-contain shrink-0 drop-shadow-xs" 
           />
-          <div className="min-w-0">
-            <div className="text-xs sm:text-sm font-black text-slate-900 tracking-tight leading-none truncate">
+          <div className="h-5 w-[1px] bg-slate-200" />
+          <img 
+            src="/branding/my-aicustom-logo.webp" 
+            alt="My AI Custom" 
+            className="h-5 object-contain shrink-0" 
+          />
+          <div className="min-w-0 pl-1 border-l border-slate-200">
+            <div className="text-xs font-black text-slate-900 tracking-tight leading-none truncate">
               TANGSEL EXPORT AI
             </div>
-            <div className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
-              Disperindag Kota Tangsel
+            <div className="text-[9px] text-slate-500 font-medium truncate mt-0.5">
+              Disperindag Tangsel
             </div>
           </div>
         </div>
@@ -123,14 +129,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath }) => {
               alt="Lambang Resmi Kota Tangerang Selatan" 
               className="w-10 h-10 object-contain shrink-0 drop-shadow-xs" 
             />
-            <div className="min-w-0">
-              <h1 className="text-sm font-black text-slate-900 tracking-tight leading-tight">
-                TANGSEL EXPORT AI
-              </h1>
-              <div className="text-[10px] text-slate-600 font-medium leading-tight mt-0.5">
-                Dinas Perindustrian & Perdagangan<br />
-                <span className="text-emerald-700 font-bold">Kota Tangerang Selatan</span>
-              </div>
+            <div className="h-8 w-[1px] bg-slate-200" />
+            <img 
+              src="/branding/my-aicustom-logo.webp" 
+              alt="Logo My AI Custom" 
+              className="h-7 object-contain shrink-0" 
+            />
+          </div>
+          <div className="min-w-0 mt-2.5">
+            <h1 className="text-sm font-black text-slate-900 tracking-tight leading-tight">
+              TANGSEL EXPORT AI
+            </h1>
+            <div className="text-[10px] text-slate-600 font-medium leading-tight mt-0.5">
+              Dinas Perindustrian & Perdagangan Kota Tangsel
+            </div>
+            <div className="text-[10px] font-bold text-slate-700 flex items-center gap-1 mt-1 bg-white px-2 py-0.5 rounded border border-slate-200 w-fit">
+              <span className="text-slate-400">Powered by</span>
+              <span className="text-emerald-700 font-extrabold">My AI Custom</span>
             </div>
           </div>
 

@@ -49,6 +49,16 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, actions }) => {
         <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0">
           {actions}
 
+          {/* Powered by My AI Custom Badge */}
+          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Powered by</span>
+            <img 
+              src="/branding/my-aicustom-logo.webp" 
+              alt="My AI Custom" 
+              className="h-5 object-contain" 
+            />
+          </div>
+
           {/* Urgent Notification Pill */}
           <div className="relative">
             <button

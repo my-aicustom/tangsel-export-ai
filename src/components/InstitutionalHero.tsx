@@ -17,12 +17,23 @@ export const InstitutionalHero: React.FC = () => {
         {/* Left Side: Tangsel Government Identity */}
         <div className="flex-1 space-y-3.5">
           {/* Government Emblem & Institutional Header */}
-          <div className="flex items-center gap-3.5 sm:gap-4">
-            <img 
-              src="/branding/logo-tangsel.png" 
-              alt="Lambang Resmi Kota Tangerang Selatan" 
-              className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0 drop-shadow-xs"
-            />
+          <div className="flex flex-wrap items-center gap-3.5 sm:gap-4">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/branding/logo-tangsel.png" 
+                alt="Lambang Resmi Kota Tangerang Selatan" 
+                className="w-12 h-12 sm:w-14 sm:h-14 object-contain shrink-0 drop-shadow-xs"
+              />
+              <div className="h-10 w-[1px] bg-slate-200" />
+              <div className="flex flex-col">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Powered by</span>
+                <img 
+                  src="/branding/my-aicustom-logo.webp" 
+                  alt="Logo My AI Custom" 
+                  className="h-7 sm:h-8 object-contain shrink-0"
+                />
+              </div>
+            </div>
             <div className="border-l-2 border-slate-200 pl-3.5 sm:pl-4">
               <div className="text-[11px] sm:text-xs font-bold tracking-widest uppercase text-slate-500">
                 Pemerintah Kota Tangerang Selatan
@@ -30,8 +41,10 @@ export const InstitutionalHero: React.FC = () => {
               <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-wide text-slate-900 leading-snug mt-0.5">
                 Dinas Perindustrian dan Perdagangan
               </h2>
-              <div className="text-xs sm:text-sm font-bold text-emerald-700">
-                Gugus Tugas Pameran Internasional TEI 2026
+              <div className="text-xs sm:text-sm font-bold text-emerald-700 flex items-center gap-1.5 flex-wrap">
+                <span>Gugus Tugas Pameran Internasional TEI 2026</span>
+                <span className="text-slate-300 hidden sm:inline">•</span>
+                <span className="text-slate-600 text-[11px] font-semibold">In Collaboration with My AI Custom</span>
               </div>
             </div>
           </div>

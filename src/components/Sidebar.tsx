@@ -143,9 +143,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath }) => {
             <div className="text-[10px] text-slate-600 font-medium leading-tight mt-0.5">
               Dinas Perindustrian & Perdagangan Kota Tangsel
             </div>
-            <div className="text-[10px] font-bold text-slate-700 flex items-center gap-1 mt-1 bg-white px-2 py-0.5 rounded border border-slate-200 w-fit">
-              <span className="text-slate-400">Powered by</span>
-              <span className="text-emerald-700 font-extrabold">My AI Custom</span>
+            <div className="flex items-center gap-1.5 mt-1 bg-white px-2 py-0.5 rounded border border-slate-200 w-fit">
+              <span className="text-[10px] text-slate-400 font-bold">Powered by</span>
+              <img src="/branding/my-aicustom-logo.webp" alt="My AI Custom" className="h-4 object-contain" />
             </div>
           </div>
 

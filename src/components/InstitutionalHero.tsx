@@ -13,11 +13,11 @@ export const InstitutionalHero: React.FC = () => {
       {/* Decorative emerald gradient stripe at top */}
       <div className="h-1.5 w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600" />
 
-      <div className="relative p-5 sm:p-6 lg:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="relative p-4 sm:p-6 lg:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         {/* Left Side: Tangsel Government Identity */}
-        <div className="flex-1 space-y-3.5">
+        <div className="flex-1 space-y-3.5 min-w-0">
           {/* Government Emblem & Institutional Header */}
-          <div className="flex flex-wrap items-center gap-3.5 sm:gap-4">
+          <div className="flex flex-wrap items-start sm:items-center gap-3">
             <div className="flex items-center gap-3">
               <img 
                 src="/branding/logo-tangsel.png" 
@@ -86,7 +86,7 @@ export const InstitutionalHero: React.FC = () => {
         </div>
 
         {/* Right Side: Quick Action & DHL Block */}
-        <div className="lg:w-80 shrink-0 space-y-3">
+        <div className="w-full lg:w-80 shrink-0 space-y-3">
           {/* Veylo Live Negotiation Banner */}
           <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-300 text-slate-800 space-y-2 shadow-2xs">
             <div className="flex items-center justify-between">

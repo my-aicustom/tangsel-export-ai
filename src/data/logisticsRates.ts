@@ -2,6 +2,8 @@ export interface DestinationPort {
   id: string;
   name: string;
   country: string;
+  countryCode: string;
+  airCode: string;
   flag: string;
   region: string;
   unLocode: string;
@@ -16,144 +18,160 @@ export interface DestinationPort {
 
 export const DESTINATION_PORTS: DestinationPort[] = [
   {
-    "id": "port-sin",
-    "country": "Singapore",
-    "name": "Port of Singapore (PSA) / Changi Airport (SIN)",
-    "region": "ASEAN & Asia Hub",
-    "unLocode": "SGSIN",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 4.8,
-    "oceanBaseRatePerCbm": 42,
-    "transitDaysAir": "1-2 Hari",
-    "transitDaysOcean": "2-4 Hari",
-    "flag": "🇸🇬",
-    "customsRequirements": [
+    id: "port-sin",
+    country: "Singapore",
+    countryCode: "SG",
+    airCode: "SIN",
+    name: "Port of Singapore (PSA) / Changi Airport (SIN)",
+    region: "ASEAN & Asia Hub",
+    unLocode: "SGSIN",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 4.8,
+    oceanBaseRatePerCbm: 42,
+    transitDaysAir: "1-2 Hari",
+    transitDaysOcean: "2-4 Hari",
+    flag: "🇸🇬",
+    customsRequirements: [
       "SFA Import Permit (Makanan)",
       "GST 9% Deklarasi Bea Cukai Singapura",
       "Surat Keterangan Asal (SKA Form D)"
     ]
   },
   {
-    "id": "port-sha",
-    "country": "China",
-    "name": "Port of Shanghai (Yangshan) / Pudong Airport (PVG)",
-    "region": "East Asia Hub",
-    "unLocode": "CNSHA",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 6.2,
-    "oceanBaseRatePerCbm": 58,
-    "transitDaysAir": "2-3 Hari",
-    "transitDaysOcean": "8-12 Hari",
-    "flag": "🇨🇳",
-    "customsRequirements": [
+    id: "port-sha",
+    country: "China",
+    countryCode: "CN",
+    airCode: "PVG",
+    name: "Port of Shanghai (Yangshan) / Pudong Airport (PVG)",
+    region: "East Asia Hub",
+    unLocode: "CNSHA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.2,
+    oceanBaseRatePerCbm: 58,
+    transitDaysAir: "2-3 Hari",
+    transitDaysOcean: "8-12 Hari",
+    flag: "🇨🇳",
+    customsRequirements: [
       "GACC Registration Decree 248/249",
       "AQSIQ Phytosanitary Certificate",
       "Certificate of Origin Form E (ACFTA)"
     ]
   },
   {
-    "id": "port-tyo",
-    "country": "Japan",
-    "name": "Port of Yokohama / Tokyo Narita Airport (NRT)",
-    "region": "East Asia Pacific",
-    "unLocode": "JPYOK",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 7.8,
-    "oceanBaseRatePerCbm": 75,
-    "transitDaysAir": "2-4 Hari",
-    "transitDaysOcean": "10-14 Hari",
-    "flag": "🇯🇵",
-    "customsRequirements": [
+    id: "port-tyo",
+    country: "Japan",
+    countryCode: "JP",
+    airCode: "NRT",
+    name: "Port of Yokohama / Tokyo Narita Airport (NRT)",
+    region: "East Asia Pacific",
+    unLocode: "JPYOK",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 7.8,
+    oceanBaseRatePerCbm: 75,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "10-14 Hari",
+    flag: "🇯🇵",
+    customsRequirements: [
       "MHLW Food Sanitation Act Notification",
       "MAFF Plant Quarantine Inspection",
       "EPA Form AJ / IJEPA"
     ]
   },
   {
-    "id": "port-lax",
-    "country": "United States",
-    "name": "Port of Los Angeles (POLA) / LAX Airport",
-    "region": "North America",
-    "unLocode": "USLAX",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 12.5,
-    "oceanBaseRatePerCbm": 145,
-    "transitDaysAir": "3-5 Hari",
-    "transitDaysOcean": "22-28 Hari",
-    "flag": "🇺🇸",
-    "customsRequirements": [
+    id: "port-lax",
+    country: "United States",
+    countryCode: "US",
+    airCode: "LAX",
+    name: "Port of Los Angeles (POLA) / LAX Airport",
+    region: "North America",
+    unLocode: "USLAX",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 12.5,
+    oceanBaseRatePerCbm: 145,
+    transitDaysAir: "3-5 Hari",
+    transitDaysOcean: "22-28 Hari",
+    flag: "🇺🇸",
+    customsRequirements: [
       "US FDA Facility Registration & Prior Notice",
       "ISF 10+2 Filing (Laut)",
       "Lacey Act Declaration (Kayu/Bambu)"
     ]
   },
   {
-    "id": "port-rtm",
-    "country": "Netherlands",
-    "name": "Port of Rotterdam (RTM) / Amsterdam Schiphol (AMS)",
-    "region": "European Union",
-    "unLocode": "NLRTM",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 11.2,
-    "oceanBaseRatePerCbm": 120,
-    "transitDaysAir": "3-5 Hari",
-    "transitDaysOcean": "24-28 Hari",
-    "flag": "🇳🇱",
-    "customsRequirements": [
+    id: "port-rtm",
+    country: "Netherlands",
+    countryCode: "NL",
+    airCode: "AMS",
+    name: "Port of Rotterdam (RTM) / Amsterdam Schiphol (AMS)",
+    region: "European Union",
+    unLocode: "NLRTM",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 11.2,
+    oceanBaseRatePerCbm: 120,
+    transitDaysAir: "3-5 Hari",
+    transitDaysOcean: "24-28 Hari",
+    flag: "🇳🇱",
+    customsRequirements: [
       "EU Deforestation Regulation (EUDR) Due Diligence",
       "REX System Statement on Origin",
       "CE Mark (Teknik/Alat)"
     ]
   },
   {
-    "id": "port-dxb",
-    "country": "United Arab Emirates",
-    "name": "Port of Jebel Ali / Dubai World Central (DWC)",
-    "region": "Middle East & GCC",
-    "unLocode": "AEJEA",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 8.9,
-    "oceanBaseRatePerCbm": 85,
-    "transitDaysAir": "2-4 Hari",
-    "transitDaysOcean": "14-18 Hari",
-    "flag": "🇦🇪",
-    "customsRequirements": [
+    id: "port-dxb",
+    country: "United Arab Emirates",
+    countryCode: "AE",
+    airCode: "DXB",
+    name: "Port of Jebel Ali / Dubai World Central (DWC)",
+    region: "Middle East & GCC",
+    unLocode: "AEJEA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 8.9,
+    oceanBaseRatePerCbm: 85,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "14-18 Hari",
+    flag: "🇦🇪",
+    customsRequirements: [
       "ESMA Halal Halal National Mark Verification",
       "MoIAT ECAS Conformity",
       "Bilingual Arabic-English Labels"
     ]
   },
   {
-    "id": "port-syd",
-    "country": "Australia",
-    "name": "Port Botany (Sydney) / Sydney Kingsford Smith (SYD)",
-    "region": "Oceania",
-    "unLocode": "AUSYD",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 9.8,
-    "oceanBaseRatePerCbm": 95,
-    "transitDaysAir": "3-5 Hari",
-    "transitDaysOcean": "12-16 Hari",
-    "flag": "🇦🇺",
-    "customsRequirements": [
+    id: "port-syd",
+    country: "Australia",
+    countryCode: "AU",
+    airCode: "SYD",
+    name: "Port Botany (Sydney) / Sydney Kingsford Smith (SYD)",
+    region: "Oceania",
+    unLocode: "AUSYD",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 9.8,
+    oceanBaseRatePerCbm: 95,
+    transitDaysAir: "3-5 Hari",
+    transitDaysOcean: "12-16 Hari",
+    flag: "🇦🇺",
+    customsRequirements: [
       "BICON Biosecurity Import Conditions",
       "DAFF Inspection Notice",
       "IA-CEPA Origin Declaration"
     ]
   },
   {
-    "id": "port-dla",
-    "country": "Cameroon",
-    "name": "Port of Douala (DLA) / Douala International Airport",
-    "region": "West Africa",
-    "unLocode": "CMDLA",
-    "portType": "MULTIMODAL",
-    "airBaseRatePerKg": 14.8,
-    "oceanBaseRatePerCbm": 165,
-    "transitDaysAir": "4-7 Hari",
-    "transitDaysOcean": "28-35 Hari",
-    "flag": "🇨🇲",
-    "customsRequirements": [
+    id: "port-dla",
+    country: "Cameroon",
+    countryCode: "CM",
+    airCode: "DLA",
+    name: "Port of Douala (DLA) / Douala International Airport",
+    region: "West Africa",
+    unLocode: "CMDLA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 14.8,
+    oceanBaseRatePerCbm: 165,
+    transitDaysAir: "4-7 Hari",
+    transitDaysOcean: "28-35 Hari",
+    flag: "🇨🇲",
+    customsRequirements: [
       "ANOR PECAE Pre-Shipment Conformity",
       "Bilingual French-English Invoices",
       "ECTN / BESC Electronic Cargo Tracking"
@@ -290,6 +308,9 @@ export interface ModeCalculation {
   customsClearanceUsd: number;
   exportDocumentationUsd: number;
   insuranceCostUsd: number;
+  inlandTruckingCostUsd?: number;
+  inlandTruckingCostIdr?: number;
+  inlandTruckDetails?: string;
   totalEstimatedCostUsd: number;
   totalEstimatedCostIdr: number;
   transitTimeEstimate: string;
@@ -309,9 +330,16 @@ export interface SideBySideComparisonResult {
   recommendationReason: string;
 }
 
-export function calculateSideBySideComparison(params: LogisticsSimulationParams): SideBySideComparisonResult {
+export const LOGISTICS_RATE_META = {
+  source: 'Disperindag Tangsel & Standar Freight Forwarding 2026',
+  version: '2026.09'
+};
+
+export function calculateSideBySideComparison(
+  params: LogisticsSimulationParams,
+  usdToIdr: number = 17985
+): SideBySideComparisonResult {
   const port = DESTINATION_PORTS.find(p => p.id === params.destinationId) || DESTINATION_PORTS[0];
-  const usdToIdr = 17985; // Live OSINT Rate (29/9/2026)
 
   const totalActualWeight = Number((params.actualWeightKg * params.packagesCount).toFixed(2));
   const singleVolumetricWeight = (params.lengthCm * params.widthCm * params.heightCm) / 5000;
@@ -338,7 +366,7 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
 
   const airCalc: ModeCalculation = {
     mode: 'AIR_EXPRESS',
-    modeLabel: 'Air Freight Express (DHL Aviation)',
+    modeLabel: 'Air Freight Express (DHL Aviation / Cargo)',
     actualWeightKg: totalActualWeight,
     volumetricWeightKg: totalVolumetricWeight,
     chargeableWeightKg: Number(airChargeableWeight.toFixed(2)),
@@ -360,7 +388,6 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
   };
 
   // 2. OCEAN LCL CALCULATION
-  // Standard Ocean LCL Billing: W/M (1 CBM = 1000 kg). Billable CBM is max(CBM, actualWeight/1000, 1.0 minimum)
   const oceanBillableCbm = Math.max(totalCbm, totalActualWeight / 1000, 1.0);
   const oceanBaseFreight = oceanBillableCbm * port.oceanBaseRatePerCbm;
   const oceanFuelSurcharge = oceanBaseFreight * 0.12; // 12% BAF / Bunker Surcharge
@@ -395,7 +422,6 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
     logisticsCostPercentageOfFob: oceanPctFob
   };
 
-  // Recommendation logic
   let recommendedMode: 'AIR_EXPRESS' | 'OCEAN_LCL' = 'AIR_EXPRESS';
   let recommendationReason = '';
 
@@ -420,8 +446,11 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
   };
 }
 
-export function calculateLogisticsDemo(params: LogisticsSimulationParams): SimulationResult {
-  const comparison = calculateSideBySideComparison(params);
+export function calculateLogisticsEstimate(
+  params: LogisticsSimulationParams,
+  usdToIdr: number = 17985
+): SimulationResult {
+  const comparison = calculateSideBySideComparison(params, usdToIdr);
   const selected = params.mode === 'AIR_EXPRESS' ? comparison.air : comparison.ocean;
 
   let incotermDesc = '';
@@ -459,3 +488,6 @@ export function calculateLogisticsDemo(params: LogisticsSimulationParams): Simul
     ]
   };
 }
+
+// Backwards-compatibility alias
+export const calculateLogisticsDemo = calculateLogisticsEstimate;

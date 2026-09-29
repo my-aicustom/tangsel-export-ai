@@ -58,9 +58,9 @@ export interface BuyerLeadItem {
   matchedIkm: string;
   matchedProduct: string;
   timestamp: string;
-  contactWa: string;
-  contactEmail: string;
-  notes: string;
+  contactWa?: string;
+  contactEmail?: string;
+  notes?: string;
 }
 
 export const BUYER_LEADS: BuyerLeadItem[] = [

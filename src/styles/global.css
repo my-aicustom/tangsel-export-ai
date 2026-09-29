@@ -78,3 +78,18 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+.dashboard-main {
+  transition: padding-left 200ms ease;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-main {
+    padding-left: 18rem;
+  }
+
+  html[data-sidebar="collapsed"] .dashboard-main {
+    padding-left: 5rem;
+  }
+}

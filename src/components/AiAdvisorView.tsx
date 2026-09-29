@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
-import { 
-  Bot, 
-  Send, 
-  Sparkles, 
-  BookOpen, 
-  Search, 
-  Tag, 
-  ExternalLink, 
-  FileText, 
-  CheckCircle2, 
+import {
+  Bot,
+  Send,
+  Sparkles,
+  BookOpen,
+  Search,
+  Tag,
+  ExternalLink,
+  FileText,
+  CheckCircle2,
   HelpCircle,
   RotateCcw,
   X,
-  ShieldCheck, 
-  Download, 
-  Package, 
-  Layers, 
-  MapPin, 
-  PlaneTakeoff, 
-  Ship, 
+  ShieldCheck,
+  Download,
+  Package,
+  Layers,
+  MapPin,
+  PlaneTakeoff,
+  Ship,
   Info,
   Video
 } from 'lucide-react';
 import { REGULASI_KB_DATA, type RegulasiKbItem } from '../data/regulasiKbData';
+import { CountryFlag } from './CountryFlag';
 
 export interface ShipmentContext {
   id: string;
@@ -31,6 +32,7 @@ export interface ShipmentContext {
   productName: string;
   hsCode: string;
   destinationCountry: string;
+  countryCode: string;
   destinationPort: string;
   volume: string;
   fobValueUsd: number;
@@ -40,7 +42,7 @@ export interface ShipmentContext {
   suggestedQuestions: string[];
 }
 
-export const DEMO_SHIPMENT_CONTEXTS: ShipmentContext[] = [
+export const SHIPMENT_CONTEXTS: ShipmentContext[] = [
   {
     id: 'shipment-01',
     label: 'Kargo #EXP-2026-001: Kopi Robusta Sangrai ke Amsterdam (Belanda / EUDR)',
@@ -48,6 +50,7 @@ export const DEMO_SHIPMENT_CONTEXTS: ShipmentContext[] = [
     productName: 'Specialty Java Robusta Roasted Beans',
     hsCode: '0901.21.00',
     destinationCountry: 'Belanda (Uni Eropa)',
+    countryCode: 'NL',
     destinationPort: 'Port of Rotterdam / AMS',
     volume: '15 Koli (~172.5 kg)',
     fobValueUsd: 1425,
@@ -67,6 +70,7 @@ export const DEMO_SHIPMENT_CONTEXTS: ShipmentContext[] = [
     productName: 'Organic Arenga Palm Sugar (Granule 500g)',
     hsCode: '1702.90.90',
     destinationCountry: 'Kamerun (Afrika Tengah)',
+    countryCode: 'CM',
     destinationPort: 'Port of Douala (Port-DLA)',
     volume: '1 x 20ft FCL (~18 Ton / 1.800 Karton)',
     fobValueUsd: 28800,
@@ -86,6 +90,7 @@ export const DEMO_SHIPMENT_CONTEXTS: ShipmentContext[] = [
     productName: 'Instant Red Ginger Extract (Granule Sachet)',
     hsCode: '2106.90.99',
     destinationCountry: 'Uni Emirat Arab (Dubai)',
+    countryCode: 'AE',
     destinationPort: 'Dubai International (DXB) / Jebel Ali',
     volume: '50 Karton (20.000 Sachet / ~300 kg)',
     fobValueUsd: 4200,
@@ -105,6 +110,7 @@ export const DEMO_SHIPMENT_CONTEXTS: ShipmentContext[] = [
     productName: 'Eco Bamboo Cutlery & Bento Tableware Set',
     hsCode: '4421.91.90',
     destinationCountry: 'Jerman (Uni Eropa)',
+    countryCode: 'DE',
     destinationPort: 'Hamburg Port / MUC',
     volume: '30 Karton (~285 kg)',
     fobValueUsd: 3600,
@@ -124,6 +130,7 @@ export const DEMO_SHIPMENT_CONTEXTS: ShipmentContext[] = [
     productName: 'Sambal Roa Asli Manado Retort Pouch 150g',
     hsCode: '2103.90.13',
     destinationCountry: 'Amerika Serikat (West Coast)',
+    countryCode: 'US',
     destinationPort: 'Port of Long Beach / LAX',
     volume: '40 Karton (~392 kg)',
     fobValueUsd: 3800,
@@ -147,6 +154,22 @@ interface ChatMessage {
   contextTag?: string;
 }
 
+const renderMessageText = (text: string) => {
+  return text.split('\n').map((line, lineIndex) => {
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <React.Fragment key={lineIndex}>
+        {parts.map((part, partIndex) =>
+          part.startsWith('**') && part.endsWith('**')
+            ? <strong key={partIndex} className="font-semibold text-inherit">{part.slice(2, -2)}</strong>
+            : <React.Fragment key={partIndex}>{part}</React.Fragment>
+        )}
+        {lineIndex < text.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    );
+  });
+};
+
 export const AiAdvisorView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'kb'>('chat');
   const [inputPrompt, setInputPrompt] = useState('');
@@ -156,16 +179,16 @@ export const AiAdvisorView: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = useState<RegulasiKbItem | null>(null);
 
   // Selected Shipment Context for Consulting
-  const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(DEMO_SHIPMENT_CONTEXTS[0]);
+  const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(SHIPMENT_CONTEXTS[0]);
 
   const initialMessage: ChatMessage = {
     id: 'm-1',
     sender: 'ai',
     text: `Halo! Saya Asisten Regulasi Ekspor Tangsel. Saya siap membantu menelusuri persyaratan ekspor, HS Code, sertifikasi internasional, dan kelengkapan dokumen kepabeanan.
 
-Saat ini konteks konsultasi terhubung ke: **${DEMO_SHIPMENT_CONTEXTS[0].label}**. Anda dapat menanyakan persyaratan regulasi spesifik untuk pengapalan ini atau memilih pengapalan lain melalui menu konteks di atas.`,
+Saat ini konteks konsultasi terhubung ke: **${SHIPMENT_CONTEXTS[0].label}**. Anda dapat menanyakan persyaratan regulasi spesifik untuk pengapalan ini atau memilih pengapalan lain melalui menu konteks di atas.`,
     timestamp: '08:30 WIB',
-    contextTag: DEMO_SHIPMENT_CONTEXTS[0].label
+    contextTag: SHIPMENT_CONTEXTS[0].label
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
@@ -191,7 +214,7 @@ Saat ini konteks konsultasi terhubung ke: **${DEMO_SHIPMENT_CONTEXTS[0].label}**
       setSelectedShipment(null);
       return;
     }
-    const found = DEMO_SHIPMENT_CONTEXTS.find(s => s.id === contextId) || null;
+    const found = SHIPMENT_CONTEXTS.find(s => s.id === contextId) || null;
     setSelectedShipment(found);
     if (found) {
       const switchNotice: ChatMessage = {
@@ -383,333 +406,176 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
   });
 
   return (
-    <div className="space-y-5 sm:space-y-6">
-      {/* Top Banner */}
-      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-lg bg-emerald-50 text-emerald-700 shrink-0">
-            <Bot size={28} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-                ASISTEN REGULASI EKSPOR
-              </span>
-              <span className="text-sm text-slate-500">Asisten Regulasi Ekspor Tangsel</span>
-            </div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mt-1">
-              Konsultasi Cerdas Regulasi, Sertifikasi, & Standar Perdagangan Internasional
-            </h2>
-            <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-              Panduan interaktif kepatuhan regulasi ekspor (EUDR, Halal UAE, US FDA, SVLK) terintegrasi dengan data kargo IKM binaan Tangerang Selatan.
-            </p>
-          </div>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+        <div className="min-w-0">
+          <div className="ui-label">Workspace konsultasi ekspor</div>
+          <div className="mt-1 text-sm text-slate-600">Pilih konteks kargo, ajukan pertanyaan, lalu buka rujukan regulasi bila perlu.</div>
         </div>
-
-        {/* Tab Controls & Veylo Link */}
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
-          <a
-            href="https://veylo.163.61.44.41.sslip.io/app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="min-h-11 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center gap-1.5"
+        <div className="flex w-full items-center rounded-lg bg-slate-100 p-1 sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setActiveTab('chat')}
+            className={`min-h-10 flex-1 rounded-md px-3 text-sm font-semibold transition sm:flex-none ${activeTab === 'chat' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            <Video size={14} />
-            <span>Veylo Trade Room</span>
-          </a>
-          <div className="flex items-center rounded-lg bg-slate-100 p-1 text-sm">
-            <button
-              onClick={() => setActiveTab('chat')}
-              className={`min-h-10 px-3.5 rounded-md font-semibold transition flex items-center gap-1.5 ${
-                activeTab === 'chat'
-                  ? 'bg-white text-emerald-800 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Bot size={14} />
-              Chat AI Advisor
-            </button>
-            <button
-              onClick={() => setActiveTab('kb')}
-              className={`min-h-10 px-3.5 rounded-md font-semibold transition flex items-center gap-1.5 ${
-                activeTab === 'kb'
-                  ? 'bg-white text-emerald-800 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <BookOpen size={14} />
-              Basis Regulasi ({REGULASI_KB_DATA.length})
-            </button>
-          </div>
+            <span className="inline-flex items-center gap-2"><Bot size={15}/> Konsultasi</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('kb')}
+            className={`min-h-10 flex-1 rounded-md px-3 text-sm font-semibold transition sm:flex-none ${activeTab === 'kb' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+          >
+            <span className="inline-flex items-center gap-2"><BookOpen size={15}/> Basis Regulasi <span className="text-xs text-slate-400">{REGULASI_KB_DATA.length}</span></span>
+          </button>
         </div>
       </div>
 
-      {/* TAB 1: INTERACTIVE CHAT UI */}
       {activeTab === 'chat' && (
-        <div className="space-y-4">
-          {/* SHIPMENT CONTEXT SELECTOR BAR */}
-          <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm">
-            <div className="flex items-center gap-2.5">
-              <Package size={20} className="text-emerald-700 shrink-0" />
-              <div>
-                <span className="font-bold text-slate-900 block">Pilih Konteks Pengiriman Kargo (Shipment Context):</span>
-                <span className="text-xs text-slate-500">Pertanyaan dan respons AI akan merujuk ke data pengapalan komoditas terpilih</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <select
-                value={selectedShipment?.id || ''}
-                onChange={(e) => handleShipmentContextChange(e.target.value)}
-                className="w-full md:w-auto min-h-11 px-3.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600"
-              >
-                <option value="">-- Umum / Tanpa Konteks Kargo Khusus --</option>
-                {DEMO_SHIPMENT_CONTEXTS.map(sc => (
-                  <option key={sc.id} value={sc.id}>{sc.label}</option>
-                ))}
-              </select>
-
-              {selectedShipment && (
-                <button
-                  onClick={() => setSelectedShipment(null)}
-                  className="min-h-11 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold shrink-0 transition"
-                  title="Bersihkan Konteks"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Active Context Card (if selected) */}
-          {selectedShipment && (
-            <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4 text-sm space-y-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-                    Konteks Kargo Aktif
-                  </span>
-                  <span className="font-bold text-slate-900">{selectedShipment.productName}</span>
-                  <span className="text-xs text-slate-500 font-mono">(HS: {selectedShipment.hsCode})</span>
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
+          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 bg-white p-4 sm:p-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><Package size={17}/></span>
+                    Konteks konsultasi
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">Jawaban akan memprioritaskan komoditas, negara tujuan, HS Code, dan kebutuhan dokumen pada konteks terpilih.</p>
                 </div>
-                <div className="text-right text-xs">
-                  <span className="text-slate-600">Nilai FOB: </span>
-                  <strong className="text-emerald-800 font-bold">${selectedShipment.fobValueUsd.toLocaleString()} USD</strong>
-                  <span className="text-slate-400 mx-1.5">•</span>
-                  <span className="text-slate-600">Moda: </span>
-                  <strong className="text-blue-800 font-bold">{selectedShipment.shippingMode}</strong>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-700 pt-1">
-                <div>
-                  <span className="text-slate-500">Eksportir Tangsel: </span>
-                  <strong className="text-slate-900">{selectedShipment.exporterName}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500">Tujuan: </span>
-                  <strong className="text-slate-900">{selectedShipment.destinationCountry} ({selectedShipment.destinationPort})</strong>
-                </div>
-                <div>
-                  <span className="text-slate-500">Volume: </span>
-                  <strong className="text-slate-900">{selectedShipment.volume}</strong>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-emerald-200 text-xs">
-                <span className="text-slate-600 font-bold">Standar Kepatuhan:</span>
-                {selectedShipment.keyCompliance.map((k, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded bg-white text-emerald-900 border border-emerald-300 font-bold shadow-2xs">
-                    ✓ {k}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Main Chat Box (3 Cols) */}
-            <div className="lg:col-span-3 rounded-xl bg-white border border-slate-200 flex flex-col h-[65dvh] min-h-[500px] lg:h-[640px] lg:max-h-[760px] overflow-hidden">
-              {/* Chat Box Top Header */}
-              <div className="px-4 py-3.5 sm:px-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                  <span className="font-bold text-slate-900">Konsultasi AI Export Advisor</span>
-                  <span className="hidden sm:inline text-xs font-semibold text-emerald-700">
-                    Online
-                  </span>
-                  <span className="text-slate-400">•</span>
-                  <span className="text-slate-600 font-medium">Disperindag Kota Tangsel</span>
-                </div>
-                <button
-                  onClick={handleResetChat}
-                  className="min-h-10 flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition px-2.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-sm font-semibold"
-                  title="Mulai percakapan baru"
-                >
-                  <RotateCcw size={13} />
-                  <span>Reset Chat</span>
-                </button>
-              </div>
-
-              {/* Messages Thread */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/40">
-                {messages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`flex gap-3 text-sm ${
-                      m.sender === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
+                <div className="flex min-w-0 flex-1 items-center gap-2 lg:max-w-xl">
+                  <select
+                    value={selectedShipment?.id || ''}
+                    onChange={(e) => handleShipmentContextChange(e.target.value)}
+                    className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-800 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                    aria-label="Pilih konteks pengiriman"
                   >
-                    {m.sender === 'ai' && (
-                      <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 border border-blue-300 flex items-center justify-center shrink-0 shadow-2xs">
-                        <Bot size={18} />
-                      </div>
-                    )}
+                    <option value="">Umum / tanpa konteks kargo</option>
+                    {SHIPMENT_CONTEXTS.map(sc => <option key={sc.id} value={sc.id}>{sc.label}</option>)}
+                  </select>
+                  {selectedShipment && (
+                    <button type="button" onClick={() => setSelectedShipment(null)} className="min-h-11 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">Hapus</button>
+                  )}
+                </div>
+              </div>
+            </div>
 
-                    <div
-                      className={`max-w-2xl p-4 rounded-xl space-y-2.5 ${
-                        m.sender === 'user'
-                          ? 'bg-emerald-600 text-white rounded-br-none shadow-xs'
-                          : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
-                      }`}
-                    >
-                      {m.contextTag && m.sender === 'ai' && (
-                        <div className="text-xs text-emerald-800 font-semibold border-b border-slate-100 pb-2 flex items-center gap-1">
-                          <Package size={13} />
-                          <span className="truncate">{m.contextTag}</span>
-                        </div>
-                      )}
+            <div className="flex h-[min(66dvh,700px)] min-h-[540px] flex-col bg-slate-50/50">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600" />
+                  <span className="truncate text-sm font-semibold text-slate-900">Asisten Regulasi Ekspor Tangsel</span>
+                  <span className="hidden text-xs text-slate-400 sm:inline">Referensi terkurasi</span>
+                </div>
+                <button type="button" onClick={handleResetChat} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+                  <RotateCcw size={14}/> Reset
+                </button>
+              </div>
 
-                      <div className="whitespace-pre-line text-sm leading-6 font-normal">
-                        {m.text}
-                      </div>
-
-                      {/* Citations Card if AI */}
-                      {m.citations && m.citations.length > 0 && (
-                        <div className="pt-3 border-t border-slate-100 text-sm space-y-1.5">
-                          <span className="text-slate-600 font-bold flex items-center gap-1">
-                            <BookOpen size={13} className="text-emerald-700" />
-                            Rujukan Regulasi Resmi:
-                          </span>
-                          {m.citations.map((c, i) => (
-                            <div key={i} className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950 font-medium">
-                              <strong className="text-slate-900">{c.title}</strong> — <span className="text-slate-600">{c.source}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className={`text-xs text-right font-medium ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>
-                        {m.timestamp}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+                <div className="mx-auto max-w-3xl space-y-4">
+                  {messages.map((m) => (
+                    <div key={m.id} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      {m.sender === 'ai' && <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800"><Bot size={18}/></div>}
+                      <div className={`max-w-[88%] rounded-xl px-4 py-3 text-sm leading-6 sm:max-w-[82%] ${m.sender === 'user' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
+                        {m.contextTag && m.sender === 'ai' && <div className="mb-2 flex items-center gap-1.5 border-b border-slate-100 pb-2 text-xs font-semibold text-emerald-800"><Package size={13}/><span className="truncate">{m.contextTag}</span></div>}
+                        <div>{renderMessageText(m.text)}</div>
+                        {m.citations && m.citations.length > 0 && (
+                          <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><BookOpen size={13} className="text-emerald-700"/> Rujukan</div>
+                            {m.citations.map((c, i) => <div key={i} className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><strong className="text-slate-800">{c.title}</strong><span className="mx-1">·</span>{c.source}</div>)}
+                          </div>
+                        )}
+                        <div className={`mt-2 text-right text-[11px] ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>{m.timestamp}</div>
                       </div>
                     </div>
+                  ))}
 
-                    {m.sender === 'user' && (
-                      <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-800 flex items-center justify-center shrink-0 font-bold text-xs shadow-2xs">
-                        TS
+                  {messages.length <= 1 && !isTyping && (
+                    <div className="ml-0 rounded-xl border border-dashed border-slate-300 bg-white/70 p-4 sm:ml-12">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Mulai dari pertanyaan berikut</div>
+                      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+                        {activePrompts.slice(0, 4).map((q, idx) => (
+                          <button key={idx} type="button" onClick={() => handleSend(q)} className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  )}
 
-                {isTyping && (
-                  <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-                    Sedang menyiapkan jawaban berdasarkan referensi regulasi ekspor...
-                  </div>
-                )}
+                  {isTyping && <div className="flex items-center gap-2 text-sm text-slate-500"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600"/> Menyiapkan jawaban berdasarkan referensi regulasi...</div>}
+                </div>
               </div>
 
-              {/* Input Bar */}
-              <div className="p-3.5 border-t border-slate-200 bg-white">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSend();
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <input
-                    type="text"
-                    placeholder={selectedShipment ? `Tanyakan regulasi untuk ${selectedShipment.productName}...` : "Ketik pertanyaan regulasi ekspor, HS Code, sertifikasi, atau dokumen PEB..."}
-                    value={inputPrompt}
-                    onChange={e => setInputPrompt(e.target.value)}
-                    className="flex-1 min-h-11 px-4 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white text-sm transition"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!inputPrompt.trim() || isTyping}
-                    className="min-h-11 px-4 sm:px-5 rounded-lg bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 text-white font-semibold text-sm transition flex items-center gap-1.5"
-                  >
-                    <Send size={15} />
-                    Kirim
-                  </button>
+              <div className="border-t border-slate-200 bg-white p-3 sm:p-4">
+                <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="mx-auto flex max-w-3xl items-end gap-2">
+                  <div className="min-w-0 flex-1">
+                    <label htmlFor="advisor-message" className="sr-only">Pertanyaan regulasi ekspor</label>
+                    <input
+                      id="advisor-message"
+                      type="text"
+                      placeholder={selectedShipment ? `Tanyakan persyaratan untuk ${selectedShipment.productName}...` : 'Tanyakan HS Code, sertifikasi, dokumen, atau aturan negara tujuan...'}
+                      value={inputPrompt}
+                      onChange={e => setInputPrompt(e.target.value)}
+                      className="min-h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                    />
+                  </div>
+                  <button type="submit" disabled={!inputPrompt.trim() || isTyping} className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40"><Send size={16}/> <span className="hidden sm:inline">Kirim</span></button>
                 </form>
               </div>
             </div>
+          </section>
 
-            {/* Sidecar Col: Context-Aware Quick Prompts */}
-            <div className="space-y-4">
-              <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-5 space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                  <HelpCircle size={15} className="text-emerald-700" />
-                  {selectedShipment ? 'Pertanyaan Kargo Terpilih' : 'Pertanyaan Cepat (FAQ Ekspor)'}
+          <aside className="space-y-4">
+            {selectedShipment ? (
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <div className="flex items-start gap-3">
+                  <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-7 w-10 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="ui-label">Konteks aktif</div>
+                    <div className="mt-1 text-sm font-bold leading-5 text-slate-900">{selectedShipment.productName}</div>
+                    <div className="mt-0.5 text-xs text-slate-500">HS {selectedShipment.hsCode} · {selectedShipment.destinationCountry}</div>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  {selectedShipment 
-                    ? `Topik yang disesuaikan dengan ${selectedShipment.productName} (${selectedShipment.destinationCountry}):`
-                    : 'Klik salah satu topik di bawah untuk melihat rujukan regulasi ekspor:'}
-                </p>
-
-                <div className="space-y-2">
-                  {activePrompts.map((q, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(q)}
-                      className="w-full min-h-11 p-3 rounded-lg bg-slate-50 border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-left text-sm text-slate-700 hover:text-slate-900 transition leading-snug font-medium"
-                    >
-                      "{q}"
-                    </button>
-                  ))}
+                <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-slate-100 pt-4 text-xs">
+                  <div><dt className="text-slate-400">FOB</dt><dd className="mt-0.5 font-semibold text-slate-800">${selectedShipment.fobValueUsd.toLocaleString()}</dd></div>
+                  <div><dt className="text-slate-400">Incoterm</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.incoterm}</dd></div>
+                  <div><dt className="text-slate-400">Moda</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.shippingMode === 'AIR_EXPRESS' ? 'Air Express' : 'Ocean LCL'}</dd></div>
+                  <div><dt className="text-slate-400">Volume</dt><dd className="mt-0.5 font-semibold text-slate-800 line-clamp-2">{selectedShipment.volume}</dd></div>
+                </dl>
+                <div className="mt-4 border-t border-slate-100 pt-4">
+                  <div className="text-xs font-semibold text-slate-700">Kepatuhan utama</div>
+                  <div className="mt-2 space-y-2">
+                    {selectedShipment.keyCompliance.map((item, i) => <div key={i} className="flex items-start gap-2 text-xs leading-5 text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600"/><span>{item}</span></div>)}
+                  </div>
                 </div>
               </div>
+            ) : (
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600"><div className="font-semibold text-slate-900">Konsultasi umum</div><p className="mt-1 leading-5">Pilih konteks kargo jika Anda ingin jawaban disesuaikan dengan produk, HS Code, dan negara tujuan tertentu.</p></div>
+            )}
 
-              {/* Status Notice */}
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5">
-                <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                  <Info size={14} className="text-blue-600" />
-                  <span>Keterangan Basis Pengetahuan:</span>
-                </div>
-                <p className="leading-relaxed text-xs">
-                  Modul AI Advisor merujuk pada standar kepatuhan regulasi terkurasi Disperindag Tangsel, Kemendag RI, Bea Cukai, dan ketentuan standar pasar mitra internasional TEI 2026.
-                </p>
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><HelpCircle size={14} className="text-emerald-700"/> Pertanyaan cepat</div>
+              <div className="mt-3 space-y-2">
+                {activePrompts.slice(0, 3).map((q, idx) => <button key={idx} type="button" onClick={() => handleSend(q)} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>)}
               </div>
             </div>
-          </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-5 text-slate-500">
+              <div className="flex items-center gap-2 font-semibold text-slate-800"><ShieldCheck size={14} className="text-emerald-700"/> Basis referensi</div>
+              <p className="mt-2">Jawaban mengacu pada basis regulasi terkurasi dan perlu diverifikasi kembali terhadap ketentuan terbaru instansi penerbit sebelum transaksi atau pengapalan.</p>
+              <a href="https://veylo.163.61.44.41.sslip.io/app" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 font-semibold text-white hover:bg-slate-800"><Video size={14}/> Buka Ruang Negosiasi</a>
+            </div>
+          </aside>
         </div>
       )}
 
-      {/* TAB 2: KNOWLEDGE BASE BROWSER */}
       {activeTab === 'kb' && (
         <div className="space-y-4">
-          {/* Search & Filter */}
-          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Cari artikel regulasi, negara tujuan, atau dokumen wajib..."
-                value={kbSearch}
-                onChange={e => setKbSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white text-xs font-medium transition"
-              />
+              <input type="text" placeholder="Cari regulasi, negara tujuan, atau dokumen wajib..." value={kbSearch} onChange={e => setKbSearch(e.target.value)} className="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
             </div>
-
-            <select
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:outline-none focus:border-emerald-600 focus:bg-white"
-            >
+            <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3.5 text-sm text-slate-800 focus:border-emerald-600 focus:bg-white focus:outline-none">
               <option value="ALL">Semua Kategori</option>
               <option value="food_beverage">Food & Beverage</option>
               <option value="furniture_dekor">Furniture & Kerajinan Bambu</option>
@@ -717,106 +583,30 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
             </select>
           </div>
 
-          {/* Articles Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {filteredKb.map(item => (
-              <div
-                key={item.id}
-                onClick={() => setSelectedArticle(item)}
-                className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 text-xs hover:border-emerald-500 cursor-pointer transition group"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition leading-tight">
-                    {item.judul}
-                  </h3>
-                  <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 shrink-0">
-                    {item.negaraTujuan}
-                  </span>
+              <button type="button" key={item.id} onClick={() => setSelectedArticle(item)} className="group rounded-xl border border-slate-200 bg-white p-5 text-left transition hover:border-emerald-400 hover:shadow-sm">
+                <div className="flex items-start justify-between gap-3"><h3 className="text-sm font-bold leading-5 text-slate-900 group-hover:text-emerald-800">{item.judul}</h3><span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{item.negaraTujuan}</span></div>
+                <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{item.ringkasan}</p>
+                <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">
+                  {item.dokumenWajib.slice(0, 3).map((doc, i) => <div key={i} className="flex items-start gap-2 text-xs leading-5 text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600"/>{doc}</div>)}
                 </div>
-
-                <p className="text-slate-600 leading-relaxed line-clamp-3 font-medium">
-                  {item.ringkasan}
-                </p>
-
-                {/* Required Documents */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <span className="text-xs font-bold text-slate-700 block">
-                    Dokumen & Sertifikasi Wajib:
-                  </span>
-                  <div className="space-y-1 text-xs">
-                    {item.dokumenWajib.slice(0, 3).map((doc, dIdx) => (
-                      <div key={dIdx} className="flex items-center gap-2 text-slate-700">
-                        <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
-                        <span className="truncate">{doc}</span>
-                      </div>
-                    ))}
-                    {item.dokumenWajib.length > 3 && (
-                      <div className="text-xs text-emerald-700 font-bold pl-5">
-                        +{item.dokumenWajib.length - 3} dokumen lainnya (klik untuk melihat)
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-                  <span className="italic truncate max-w-[200px]">Ref: {item.sumberRegulasi}</span>
-                  <span className="text-emerald-700 font-bold group-hover:translate-x-0.5 transition">
-                    Buka Panduan Lengkap →
-                  </span>
-                </div>
-              </div>
+                <div className="mt-4 text-xs font-semibold text-emerald-700">Buka panduan lengkap →</div>
+              </button>
             ))}
           </div>
 
-          {/* Article Detail Modal */}
           {selectedArticle && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setSelectedArticle(null)} />
-              <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-5 text-xs max-h-[85vh] overflow-y-auto">
-                <div className="flex justify-between items-start border-b border-slate-200 pb-3">
-                  <div>
-                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
-                      Dokumen Regulasi Ekspor Resmi
-                    </span>
-                    <h3 className="text-base font-bold text-slate-900 mt-0.5">{selectedArticle.judul}</h3>
-                    <div className="text-xs text-slate-600 mt-0.5 font-medium">
-                      Target Wilayah: <strong className="text-slate-900">{selectedArticle.negaraTujuan}</strong>
-                    </div>
-                  </div>
-                  <button onClick={() => setSelectedArticle(null)} className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900 transition">
-                    <X size={18} />
-                  </button>
+              <button type="button" className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setSelectedArticle(null)} aria-label="Tutup detail regulasi" />
+              <div className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6">
+                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+                  <div><div className="ui-label">Panduan regulasi ekspor</div><h3 className="mt-1 text-lg font-bold text-slate-900">{selectedArticle.judul}</h3><div className="mt-1 text-sm text-slate-500">Target: {selectedArticle.negaraTujuan}</div></div>
+                  <button type="button" onClick={() => setSelectedArticle(null)} className="tap-target inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200" aria-label="Tutup"><X size={18}/></button>
                 </div>
-
-                <div className="space-y-2 text-slate-800 leading-relaxed text-xs">
-                  <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Ringkasan Ketentuan:</h4>
-                  <p className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 leading-relaxed font-medium">{selectedArticle.ringkasan}</p>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Daftar Dokumen Wajib:</h4>
-                  <div className="space-y-1.5">
-                    {selectedArticle.dokumenWajib.map((doc, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 text-slate-800 font-medium">
-                        <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-                        <span>{doc}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
-                  <strong>Dasar Hukum Regulasi:</strong> {selectedArticle.sumberRegulasi}
-                </div>
-
-                <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
-                  <button
-                    onClick={() => setSelectedArticle(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200 transition"
-                  >
-                    Tutup
-                  </button>
-                </div>
+                <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">{selectedArticle.ringkasan}</p>
+                <div className="mt-5"><h4 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Dokumen wajib</h4><div className="mt-2 space-y-2">{selectedArticle.dokumenWajib.map((doc,i)=><div key={i} className="flex items-start gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700"><CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-600"/>{doc}</div>)}</div></div>
+                <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900"><strong>Dasar regulasi:</strong> {selectedArticle.sumberRegulasi}</div>
               </div>
             </div>
           )}

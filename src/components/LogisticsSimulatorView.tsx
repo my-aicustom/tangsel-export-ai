@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  PlaneTakeoff, 
-  Ship, 
-  Calculator, 
-  FileText, 
-  AlertTriangle, 
-  ShieldCheck, 
-  Check, 
-  ChevronRight, 
-  ChevronLeft, 
-  Info, 
+import {
+  PlaneTakeoff,
+  Ship,
+  Calculator,
+  FileText,
+  AlertTriangle,
+  ShieldCheck,
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  Info,
   Sparkles,
   Printer,
   RotateCcw,
@@ -19,16 +19,26 @@ import {
   Clock,
   DollarSign,
   PackageCheck,
-  Video
+  Video,
+  RefreshCw,
+  ExternalLink,
+  Database
 } from 'lucide-react';
-import { 
-  DESTINATION_PORTS, 
-  calculateLogisticsDemo, 
+import {
+  DESTINATION_PORTS,
+  calculateLogisticsEstimate,
   calculateSideBySideComparison,
   type LogisticsSimulationParams,
   type SimulationResult,
-  type SideBySideComparisonResult 
-} from '../data/dhlDemoRates';
+  type SideBySideComparisonResult,
+  LOGISTICS_RATE_META
+} from '../data/logisticsRates';
+import { CountryFlag } from './CountryFlag';
+import {
+  fetchFreightosMarketEstimates,
+  fetchUsdIdrRate,
+  type FreightMarketEstimates
+} from '../lib/openFreightEstimate';
 
 export const LogisticsSimulatorView: React.FC = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -54,6 +64,11 @@ export const LogisticsSimulatorView: React.FC = () => {
   } | null>(null);
 
   const [showExportModal, setShowExportModal] = useState(false);
+  const [usdToIdr, setUsdToIdr] = useState(17985);
+  const [fxDate, setFxDate] = useState<string | null>(null);
+  const [marketEstimates, setMarketEstimates] = useState<FreightMarketEstimates | null>(null);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [marketError, setMarketError] = useState<string | null>(null);
 
   // Read URL query parameters passed from /readiness ("Create Logistics Simulation")
   useEffect(() => {
@@ -99,9 +114,58 @@ export const LogisticsSimulatorView: React.FC = () => {
     }
   }, []);
 
-  const result: SimulationResult = calculateLogisticsDemo(params);
-  const comparison: SideBySideComparisonResult = calculateSideBySideComparison(params);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchUsdIdrRate(controller.signal)
+      .then(({ rate, date }) => {
+        setUsdToIdr(rate);
+        setFxDate(date || null);
+      })
+      .catch(() => {
+        // Keep the bundled operational fallback rate when the open FX endpoint is unavailable.
+      });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    setMarketEstimates(null);
+    setMarketError(null);
+  }, [params.destinationId, params.actualWeightKg, params.lengthCm, params.widthCm, params.heightCm, params.packagesCount]);
+
+  const result: SimulationResult = calculateLogisticsEstimate(params, usdToIdr);
+  const comparison: SideBySideComparisonResult = calculateSideBySideComparison(params, usdToIdr);
   const selectedPort = DESTINATION_PORTS.find(p => p.id === params.destinationId) || DESTINATION_PORTS[0];
+
+  const handleFetchMarketEstimate = async () => {
+    setMarketLoading(true);
+    setMarketError(null);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 9000);
+
+    try {
+      const estimates = await fetchFreightosMarketEstimates({
+        airDestinationCode: selectedPort.airCode,
+        seaDestinationLocode: selectedPort.unLocode,
+        weightPerPackageKg: params.actualWeightKg,
+        lengthCm: params.lengthCm,
+        widthCm: params.widthCm,
+        heightCm: params.heightCm,
+        packagesCount: params.packagesCount,
+      }, controller.signal);
+      setMarketEstimates(estimates);
+    } catch {
+      setMarketError('Estimasi pasar publik belum tersedia untuk rute atau ukuran kargo ini. Model perencanaan internal tetap dapat digunakan.');
+    } finally {
+      window.clearTimeout(timeout);
+      setMarketLoading(false);
+    }
+  };
+
+  const formatMarketTransit = (min?: number, max?: number) => {
+    if (min && max) return `${min}–${max} hari`;
+    if (min) return `${min}+ hari`;
+    return 'Transit mengikuti marketplace';
+  };
 
   const handleReset = () => {
     setParams({
@@ -122,7 +186,7 @@ export const LogisticsSimulatorView: React.FC = () => {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      {/* Partner Header: Disperindag Tangsel & Simulasi Integrasi Logistik */}
+      {/* Partner Header: Disperindag Tangsel & Estimasi Integrasi Logistik */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -133,46 +197,30 @@ export const LogisticsSimulatorView: React.FC = () => {
             <span className="text-sm text-slate-500">Tangsel Export AI</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
-            Simulasi Biaya Logistik & Kargo Ekspor
+            Estimasi Biaya Logistik & Kargo Ekspor
           </h1>
           <p className="text-sm text-slate-600 mt-1 max-w-xl leading-relaxed">
-            Kalkulator rute kargo internasional, perbandingan moda Air Express vs Ocean LCL, serta estimasi landing cost IKM Tangsel untuk TEI 2026.
+            Estimator operasional rute kargo internasional, perbandingan moda Air Express vs Ocean LCL, dan proyeksi landing cost IKM Tangsel untuk TEI 2026.
           </p>
         </div>
 
-        {/* Simulasi Integrasi Logistik Block */}
-        <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-3 shrink-0 self-start sm:self-center">
-          <div className="p-1.5 bg-white rounded-lg border border-slate-200 shadow-2xs shrink-0">
-            <img 
-              src="/branding/logo-dhl.png" 
-              alt="DHL Logo" 
-              className="h-6 w-auto object-contain max-w-[80px]" 
-            />
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Simulasi Integrasi Logistik
-            </div>
-            <div className="text-xs font-bold text-slate-900">
-              Estimasi Kargo Internasional
-            </div>
-            <div className="text-xs text-amber-700 font-bold">
-              Kemitraan Dalam Pembahasan
-            </div>
-          </div>
+        <div className="rounded-lg bg-slate-50 px-4 py-3 text-xs text-slate-600 shrink-0 self-start sm:self-center">
+          <div className="font-semibold uppercase tracking-wide text-slate-500">Status data</div>
+          <div className="mt-0.5 font-bold text-slate-900">Open market + operational model</div>
+          <div className="mt-0.5">Tanpa API key carrier dan tanpa vendor lock-in</div>
         </div>
       </div>
 
-      {/* Disclaimer simulasi */}
+      {/* Disclaimer estimasi */}
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 sm:p-5 text-sm text-amber-950 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2 font-bold text-amber-900 text-sm">
           <div className="flex flex-wrap items-center gap-2">
             <AlertTriangle size={18} className="text-amber-700 shrink-0" />
-            <span>Simulasi indikatif — bukan quotation resmi</span>
+            <span>Estimasi operasional — bukan quotation carrier</span>
           </div>
         </div>
         <p className="leading-relaxed text-amber-900/90 font-medium">
-          Seluruh tarif kargo, estimasi transit time, dan biaya bea cukai pada modul ini adalah <strong>kalkulasi simulasi matematis (DEMO RATE)</strong> untuk kebutuhan proyeksi kesiapan kontingensi pameran TEI 2026. Sesuai surat permohonan Disperindag Tangsel No. <code>/ /Disperindag/2026</code> tertanggal 24 September 2026, pembahasan kemitraan resmi bersama <strong>PT DHL Global Forwarding Indonesia</strong> saat ini sedang berproses.
+          Modul menggunakan <strong>estimasi pasar publik Freightos</strong> saat tersedia, kurs harian terbuka untuk konversi USD/IDR, serta model perencanaan internal sebagai fallback. Nilai ini tetap merupakan estimasi perencanaan dan bukan quotation yang mengikat sampai pemesanan dikonfirmasi oleh forwarder/carrier. Sumber fallback: <strong>{LOGISTICS_RATE_META.source}</strong>.
         </p>
       </div>
 
@@ -191,7 +239,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                 {forwardedContext.exporterName || 'IKM Tangsel'} — {forwardedContext.productName || 'Komoditas Unggulan'}
               </div>
               <div className="text-slate-600 text-xs mt-0.5 font-medium">
-                Dimensi produk & nilai estimasi FOB (${forwardedContext.fobPriceUsd || 0}/unit) telah diimpor otomatis ke simulator.
+                Dimensi produk & nilai estimasi FOB (${forwardedContext.fobPriceUsd || 0}/unit) telah diimpor otomatis ke estimator.
               </div>
             </div>
           </div>
@@ -209,10 +257,10 @@ export const LogisticsSimulatorView: React.FC = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-              Simulator Biaya Pengiriman
+              Estimator Biaya Pengiriman
             </span>
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
-              Wizard Simulasi Biaya Logistik Ekspor IKM
+              Estimator Biaya Logistik Ekspor IKM
             </h2>
           </div>
           <button
@@ -267,17 +315,22 @@ export const LogisticsSimulatorView: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   {DESTINATION_PORTS.map((port) => (
-                    <div
+                    <button
+                      type="button"
                       key={port.id}
                       onClick={() => setParams({ ...params, destinationId: port.id })}
-                      className={`p-4 rounded-xl border transition cursor-pointer text-xs space-y-1.5 ${
+                      aria-pressed={params.destinationId === port.id}
+                      className={`w-full p-4 rounded-xl border transition text-left text-xs space-y-1.5 ${
                         params.destinationId === port.id
                           ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 shadow-2xs'
                           : 'bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-white'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-2xl">{port.flag}</span>
+                        <div className="flex items-center gap-2.5">
+                          <CountryFlag code={port.countryCode} title={port.country} className="h-6 w-9" />
+                          <span className="font-mono text-[11px] font-bold text-slate-400">{port.countryCode}</span>
+                        </div>
                         <span className="px-2 py-0.5 rounded text-xs font-bold bg-white text-slate-700 border border-slate-200">
                           {port.region}
                         </span>
@@ -288,7 +341,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                         <span>Udara: <strong className="text-blue-700">{port.transitDaysAir}</strong></span>
                         <span>Laut: <strong className="text-emerald-700">{port.transitDaysOcean}</strong></span>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -562,11 +615,89 @@ export const LogisticsSimulatorView: React.FC = () => {
                 <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-sm space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-sm">
                     <Sparkles size={16} className="text-emerald-700" />
-                    <span>Saran moda berdasarkan simulasi: {comparison.recommendedMode === 'OCEAN_LCL' ? 'Ocean LCL (Laut)' : 'Air Freight (Udara)'}</span>
+                    <span>Saran moda berdasarkan estimasi: {comparison.recommendedMode === 'OCEAN_LCL' ? 'Ocean LCL (Laut)' : 'Air Freight (Udara)'}</span>
                   </div>
                   <p className="text-slate-700 text-sm leading-relaxed">
                     {comparison.recommendationReason}
                   </p>
+                </div>
+
+                {/* Open public market estimate */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                        <Database size={16} className="text-emerald-700" />
+                        Estimasi Pasar Terbuka
+                      </div>
+                      <p className="mt-1 max-w-2xl text-xs leading-relaxed text-slate-600">
+                        Ambil kisaran freight publik untuk rute yang dipilih. Data pasar menggunakan Freightos Public Shipping Estimates, kode lokasi mengacu UN/LOCODE, dan konversi USD/IDR menggunakan Frankfurter.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleFetchMarketEstimate}
+                      disabled={marketLoading}
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      <RefreshCw size={15} className={marketLoading ? 'animate-spin' : ''} />
+                      {marketLoading ? 'Mengambil data…' : marketEstimates ? 'Perbarui estimasi pasar' : 'Ambil estimasi pasar'}
+                    </button>
+                  </div>
+
+                  {marketError && (
+                    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
+                      {marketError}
+                    </div>
+                  )}
+
+                  {marketEstimates && (
+                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {[
+                        { id: 'AIR_EXPRESS' as const, label: 'Air Freight', data: marketEstimates.air, icon: PlaneTakeoff },
+                        { id: 'OCEAN_LCL' as const, label: 'Ocean LCL', data: marketEstimates.ocean, icon: Ship },
+                      ].map(item => {
+                        const Icon = item.icon;
+                        const active = params.mode === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setParams({ ...params, mode: item.id })}
+                            disabled={!item.data}
+                            className={`min-h-28 rounded-xl border p-4 text-left transition ${active ? 'border-emerald-500 bg-emerald-50/60' : 'border-slate-200 bg-slate-50 hover:bg-white'} disabled:cursor-not-allowed disabled:opacity-60`}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-900"><Icon size={17} />{item.label}</span>
+                              {active && <span className="text-xs font-semibold text-emerald-700">Moda aktif</span>}
+                            </div>
+                            {item.data ? (
+                              <>
+                                <div className="mt-3 text-xl font-extrabold tracking-tight text-slate-950">
+                                  ${item.data.minUsd.toLocaleString('en-US')}–${item.data.maxUsd.toLocaleString('en-US')} USD
+                                </div>
+                                <div className="mt-1 text-xs text-slate-500">{formatMarketTransit(item.data.transitMinDays, item.data.transitMaxDays)}</div>
+                              </>
+                            ) : (
+                              <div className="mt-3 text-xs text-slate-500">Belum ada estimasi publik untuk moda ini.</div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <span>FX USD/IDR: <strong className="text-slate-700">{usdToIdr.toLocaleString('id-ID')}</strong>{fxDate ? ` · referensi ${fxDate}` : ' · fallback lokal bila API tidak tersedia'}</span>
+                    <a
+                      href="https://ship.freightos.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-emerald-800 hover:underline"
+                    >
+                      Market estimate data by Freightos <ExternalLink size={12} />
+                    </a>
+                  </div>
                 </div>
 
                 {/* Mobile comparison summary */}
@@ -836,7 +967,7 @@ export const LogisticsSimulatorView: React.FC = () => {
             <div className="space-y-2 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <div className="flex justify-between text-slate-600">
                 <span>Rute:</span>
-                <span className="text-slate-900 font-semibold">Tangsel (ID) → {selectedPort.country}</span>
+                <span className="inline-flex items-center gap-2 text-slate-900 font-semibold"><CountryFlag code={selectedPort.countryCode} title={selectedPort.country} className="h-4 w-6" />Tangsel (ID) → {selectedPort.country}</span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Pelabuhan/Bandara:</span>
@@ -883,16 +1014,26 @@ export const LogisticsSimulatorView: React.FC = () => {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                <div className={`p-2.5 rounded-lg border ${params.mode === 'AIR_EXPRESS' ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-600'}`}>
+                <button
+                  type="button"
+                  onClick={() => setParams({ ...params, mode: 'AIR_EXPRESS' })}
+                  aria-pressed={params.mode === 'AIR_EXPRESS'}
+                  className={`min-h-20 p-2.5 rounded-lg border transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500 ${params.mode === 'AIR_EXPRESS' ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'}`}
+                >
                   <div>Air Express</div>
                   <strong className="text-slate-900 text-xs block my-0.5">${comparison.air.totalEstimatedCostUsd.toFixed(0)}</strong>
                   <div>{comparison.air.transitTimeEstimate}</div>
-                </div>
-                <div className={`p-2.5 rounded-lg border ${params.mode === 'OCEAN_LCL' ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold' : 'bg-white border-slate-200 text-slate-600'}`}>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setParams({ ...params, mode: 'OCEAN_LCL' })}
+                  aria-pressed={params.mode === 'OCEAN_LCL'}
+                  className={`min-h-20 p-2.5 rounded-lg border transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-emerald-500 ${params.mode === 'OCEAN_LCL' ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'}`}
+                >
                   <div>Ocean LCL</div>
                   <strong className="text-slate-900 text-xs block my-0.5">${comparison.ocean.totalEstimatedCostUsd.toFixed(0)}</strong>
                   <div>{comparison.ocean.transitTimeEstimate}</div>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -917,10 +1058,10 @@ export const LogisticsSimulatorView: React.FC = () => {
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <div>
                 <span className="text-xs uppercase font-bold text-emerald-700">Pemerintah Kota Tangerang Selatan — Disperindag</span>
-                <h3 className="text-base font-bold text-slate-900">Lembar Simulasi Logistik & Kargo Ekspor TEI 2026</h3>
+                <h3 className="text-base font-bold text-slate-900">Lembar Estimasi Logistik & Kargo Ekspor TEI 2026</h3>
               </div>
               <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                DEMO ESTIMATE
+                ESTIMASI OPERASIONAL
               </span>
             </div>
 
@@ -934,7 +1075,7 @@ export const LogisticsSimulatorView: React.FC = () => {
               <p><strong>Rute Ekspor:</strong> Tangerang Selatan (ID) → {selectedPort.name} ({selectedPort.country})</p>
               <p><strong>Spesifikasi Koli:</strong> {params.packagesCount} Box | Total Berat Fisik: {comparison.actualWeightKg} kg | Kubikasi: {comparison.totalVolumeCbm} CBM</p>
               <p><strong>Nilai Kargo FOB:</strong> ${params.cargoValueUsd.toLocaleString()} USD</p>
-              
+
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
                 <div className="font-bold text-slate-900">Perbandingan Biaya Pengiriman:</div>
                 <div className="flex justify-between text-slate-700">
@@ -956,7 +1097,7 @@ export const LogisticsSimulatorView: React.FC = () => {
               </div>
 
               <p className="text-xs text-slate-500 italic">
-                *Dokumen ini merupakan hasil estimasi simulasi sistem Tangsel Export AI untuk keperluan persiapan pameran TEI 2026 dan pembahasan kerja sama logistik Disperindag Tangsel bersama mitra logistik.
+                *Dokumen ini merupakan hasil estimasi operasional Tangsel Export AI untuk perencanaan awal pengiriman. Nilai final mengikuti quotation forwarder/carrier dan kondisi aktual saat booking.
               </p>
             </div>
 

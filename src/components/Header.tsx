@@ -42,10 +42,10 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, actions }) => {
           {/* Powered by My AI Custom Badge */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Powered by</span>
-            <img 
-              src="/branding/my-aicustom-logo.webp" 
-              alt="My AI Custom" 
-              className="h-5 w-auto object-contain" 
+            <img
+              src="/branding/my-aicustom-logo.webp"
+              alt="My AI Custom"
+              className="h-5 w-auto object-contain"
             />
           </div>
 

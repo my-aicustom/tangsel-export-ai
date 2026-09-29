@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Store, 
-  Search, 
-  Globe2, 
-  Send, 
-  Sparkles, 
-  CheckCircle2, 
-  ArrowRight, 
-  Phone, 
+import {
+  Store,
+  Search,
+  Globe2,
+  Send,
+  Sparkles,
+  CheckCircle2,
+  ArrowRight,
+  Phone,
   Layers,
   X,
   FileCheck2,
@@ -23,7 +23,9 @@ import {
   Video
 } from 'lucide-react';
 import { IKM_DATABASE, type IkmItem, type ProductItem } from '../data/ikmData';
-import { DESTINATION_PORTS, calculateLogisticsDemo } from '../data/dhlDemoRates';
+import { DESTINATION_PORTS, calculateLogisticsEstimate } from '../data/logisticsRates';
+import { ProductImage } from './ProductImage';
+import { CountryFlag } from './CountryFlag';
 import { getVeyloRoomUrl } from '../lib/veyloBridge';
 
 export const BoothKioskView: React.FC = () => {
@@ -142,7 +144,7 @@ export const BoothKioskView: React.FC = () => {
     });
   };
 
-  const quickSimResult = calculateLogisticsDemo({
+  const quickSimResult = calculateLogisticsEstimate({
     destinationId: quickPortId,
     actualWeightKg: quickWeightKg / quickPackages,
     lengthCm: 35,
@@ -161,10 +163,10 @@ export const BoothKioskView: React.FC = () => {
       <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-6 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img 
-              src="/branding/logo-tangsel.png" 
-              alt="Lambang Resmi Kota Tangerang Selatan" 
-              className="w-14 h-14 object-contain shrink-0 drop-shadow-xs" 
+            <img
+              src="/branding/logo-tangsel.png"
+              alt="Lambang Resmi Kota Tangerang Selatan"
+              className="w-14 h-14 object-contain shrink-0 drop-shadow-xs"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -322,7 +324,7 @@ export const BoothKioskView: React.FC = () => {
               >
                 <div>
                   <div className="h-48 w-full bg-slate-100 relative overflow-hidden">
-                    <img
+                    <ProductImage
                       src={product.photoUrl}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
@@ -543,13 +545,16 @@ export const BoothKioskView: React.FC = () => {
         <div className="max-w-3xl mx-auto space-y-6 text-xs">
           <div className="rounded-xl bg-white border border-slate-200 p-5 sm:p-7 space-y-5">
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs">
-              <span className="font-bold block text-amber-900">DEMO RATE & KEMITRAAN LOGISTIK DALAM PEMBAHASAN</span>
-              Perhitungan indikatif cepat kargo ekspor untuk buyer pameran TEI 2026.
+              <span className="font-bold block text-amber-900">ESTIMASI OPERASIONAL KARGO</span>
+              Perkiraan biaya kargo untuk perencanaan awal buyer TEI 2026. Nilai final mengikuti quotation forwarder/carrier saat booking.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Destinasi Buyer</label>
+                <label className="text-slate-700 font-semibold mb-1 flex items-center gap-2">
+                  Destinasi Buyer
+                  {(() => { const selected = DESTINATION_PORTS.find(p => p.id === quickPortId); return selected ? <CountryFlag code={selected.countryCode} title={selected.country} className="h-4 w-6" /> : null; })()}
+                </label>
                 <select
                   value={quickPortId}
                   onChange={e => setQuickPortId(e.target.value)}

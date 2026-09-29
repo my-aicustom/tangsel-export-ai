@@ -624,6 +624,24 @@ export const LogisticsSimulatorView: React.FC = () => {
                         <td className="py-2.5 px-4 text-slate-800">{comparison.air.totalVolumeCbm} CBM</td>
                         <td className="py-2.5 px-4 text-slate-800 font-bold">{comparison.ocean.totalVolumeCbm} CBM</td>
                       </tr>
+                      <tr className="bg-amber-50/60">
+                        <td className="py-2.5 px-4 text-slate-700 font-bold">
+                          Inland Trucking (Tangsel → Priok/CGK)
+                          <div className="text-[10px] text-slate-500 font-medium">Pick-up gudang IKM ke pelabuhan/bandara muat</div>
+                        </td>
+                        <td className="py-2.5 px-4 text-blue-900 font-semibold">
+                          ${comparison.air.inlandTruckingCostUsd?.toFixed(2)} USD
+                          <div className="text-[10px] text-slate-500 font-normal">
+                            {comparison.air.inlandTruckDetails} · Rp {comparison.air.inlandTruckingCostIdr?.toLocaleString('id-ID')}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-emerald-900 font-semibold">
+                          ${comparison.ocean.inlandTruckingCostUsd?.toFixed(2)} USD
+                          <div className="text-[10px] text-slate-500 font-normal">
+                            {comparison.ocean.inlandTruckDetails} · Rp {comparison.ocean.inlandTruckingCostIdr?.toLocaleString('id-ID')}
+                          </div>
+                        </td>
+                      </tr>
                       <tr>
                         <td className="py-2.5 px-4 text-slate-600 font-medium">Transit Time Estimasi</td>
                         <td className="py-2.5 px-4 text-blue-700 font-semibold">{comparison.air.transitTimeEstimate}</td>
@@ -883,9 +901,17 @@ export const LogisticsSimulatorView: React.FC = () => {
                   <span>✈️ Air Freight Express ({comparison.air.transitTimeEstimate}):</span>
                   <strong className="text-blue-800">${comparison.air.totalEstimatedCostUsd.toFixed(2)} USD ({comparison.air.logisticsCostPercentageOfFob}% of FOB)</strong>
                 </div>
+                <div className="flex justify-between text-slate-600 text-[11px]">
+                  <span>↳ Inland Tangsel → CGK:</span>
+                  <strong>${comparison.air.inlandTruckingCostUsd?.toFixed(2)} USD · {comparison.air.inlandTruckDetails}</strong>
+                </div>
                 <div className="flex justify-between text-slate-700">
                   <span>🚢 Ocean Freight LCL ({comparison.ocean.transitTimeEstimate}):</span>
                   <strong className="text-emerald-800">${comparison.ocean.totalEstimatedCostUsd.toFixed(2)} USD ({comparison.ocean.logisticsCostPercentageOfFob}% of FOB)</strong>
+                </div>
+                <div className="flex justify-between text-slate-600 text-[11px]">
+                  <span>↳ Inland Tangsel → Priok:</span>
+                  <strong>${comparison.ocean.inlandTruckingCostUsd?.toFixed(2)} USD · {comparison.ocean.inlandTruckDetails}</strong>
                 </div>
               </div>
 

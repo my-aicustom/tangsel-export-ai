@@ -166,6 +166,86 @@ export const ORIGIN_PORTS = {
   airport: { locode: 'IDCGK', name: 'Soekarno-Hatta International Airport', province: 'Tangerang, Banten' }
 };
 
+export type TruckVehicleType = 'PICKUP_VAN' | 'CDD_4T' | 'FUSO_10T' | 'TRAILER_20FT' | 'TRAILER_40FT';
+
+export interface InlandTruckingRate {
+  type: TruckVehicleType;
+  label: string;
+  capacityCbm: number;
+  capacityWeightKg: number;
+  costIdrPriok: number;
+  costIdrCgk: number;
+  costUsdPriok: number;
+  costUsdCgk: number;
+  description: string;
+}
+
+export const INLAND_TRUCKING_RATES: InlandTruckingRate[] = [
+  {
+    type: 'PICKUP_VAN',
+    label: 'Pickup / Blind Van (1-2 CBM)',
+    capacityCbm: 2,
+    capacityWeightKg: 800,
+    costIdrPriok: 450000,
+    costIdrCgk: 350000,
+    costUsdPriok: 25.02,
+    costUsdCgk: 19.46,
+    description: 'Cocok untuk sampel kargo & LCL kecil dari sentra IKM Tangsel'
+  },
+  {
+    type: 'CDD_4T',
+    label: 'Colt Diesel Double (CDD 14 CBM / 4 Ton)',
+    capacityCbm: 14,
+    capacityWeightKg: 4000,
+    costIdrPriok: 1200000,
+    costIdrCgk: 950000,
+    costUsdPriok: 66.72,
+    costUsdCgk: 52.82,
+    description: 'Armada standar LCL agregat antar gudang Tangsel ke CFS Priok'
+  },
+  {
+    type: 'FUSO_10T',
+    label: 'Fuso Heavy Box (30 CBM / 10 Ton)',
+    capacityCbm: 30,
+    capacityWeightKg: 10000,
+    costIdrPriok: 2200000,
+    costIdrCgk: 1800000,
+    costUsdPriok: 122.32,
+    costUsdCgk: 100.08,
+    description: 'Muatan partai besar konsolidasi sentra industri Serpong/Setu'
+  },
+  {
+    type: 'TRAILER_20FT',
+    label: 'Trailer Kontainer 20ft (FCL Haulage)',
+    capacityCbm: 28,
+    capacityWeightKg: 21000,
+    costIdrPriok: 2800000,
+    costIdrCgk: 2800000,
+    costUsdPriok: 155.68,
+    costUsdCgk: 155.68,
+    description: 'Haulage kontainer 20ft dari depo Jakarta ke pabrik Tangsel bolak-balik'
+  },
+  {
+    type: 'TRAILER_40FT',
+    label: 'Trailer Kontainer 40ft (FCL Haulage)',
+    capacityCbm: 58,
+    capacityWeightKg: 26000,
+    costIdrPriok: 3800000,
+    costIdrCgk: 3800000,
+    costUsdPriok: 211.28,
+    costUsdCgk: 211.28,
+    description: 'Haulage kontainer 40ft High Cube untuk ekspor volume tinggi'
+  }
+];
+
+export function getRecommendedTruck(cbm: number, weightKg: number): InlandTruckingRate {
+  if (cbm <= 2 && weightKg <= 800) return INLAND_TRUCKING_RATES[0];
+  if (cbm <= 14 && weightKg <= 4000) return INLAND_TRUCKING_RATES[1];
+  if (cbm <= 30 && weightKg <= 10000) return INLAND_TRUCKING_RATES[2];
+  if (cbm <= 33 && weightKg <= 21000) return INLAND_TRUCKING_RATES[3];
+  return INLAND_TRUCKING_RATES[4];
+}
+
 export interface LogisticsSimulationParams {
   destinationId: string;
   actualWeightKg: number;
@@ -188,6 +268,9 @@ export interface SimulationResult {
   customsClearanceUsd: number;
   exportDocumentationUsd: number;
   insuranceCostUsd: number;
+  inlandTruckingCostUsd?: number;
+  inlandTruckingCostIdr?: number;
+  inlandTruckDetails?: string;
   totalEstimatedCostUsd: number;
   totalEstimatedCostIdr: number;
   transitTimeEstimate: string;
@@ -235,6 +318,11 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
   const totalVolumetricWeight = Number((singleVolumetricWeight * params.packagesCount).toFixed(2));
   const totalCbm = Number((((params.lengthCm * params.widthCm * params.heightCm) / 1000000) * params.packagesCount).toFixed(3));
   const insuranceCost = params.needInsurance ? Math.max(params.cargoValueUsd * 0.0035, 25.00) : 0;
+  const recommendedTruck = getRecommendedTruck(totalCbm, totalActualWeight);
+  const airInlandTruckUsd = recommendedTruck.costUsdCgk;
+  const airInlandTruckIdr = recommendedTruck.costIdrCgk;
+  const oceanInlandTruckUsd = recommendedTruck.costUsdPriok;
+  const oceanInlandTruckIdr = recommendedTruck.costIdrPriok;
 
   // 1. AIR FREIGHT CALCULATION
   const airChargeableWeight = Math.max(totalActualWeight, totalVolumetricWeight);
@@ -242,8 +330,8 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
   const airFuelSurcharge = airBaseFreight * 0.16; // 16% Fuel Surcharge
   const airCustoms = 45.00;
   const airDocs = 35.00;
-  const airTotalUsd = Number((airBaseFreight + airFuelSurcharge + airCustoms + airDocs + insuranceCost).toFixed(2));
-  const airTotalIdr = Math.round(airTotalUsd * usdToIdr);
+  const airTotalUsd = Number((airBaseFreight + airFuelSurcharge + airCustoms + airDocs + insuranceCost + airInlandTruckUsd).toFixed(2));
+  const airTotalIdr = Math.round((airBaseFreight + airFuelSurcharge + airCustoms + airDocs + insuranceCost) * usdToIdr) + airInlandTruckIdr;
   const airCostPerKg = Number((airTotalUsd / airChargeableWeight).toFixed(2));
   const airCostPerCbm = Number((airTotalUsd / Math.max(totalCbm, 0.01)).toFixed(2));
   const airPctFob = Number(((airTotalUsd / Math.max(params.cargoValueUsd, 1)) * 100).toFixed(1));
@@ -260,6 +348,9 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
     customsClearanceUsd: airCustoms,
     exportDocumentationUsd: airDocs,
     insuranceCostUsd: Number(insuranceCost.toFixed(2)),
+    inlandTruckingCostUsd: airInlandTruckUsd,
+    inlandTruckingCostIdr: airInlandTruckIdr,
+    inlandTruckDetails: `${recommendedTruck.label} - Tangsel -> ${ORIGIN_PORTS.airport.name} (${ORIGIN_PORTS.airport.locode})`,
     totalEstimatedCostUsd: airTotalUsd,
     totalEstimatedCostIdr: airTotalIdr,
     transitTimeEstimate: port.transitDaysAir,
@@ -275,8 +366,8 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
   const oceanFuelSurcharge = oceanBaseFreight * 0.12; // 12% BAF / Bunker Surcharge
   const oceanCustoms = 65.00; // CFS handling + Customs export clearance
   const oceanDocs = 40.00; // Bill of Lading + PEB filing
-  const oceanTotalUsd = Number((oceanBaseFreight + oceanFuelSurcharge + oceanCustoms + oceanDocs + insuranceCost).toFixed(2));
-  const oceanTotalIdr = Math.round(oceanTotalUsd * usdToIdr);
+  const oceanTotalUsd = Number((oceanBaseFreight + oceanFuelSurcharge + oceanCustoms + oceanDocs + insuranceCost + oceanInlandTruckUsd).toFixed(2));
+  const oceanTotalIdr = Math.round((oceanBaseFreight + oceanFuelSurcharge + oceanCustoms + oceanDocs + insuranceCost) * usdToIdr) + oceanInlandTruckIdr;
   const oceanCostPerKg = Number((oceanTotalUsd / totalActualWeight).toFixed(2));
   const oceanCostPerCbm = Number((oceanTotalUsd / oceanBillableCbm).toFixed(2));
   const oceanPctFob = Number(((oceanTotalUsd / Math.max(params.cargoValueUsd, 1)) * 100).toFixed(1));
@@ -293,6 +384,9 @@ export function calculateSideBySideComparison(params: LogisticsSimulationParams)
     customsClearanceUsd: oceanCustoms,
     exportDocumentationUsd: oceanDocs,
     insuranceCostUsd: Number(insuranceCost.toFixed(2)),
+    inlandTruckingCostUsd: oceanInlandTruckUsd,
+    inlandTruckingCostIdr: oceanInlandTruckIdr,
+    inlandTruckDetails: `${recommendedTruck.label} - Tangsel -> ${ORIGIN_PORTS.seaport.name} (${ORIGIN_PORTS.seaport.locode})`,
     totalEstimatedCostUsd: oceanTotalUsd,
     totalEstimatedCostIdr: oceanTotalIdr,
     transitTimeEstimate: port.transitDaysOcean,

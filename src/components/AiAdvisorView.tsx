@@ -212,7 +212,107 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
     }
   };
 
-  const handleSend = (textToSend?: string) => {
+  const buildOfflineAdvisorReply = (query: string): { reply: string; citations: { title: string; source: string }[] } => {
+    let reply = '';
+    let citations: { title: string; source: string }[] = [];
+    const q = query.toLowerCase();
+    const kbHit = REGULASI_KB_DATA.find(item => {
+      const haystack = [
+        item.judul,
+        item.ringkasan,
+        item.negaraTujuan,
+        item.sumberRegulasi,
+        ...item.tags,
+        ...item.dokumenWajib,
+      ].join(' ').toLowerCase();
+      return q.split(/\s+/).filter(word => word.length > 3).some(word => haystack.includes(word));
+    });
+
+    // If tied to shipment context, provide tailored response
+    const ctxPrefix = selectedShipment
+      ? `[Konteks: ${selectedShipment.productName} - HS: ${selectedShipment.hsCode} ke ${selectedShipment.destinationCountry}]\n\n`
+      : '';
+
+    if (q.includes('kopi') || q.includes('eudr') || q.includes('eropa') || (selectedShipment?.id === 'shipment-01' && (q.includes('deforestasi') || q.includes('traces') || q.includes('mrl') || q.includes('residu') || q.includes('phytosanitary')))) {
+      reply = `${ctxPrefix}Untuk ekspor Kopi Robusta (${selectedShipment?.exporterName || 'Koperasi Kopi Robusta Ciputat'}) ke Uni Eropa berdasarkan regulasi EUDR (Regulation 2023/1115):
+1. **Bukti Bebas Deforestasi**: Wajib melampirkan data geolocation poligon GPS kebun budidaya petani (cut-off date 31 Des 2020).
+2. **Due Diligence Statement (DDS)**: Diunggah melalui sistem TRACES-NT Uni Eropa sebelum kargo sandar di Rotterdam.
+3. **Dokumen Pendukung**: Phytosanitary Certificate dari Karantina Tumbuhan RI (Bandara CGK / Pelabuhan Tanjung Priok), Form A/COO, dan uji residu pestisida (MRL) akreditasi ISO 17025.
+4. **Status Kesiapan Tangsel**: Verifikasi titik koordinat kebun petani binaan Ciputat saat ini sedang difasilitasi oleh Dinas Pertanian & Disperindag Tangsel.`;
+      citations = [{
+        title: 'Regulasi Bebas Deforestasi Uni Eropa (EUDR Regulation 2023/1115)',
+        source: 'European Commission Regulation (EU) 2023/1115'
+      }];
+    } else if (q.includes('halal') || q.includes('uae') || q.includes('emirates') || q.includes('timur tengah') || (selectedShipment?.id === 'shipment-03')) {
+      reply = `${ctxPrefix}Sertifikat Halal resmi BPJPH Kemenag RI telah memiliki perjanjian pengakuan timbal balik (**Mutual Recognition Agreement / MRA**) dengan MoIAT/ESMA Uni Emirat Arab (UEA).
+Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekstrak Jahe Merah'}):
+- Sertifikat Halal resmi BPJPH dengan logo Garuda Nasional & QR Code aktif.
+- Label kemasan bilingual: Keterangan komposisi dan petunjuk saji wajib memuat Bahasa Arab & Inggris.
+- Health Certificate dari BPOM RI dan Certificate of Analysis (COA) mikrobiologi dari Sucofindo/SGS.
+- Komoditas siap dipromosikan ke buyer Al-Madina UAE di booth TEI 2026.`;
+      citations = [{
+        title: 'Ketentuan Sertifikasi Halal MRA untuk Ekspor Pangan ke UAE',
+        source: 'MoIAT UAE Technical Regulation 2055-1'
+      }];
+    } else if (q.includes('bambu') || q.includes('svlk') || q.includes('kayu') || q.includes('v-legal') || (selectedShipment?.id === 'shipment-04')) {
+      reply = `${ctxPrefix}Untuk produk perabot dan perlengkapan makan berbahan bambu (${selectedShipment?.exporterName || 'UD Bambu Kriya BSD'}):
+1. **Dokumen V-Legal (SVLK)**: Wajib diterbitkan oleh Lembaga Penilai & Verifikasi Independen (LPVI) terakreditasi KAN sesuai Permendag No. 23/2023. Nomor V-Legal langsung divalidasi ke modul ekspor PEB Bea Cukai.
+2. **Fumigasi**: Wajib melalui perlakuan fumigasi berstandar AFAS atau Heat Treatment bersertifikat Phytosanitary resmi.
+3. **Food Grade Testing**: Wajib menyertakan sertifikat uji migrasi zat kimia aman kontak pangan (SGS / Sucofindo) sesuai standar EU Framework Regulation (EC) No 1935/2004.`;
+      citations = [{
+        title: 'Sistem Verifikasi Legalitas Kayu (SVLK / V-Legal)',
+        source: 'Permendag No. 23 Tahun 2023'
+      }];
+    } else if (q.includes('fda') || q.includes('retort') || q.includes('roa') || q.includes('sambal') || (selectedShipment?.id === 'shipment-05')) {
+      reply = `${ctxPrefix}Untuk produk pangan kemasan retort tahan suhu ruang (${selectedShipment?.productName || 'Sambal Roa Retort Pouch'}) tujuan Amerika Serikat:
+1. **FDA Facility Registration**: Registrasi fasilitas dapur produksi di portal FDA FURLS.
+2. **FCE & SID (Food Canning Establishment & Submission Identifier)**: Pengajuan jadwal proses sterilisasi panas (F0 value) ke US FDA untuk kategori Low-Acid/Acidified Foods (21 CFR Part 108/113).
+3. **Prior Notice**: Wajib mengirimkan pemberitahuan awal (PN Confirm Number) ke US Customs & Border Protection (CBP) sebelum kargo mendarat di pelabuhan LAX/Long Beach.`;
+      citations = [{
+        title: 'Regulasi Pangan Kemasan Retort US FDA (FCE & SID)',
+        source: 'US 21 CFR Part 108 & 113'
+      }];
+    } else if (q.includes('kamerun') || q.includes('gula') || q.includes('aren') || (selectedShipment?.id === 'shipment-02')) {
+      reply = `${ctxPrefix}Untuk ekspor kargo Gula Aren Kristal Organik (${selectedShipment?.exporterName || 'PT Java Palm Sugar Nusantara'}) ke Port of Douala, Kamerun:
+1. **Inspeksi Pra-Pengapalan**: Importir Kamerun biasanya memerlukan laporan pemeriksaan kesesuaian mutu (Clean Report of Findings / CRF) dari BIVAC/Bureau Veritas sebelum keberangkatan kapal.
+2. **Dokumen Kepabeanan**: Pemberitahuan Ekspor Barang (PEB), Commercial Invoice, Packing List, Bill of Lading (B/L), dan Certificate of Origin (Form A/SKA).
+3. **Sertifikasi Mutu**: Certificate of Analysis (COA) kadar air < 1.5%, uji bebas aflatoksin, dan sertifikat Halal BPJPH.
+4. **Proteksi Kargo Laut**: Mengingat transit time laut adalah 35 - 42 hari, wajib menggunakan container liner bag dan silica gel desiccant khusus kontainer.`;
+      citations = [{
+        title: 'Ketentuan Ekspor Komoditas Pangan ke Wilayah CEMAC (Afrika Tengah)',
+        source: 'CEMAC Trade Harmonization & Cameroon Customs Authority'
+      }];
+    } else if (q.includes('peb') || q.includes('cukai') || q.includes('bea')) {
+      reply = `${ctxPrefix}Tata laksana Pemberitahuan Ekspor Barang (PEB) sesuai PER-07/BC/2023:
+1. Eksportir wajib memiliki NIB yang berfungsi sebagai identitas kepabeanan aktif.
+2. Pengisian modul PEB elektronik secara mandiri atau melalui PPJK mitra resmi di sistem CEISA Bea Cukai.
+3. Lampiran wajib: Commercial Invoice, Packing List (tertera jumlah koli, berat kotor/bersih), dan pemenuhan Larangan & Pembatasan (Lartas).
+4. Setelah diverifikasi sistem, Bea Cukai akan menerbitkan Nota Pelayanan Ekspor (NPE) untuk memasukkan kargo ke Kawasan Pabean bandara/pelabuhan.`;
+      citations = [{
+        title: 'Tata Laksana Kepabeanan Pemberitahuan Ekspor Barang (PEB)',
+        source: 'Peraturan Dirjen Bea dan Cukai No. PER-07/BC/2023'
+      }];
+    } else if (kbHit) {
+      reply = `${ctxPrefix}${kbHit.ringkasan}
+
+Dokumen yang perlu diprioritaskan:
+${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).join('\n')}`;
+      citations = [{
+        title: kbHit.judul,
+        source: kbHit.sumberRegulasi
+      }];
+    } else {
+      reply = `${ctxPrefix}Berdasarkan basis pengetahuan regulasi ekspor Disperindag Tangsel: Setiap pengapalan komoditas memerlukan verifikasi NIB kepabeanan, standar mutu sertifikasi teknis (SNI/BPOM/Halal/Organik), dan kelengkapan dokumen pelayaran (Invoice, Packing List, Certificate of Origin). Silakan gunakan salah satu pertanyaan cepat yang tersedia untuk petunjuk rinci per komoditas.`;
+      citations = [{
+        title: 'Tata Laksana Kepabeanan Pemberitahuan Ekspor Barang (PEB)',
+        source: 'Peraturan Dirjen Bea dan Cukai No. PER-07/BC/2023'
+      }];
+    }
+
+    return { reply, citations };
+  };
+
+  const handleSend = async (textToSend?: string) => {
     const query = textToSend || inputPrompt;
     if (!query.trim()) return;
 
@@ -227,96 +327,50 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
     setInputPrompt('');
     setIsTyping(true);
 
-    // Simulated Offline RAG Knowledge Base Lookup & Synthesis
-    setTimeout(() => {
-      let reply = '';
-      let citations: { title: string; source: string }[] = [];
-      const q = query.toLowerCase();
+    let replyData: { reply: string; citations: { title: string; source: string }[] };
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 6000);
 
-      // If tied to shipment context, provide tailored response
-      const ctxPrefix = selectedShipment 
-        ? `[Konteks: ${selectedShipment.productName} - HS: ${selectedShipment.hsCode} ke ${selectedShipment.destinationCountry}]\n\n`
-        : '';
-
-      if (q.includes('kopi') || q.includes('eudr') || q.includes('eropa') || (selectedShipment?.id === 'shipment-01' && (q.includes('deforestasi') || q.includes('traces') || q.includes('mrl') || q.includes('residu') || q.includes('phytosanitary')))) {
-        reply = `${ctxPrefix}Untuk ekspor Kopi Robusta (${selectedShipment?.exporterName || 'Koperasi Kopi Robusta Ciputat'}) ke Uni Eropa berdasarkan regulasi EUDR (Regulation 2023/1115):
-1. **Bukti Bebas Deforestasi**: Wajib melampirkan data geolocation poligon GPS kebun budidaya petani (cut-off date 31 Des 2020).
-2. **Due Diligence Statement (DDS)**: Diunggah melalui sistem TRACES-NT Uni Eropa sebelum kargo sandar di Rotterdam.
-3. **Dokumen Pendukung**: Phytosanitary Certificate dari Karantina Tumbuhan RI (Bandara CGK / Pelabuhan Tanjung Priok), Form A/COO, dan uji residu pestisida (MRL) akreditasi ISO 17025.
-4. **Status Kesiapan Tangsel**: Verifikasi titik koordinat kebun petani binaan Ciputat saat ini sedang difasilitasi oleh Dinas Pertanian & Disperindag Tangsel.`;
-        citations = [{
-          title: 'Regulasi Bebas Deforestasi Uni Eropa (EUDR Regulation 2023/1115)',
-          source: 'European Commission Regulation (EU) 2023/1115'
-        }];
-      } else if (q.includes('halal') || q.includes('uae') || q.includes('emirates') || q.includes('timur tengah') || (selectedShipment?.id === 'shipment-03')) {
-        reply = `${ctxPrefix}Sertifikat Halal resmi BPJPH Kemenag RI telah memiliki perjanjian pengakuan timbal balik (**Mutual Recognition Agreement / MRA**) dengan MoIAT/ESMA Uni Emirat Arab (UEA).
-Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekstrak Jahe Merah'}):
-- Sertifikat Halal resmi BPJPH dengan logo Garuda Nasional & QR Code aktif.
-- Label kemasan bilingual: Keterangan komposisi dan petunjuk saji wajib memuat Bahasa Arab & Inggris.
-- Health Certificate dari BPOM RI dan Certificate of Analysis (COA) mikrobiologi dari Sucofindo/SGS.
-- Komoditas siap dipromosikan ke buyer Al-Madina UAE di booth TEI 2026.`;
-        citations = [{
-          title: 'Ketentuan Sertifikasi Halal MRA untuk Ekspor Pangan ke UAE',
-          source: 'MoIAT UAE Technical Regulation 2055-1'
-        }];
-      } else if (q.includes('bambu') || q.includes('svlk') || q.includes('kayu') || q.includes('v-legal') || (selectedShipment?.id === 'shipment-04')) {
-        reply = `${ctxPrefix}Untuk produk perabot dan perlengkapan makan berbahan bambu (${selectedShipment?.exporterName || 'UD Bambu Kriya BSD'}):
-1. **Dokumen V-Legal (SVLK)**: Wajib diterbitkan oleh Lembaga Penilai & Verifikasi Independen (LPVI) terakreditasi KAN sesuai Permendag No. 23/2023. Nomor V-Legal langsung divalidasi ke modul ekspor PEB Bea Cukai.
-2. **Fumigasi**: Wajib melalui perlakuan fumigasi berstandar AFAS atau Heat Treatment bersertifikat Phytosanitary resmi.
-3. **Food Grade Testing**: Wajib menyertakan sertifikat uji migrasi zat kimia aman kontak pangan (SGS / Sucofindo) sesuai standar EU Framework Regulation (EC) No 1935/2004.`;
-        citations = [{
-          title: 'Sistem Verifikasi Legalitas Kayu (SVLK / V-Legal)',
-          source: 'Permendag No. 23 Tahun 2023'
-        }];
-      } else if (q.includes('fda') || q.includes('retort') || q.includes('roa') || q.includes('sambal') || (selectedShipment?.id === 'shipment-05')) {
-        reply = `${ctxPrefix}Untuk produk pangan kemasan retort tahan suhu ruang (${selectedShipment?.productName || 'Sambal Roa Retort Pouch'}) tujuan Amerika Serikat:
-1. **FDA Facility Registration**: Registrasi fasilitas dapur produksi di portal FDA FURLS.
-2. **FCE & SID (Food Canning Establishment & Submission Identifier)**: Pengajuan jadwal proses sterilisasi panas (F0 value) ke US FDA untuk kategori Low-Acid/Acidified Foods (21 CFR Part 108/113).
-3. **Prior Notice**: Wajib mengirimkan pemberitahuan awal (PN Confirm Number) ke US Customs & Border Protection (CBP) sebelum kargo mendarat di pelabuhan LAX/Long Beach.`;
-        citations = [{
-          title: 'Regulasi Pangan Kemasan Retort US FDA (FCE & SID)',
-          source: 'US 21 CFR Part 108 & 113'
-        }];
-      } else if (q.includes('kamerun') || q.includes('gula') || q.includes('aren') || (selectedShipment?.id === 'shipment-02')) {
-        reply = `${ctxPrefix}Untuk ekspor kargo Gula Aren Kristal Organik (${selectedShipment?.exporterName || 'PT Java Palm Sugar Nusantara'}) ke Port of Douala, Kamerun:
-1. **Inspeksi Pra-Pengapalan**: Importir Kamerun biasanya memerlukan laporan pemeriksaan kesesuaian mutu (Clean Report of Findings / CRF) dari BIVAC/Bureau Veritas sebelum keberangkatan kapal.
-2. **Dokumen Kepabeanan**: Pemberitahuan Ekspor Barang (PEB), Commercial Invoice, Packing List, Bill of Lading (B/L), dan Certificate of Origin (Form A/SKA).
-3. **Sertifikasi Mutu**: Certificate of Analysis (COA) kadar air < 1.5%, uji bebas aflatoksin, dan sertifikat Halal BPJPH.
-4. **Proteksi Kargo Laut**: Mengingat transit time laut adalah 35 - 42 hari, wajib menggunakan container liner bag dan silica gel desiccant khusus kontainer.`;
-        citations = [{
-          title: 'Ketentuan Ekspor Komoditas Pangan ke Wilayah CEMAC (Afrika Tengah)',
-          source: 'CEMAC Trade Harmonization & Cameroon Customs Authority'
-        }];
-      } else if (q.includes('peb') || q.includes('cukai') || q.includes('bea')) {
-        reply = `${ctxPrefix}Tata laksana Pemberitahuan Ekspor Barang (PEB) sesuai PER-07/BC/2023:
-1. Eksportir wajib memiliki NIB yang berfungsi sebagai identitas kepabeanan aktif.
-2. Pengisian modul PEB elektronik secara mandiri atau melalui PPJK mitra resmi di sistem CEISA Bea Cukai.
-3. Lampiran wajib: Commercial Invoice, Packing List (tertera jumlah koli, berat kotor/bersih), dan pemenuhan Larangan & Pembatasan (Lartas).
-4. Setelah diverifikasi sistem, Bea Cukai akan menerbitkan Nota Pelayanan Ekspor (NPE) untuk memasukkan kargo ke Kawasan Pabean bandara/pelabuhan.`;
-        citations = [{
-          title: 'Tata Laksana Kepabeanan Pemberitahuan Ekspor Barang (PEB)',
-          source: 'Peraturan Dirjen Bea dan Cukai No. PER-07/BC/2023'
-        }];
-      } else {
-        reply = `${ctxPrefix}Berdasarkan basis pengetahuan regulasi ekspor Disperindag Tangsel: Setiap pengapalan komoditas memerlukan verifikasi NIB kepabeanan, standar mutu sertifikasi teknis (SNI/BPOM/Halal/Organik), dan kelengkapan dokumen pelayaran (Invoice, Packing List, Certificate of Origin). Silakan gunakan salah satu pertanyaan cepat yang tersedia untuk petunjuk rinci per komoditas.`;
-        citations = [{
-          title: 'Tata Laksana Kepabeanan Pemberitahuan Ekspor Barang (PEB)',
-          source: 'Peraturan Dirjen Bea dan Cukai No. PER-07/BC/2023'
-        }];
-      }
+    try {
+      const response = await fetch('https://veylo.163.61.44.41.sslip.io/api/trade-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({
+          message: query,
+          history: messages.slice(-4).map(m => ({
+            speaker: m.sender === 'user' ? 'user' : 'advisor',
+            text: m.text
+          }))
+        })
+      });
+      if (!response.ok) throw new Error('Live advisor unavailable');
+      const data = await response.json();
+      if (!data?.reply || typeof data.reply !== 'string') throw new Error('Live advisor returned no reply');
+      replyData = {
+        reply: data.reply,
+        citations: [{
+          title: 'OpenRouter Live Trade Intelligence (Ditjen PEN & INSW Grounded)',
+          source: 'Veylo Trade Chat Cloud Endpoint'
+        }]
+      };
+    } catch {
+      replyData = buildOfflineAdvisorReply(query);
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: reply,
+        text: replyData.reply,
         timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-        citations,
+        citations: replyData.citations,
         contextTag: selectedShipment?.label
       };
 
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
-    }, 800);
   };
 
   const filteredKb = REGULASI_KB_DATA.filter(item => {
@@ -340,6 +394,9 @@ Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekst
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
                 OPENROUTER & RAG KEMENDAG
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-green-100 text-green-800 border border-green-300">
+                Live Trade Intelligence (OpenRouter Cloud + Offline Fallback)
               </span>
               <span className="text-xs text-slate-500 font-medium">Asisten Regulasi Ekspor Tangsel</span>
             </div>

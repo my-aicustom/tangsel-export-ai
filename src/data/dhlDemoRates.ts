@@ -136,7 +136,7 @@ export interface SideBySideComparisonResult {
 
 export function calculateSideBySideComparison(params: LogisticsSimulationParams): SideBySideComparisonResult {
   const port = DESTINATION_PORTS.find(p => p.id === params.destinationId) || DESTINATION_PORTS[0];
-  const usdToIdr = 16250;
+  const usdToIdr = 17985; // Live OSINT Rate (29/9/2026)
 
   const totalActualWeight = Number((params.actualWeightKg * params.packagesCount).toFixed(2));
   const singleVolumetricWeight = (params.lengthCm * params.widthCm * params.heightCm) / 5000;

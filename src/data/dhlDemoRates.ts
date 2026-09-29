@@ -13,64 +13,132 @@ export interface DestinationPort {
 
 export const DESTINATION_PORTS: DestinationPort[] = [
   {
-    id: 'port-dla',
-    name: 'Douala International Airport / Port of Douala',
-    country: 'Cameroon',
-    flag: '🇨🇲',
-    region: 'Africa',
-    airBaseRatePerKg: 7.80,
-    oceanBaseRatePerCbm: 145.00,
-    transitDaysAir: '4 - 6 Hari',
-    transitDaysOcean: '35 - 42 Hari',
-    customsRiskLevel: 'Strict'
+    "id": "port-sin",
+    "country": "Singapore",
+    "name": "Port of Singapore (PSA) / Changi Airport (SIN)",
+    "region": "ASEAN & Asia Hub",
+    "airBaseRatePerKg": 4.8,
+    "oceanBaseRatePerCbm": 42,
+    "transitDaysAir": "1-2 Hari",
+    "transitDaysOcean": "2-4 Hari",
+    "flag": "🇸🇬",
+    "customsRequirements": [
+      "SFA Import Permit (Makanan)",
+      "GST 9% Deklarasi Bea Cukai Singapura",
+      "Surat Keterangan Asal (SKA Form D)"
+    ]
   },
   {
-    id: 'port-dxb',
-    name: 'Dubai International (DXB) / Port of Jebel Ali',
-    country: 'United Arab Emirates',
-    flag: '🇦🇪',
-    region: 'Middle East',
-    airBaseRatePerKg: 5.20,
-    oceanBaseRatePerCbm: 85.00,
-    transitDaysAir: '2 - 3 Hari',
-    transitDaysOcean: '18 - 22 Hari',
-    customsRiskLevel: 'Standard'
+    "id": "port-sha",
+    "country": "China",
+    "name": "Port of Shanghai (Yangshan) / Pudong Airport (PVG)",
+    "region": "East Asia Hub",
+    "airBaseRatePerKg": 6.2,
+    "oceanBaseRatePerCbm": 58,
+    "transitDaysAir": "2-3 Hari",
+    "transitDaysOcean": "8-12 Hari",
+    "flag": "🇨🇳",
+    "customsRequirements": [
+      "GACC Registration Decree 248/249",
+      "AQSIQ Phytosanitary Certificate",
+      "Certificate of Origin Form E (ACFTA)"
+    ]
   },
   {
-    id: 'port-rtm',
-    name: 'Amsterdam Schiphol (AMS) / Port of Rotterdam',
-    country: 'Netherlands',
-    flag: '🇳🇱',
-    region: 'Europe',
-    airBaseRatePerKg: 6.90,
-    oceanBaseRatePerCbm: 110.00,
-    transitDaysAir: '3 - 5 Hari',
-    transitDaysOcean: '28 - 34 Hari',
-    customsRiskLevel: 'High Compliance'
+    "id": "port-tyo",
+    "country": "Japan",
+    "name": "Port of Yokohama / Tokyo Narita Airport (NRT)",
+    "region": "East Asia Pacific",
+    "airBaseRatePerKg": 7.8,
+    "oceanBaseRatePerCbm": 75,
+    "transitDaysAir": "2-4 Hari",
+    "transitDaysOcean": "10-14 Hari",
+    "flag": "🇯🇵",
+    "customsRequirements": [
+      "MHLW Food Sanitation Act Notification",
+      "MAFF Plant Quarantine Inspection",
+      "EPA Form AJ / IJEPA"
+    ]
   },
   {
-    id: 'port-nrt',
-    name: 'Tokyo Narita (NRT) / Port of Yokohama',
-    country: 'Japan',
-    flag: '🇯🇵',
-    region: 'Asia',
-    airBaseRatePerKg: 4.80,
-    oceanBaseRatePerCbm: 65.00,
-    transitDaysAir: '2 - 3 Hari',
-    transitDaysOcean: '12 - 16 Hari',
-    customsRiskLevel: 'High Compliance'
+    "id": "port-lax",
+    "country": "United States",
+    "name": "Port of Los Angeles (POLA) / LAX Airport",
+    "region": "North America",
+    "airBaseRatePerKg": 12.5,
+    "oceanBaseRatePerCbm": 145,
+    "transitDaysAir": "3-5 Hari",
+    "transitDaysOcean": "22-28 Hari",
+    "flag": "🇺🇸",
+    "customsRequirements": [
+      "US FDA Facility Registration & Prior Notice",
+      "ISF 10+2 Filing (Laut)",
+      "Lacey Act Declaration (Kayu/Bambu)"
+    ]
   },
   {
-    id: 'port-lax',
-    name: 'Los Angeles (LAX) / Port of Long Beach',
-    country: 'United States',
-    flag: '🇺🇸',
-    region: 'North America',
-    airBaseRatePerKg: 8.50,
-    oceanBaseRatePerCbm: 125.00,
-    transitDaysAir: '4 - 6 Hari',
-    transitDaysOcean: '24 - 30 Hari',
-    customsRiskLevel: 'High Compliance'
+    "id": "port-rtm",
+    "country": "Netherlands",
+    "name": "Port of Rotterdam (RTM) / Amsterdam Schiphol (AMS)",
+    "region": "European Union",
+    "airBaseRatePerKg": 11.2,
+    "oceanBaseRatePerCbm": 120,
+    "transitDaysAir": "3-5 Hari",
+    "transitDaysOcean": "24-28 Hari",
+    "flag": "🇳🇱",
+    "customsRequirements": [
+      "EU Deforestation Regulation (EUDR) Due Diligence",
+      "REX System Statement on Origin",
+      "CE Mark (Teknik/Alat)"
+    ]
+  },
+  {
+    "id": "port-dxb",
+    "country": "United Arab Emirates",
+    "name": "Port of Jebel Ali / Dubai World Central (DWC)",
+    "region": "Middle East & GCC",
+    "airBaseRatePerKg": 8.9,
+    "oceanBaseRatePerCbm": 85,
+    "transitDaysAir": "2-4 Hari",
+    "transitDaysOcean": "14-18 Hari",
+    "flag": "🇦🇪",
+    "customsRequirements": [
+      "ESMA Halal Halal National Mark Verification",
+      "MoIAT ECAS Conformity",
+      "Bilingual Arabic-English Labels"
+    ]
+  },
+  {
+    "id": "port-syd",
+    "country": "Australia",
+    "name": "Port Botany (Sydney) / Sydney Kingsford Smith (SYD)",
+    "region": "Oceania",
+    "airBaseRatePerKg": 9.8,
+    "oceanBaseRatePerCbm": 95,
+    "transitDaysAir": "3-5 Hari",
+    "transitDaysOcean": "12-16 Hari",
+    "flag": "🇦🇺",
+    "customsRequirements": [
+      "BICON Biosecurity Import Conditions",
+      "DAFF Inspection Notice",
+      "IA-CEPA Origin Declaration"
+    ]
+  },
+  {
+    "id": "port-dla",
+    "country": "Cameroon",
+    "name": "Port of Douala (DLA) / Douala International Airport",
+    "region": "West Africa",
+    "airBaseRatePerKg": 14.8,
+    "oceanBaseRatePerCbm": 165,
+    "transitDaysAir": "4-7 Hari",
+    "transitDaysOcean": "28-35 Hari",
+    "flag": "🇨🇲",
+    "customsRequirements": [
+      "ANOR PECAE Pre-Shipment Conformity",
+      "Bilingual French-English Invoices",
+      "ECTN / BESC Electronic Cargo Tracking"
+    ]
   }
 ];
 

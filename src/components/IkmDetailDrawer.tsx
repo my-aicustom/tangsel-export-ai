@@ -3,7 +3,6 @@ import {
   X, 
   CheckCircle2, 
   AlertTriangle, 
-  Sparkles, 
   Building, 
   Phone, 
   Mail, 
@@ -43,17 +42,17 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
     hsCode: primaryProduct?.hsCode,
   });
 
-  const handleRunAiAudit = () => {
+  const handleRunAudit = () => {
     setRunningAudit(true);
     setAuditResult(null);
     setTimeout(() => {
       setRunningAudit(false);
       if (ikm.grade === 'A') {
-        setAuditResult('✅ AI VERDICT: Komoditas memenuhi 100% persyaratan dasar ekspor global. Dokumen legalitas dan sertifikasi internasional siap untuk pameran TEI 2026.');
+        setAuditResult('Komoditas memenuhi persyaratan dasar pada checklist kesiapan saat ini. Dokumen legalitas dan sertifikasi utama tercatat siap untuk proses kurasi TEI 2026.');
       } else if (ikm.grade === 'B') {
-        setAuditResult('⚠️ AI VERDICT: Siap bersyarat. Kualitas fisik dan kapasitas mencukupi. Perlu prioritas penyelesaian dokumen kepatuhan target negara tujuan (EUDR / V-Legal Phytosanitary).');
+        setAuditResult('Siap bersyarat. Kapasitas mencukupi, tetapi dokumen kepatuhan negara tujuan masih perlu dilengkapi, misalnya EUDR, V-Legal, atau phytosanitary sesuai komoditas.');
       } else {
-        setAuditResult('❌ AI VERDICT: Belum memenuhi syarat ekspor langsung. Direkomendasikan masuk pendampingan inkubasi perbaikan kemasan barrier foil dan izin edar BPOM MD.');
+        setAuditResult('Belum siap untuk ekspor langsung. Prioritaskan pendampingan pada kemasan, izin edar, dan dokumen dasar sebelum masuk tahap business matching.');
       }
     }, 1200);
   };
@@ -79,7 +78,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-2xl bg-white border-l border-slate-200 shadow-2xl flex flex-col">
+        <div className="w-screen max-w-2xl bg-white border-l border-slate-200 shadow-xl flex flex-col">
           {/* Drawer Header */}
           <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-start justify-between">
             <div>
@@ -101,7 +100,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-900 transition"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition"
             >
               <X size={20} />
             </button>
@@ -111,14 +110,14 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* Quick Curator Adjustment Bar */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <Edit3 size={13} className="text-emerald-600" />
                 Penetapan Kurator Disperindag Tangsel:
               </span>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="text-slate-600 font-semibold block mb-1 text-[11px]">Klasifikasi Kesiapan:</label>
+                  <label className="text-slate-600 font-semibold block mb-1 text-xs">Klasifikasi Kesiapan:</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {(['A', 'B', 'C'] as const).map(g => (
                       <button
@@ -128,10 +127,10 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
                         className={`py-1.5 rounded-lg font-bold border transition ${
                           ikm.grade === g
                             ? g === 'A'
-                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                              ? 'bg-emerald-600 text-white border-emerald-600 '
                               : g === 'B'
-                              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                              : 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                              ? 'bg-blue-600 text-white border-blue-600 '
+                              : 'bg-amber-600 text-white border-amber-600 '
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
@@ -142,7 +141,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
                 </div>
 
                 <div>
-                  <label className="text-slate-600 font-semibold block mb-1 text-[11px]">Status Verifikasi:</label>
+                  <label className="text-slate-600 font-semibold block mb-1 text-xs">Status Verifikasi:</label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { id: 'belum', label: 'Belum' },
@@ -153,9 +152,9 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
                         key={st.id}
                         type="button"
                         onClick={() => handleVerificationChange(st.id as any)}
-                        className={`py-1.5 rounded-lg font-bold border text-[11px] transition ${
+                        className={`py-1.5 rounded-lg font-bold border text-xs transition ${
                           ikm.statusVerifikasi === st.id
-                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                            ? 'bg-emerald-600 text-white border-emerald-600 '
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
@@ -200,7 +199,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
               </h3>
               <div className="space-y-3">
                 {ikm.products.map((prod) => (
-                  <div key={prod.id} className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs space-y-3">
+                  <div key={prod.id} className="p-4 rounded-xl bg-white border border-slate-200  space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <h4 className="text-sm font-bold text-slate-900">{prod.name}</h4>
@@ -212,7 +211,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
                         <div className="text-base font-extrabold text-emerald-700">
                           ${prod.fobPriceUsd.toFixed(2)} <span className="text-xs font-normal text-slate-500">FOB</span>
                         </div>
-                        <div className="text-[11px] text-slate-500 font-medium">MOQ: {prod.moq}</div>
+                        <div className="text-xs text-slate-500 font-medium">MOQ: {prod.moq}</div>
                       </div>
                     </div>
 
@@ -221,7 +220,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
                     </p>
 
                     {/* Key Specs */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
                       <div>
                         <span className="text-slate-500 block">Kapasitas:</span>
                         <span className="font-bold text-slate-800">{prod.capacityPerMonth}</span>
@@ -238,10 +237,10 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
 
                     {/* Certification Badges */}
                     <div>
-                      <span className="text-[11px] text-slate-600 block mb-1.5 font-bold">Sertifikasi & Kepatuhan:</span>
+                      <span className="text-xs text-slate-600 block mb-1.5 font-bold">Sertifikasi & Kepatuhan:</span>
                       <div className="flex flex-wrap gap-1.5">
                         {prod.certifications.map((cert, cIdx) => (
-                          <span key={cIdx} className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                          <span key={cIdx} className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
                             ✓ {cert}
                           </span>
                         ))}
@@ -252,7 +251,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
                     <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
                       <a
                         href={`/logistics?ikmId=${encodeURIComponent(ikm.id)}&productId=${encodeURIComponent(prod.id)}&p=${prod.dimensionsCm.p}&l=${prod.dimensionsCm.l}&t=${prod.dimensionsCm.t}&w=${prod.dimensionsCm.weightKg}&fob=${prod.fobPriceUsd}&productName=${encodeURIComponent(prod.name)}&exporterName=${encodeURIComponent(ikm.namaUsaha)}`}
-                        className="flex-1 py-2 px-3 rounded-xl bg-slate-50 hover:bg-emerald-600 text-slate-700 hover:text-white text-xs font-bold border border-slate-200 hover:border-emerald-600 flex items-center justify-center gap-2 transition shadow-2xs group"
+                        className="flex-1 min-h-11 px-3 rounded-lg bg-slate-50 hover:bg-emerald-700 text-slate-700 hover:text-white text-sm font-semibold border border-slate-200 hover:border-emerald-700 flex items-center justify-center gap-2 transition group"
                       >
                         <Calculator size={14} className="text-emerald-600 group-hover:text-white transition" />
                         <span>Simulasi Kargo Logistik</span>
@@ -268,15 +267,15 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Gap Analysis & Catatan Audit Kurator
+                  Catatan Kesiapan & Audit Kurator
                 </h3>
                 <button
-                  onClick={handleRunAiAudit}
+                  onClick={handleRunAudit}
                   disabled={runningAudit}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition disabled:opacity-50"
+                  className="inline-flex min-h-10 items-center gap-1.5 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition disabled:opacity-50"
                 >
-                  <Sparkles size={13} />
-                  {runningAudit ? 'Menganalisis...' : 'AI Gap Re-Audit'}
+                  <ShieldCheck size={13} />
+                  {runningAudit ? 'Memeriksa...' : 'Evaluasi Ulang'}
                 </button>
               </div>
 
@@ -303,7 +302,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
               href={veyloTradeRoomUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center justify-center gap-2"
+              className="min-h-11 px-4 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center justify-center gap-2"
             >
               <Video size={14} />
               <span>Veylo Trade Room</span>
@@ -312,14 +311,14 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
               href={`https://wa.me/${ikm.kontakWa.replace(/^0/, '62')}?text=${encodeURIComponent(`Halo ${ikm.namaUsaha}, kami dari Tim Business Matching TEI 2026 Disperindag Tangsel...`)}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold text-center shadow-xs transition flex items-center justify-center gap-2"
+              className="flex-1 min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold text-center transition flex items-center justify-center gap-2"
             >
               <Phone size={14} />
               Hubungi via WhatsApp
             </a>
             <button
               onClick={onClose}
-              className="py-2.5 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition"
+              className="min-h-11 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition"
             >
               Tutup
             </button>

@@ -161,7 +161,7 @@ export const AiAdvisorView: React.FC = () => {
   const initialMessage: ChatMessage = {
     id: 'm-1',
     sender: 'ai',
-    text: `Halo! Saya Tangsel AI Export Advisor (OpenRouter & RAG Regulasi Kemendag). Saya siap membantu konsultasi kepatuhan regulasi ekspor, HS Code, sertifikasi internasional (EUDR, Halal UAE, US FDA), dan kelengkapan dokumen PEB kepabeanan.
+    text: `Halo! Saya Asisten Regulasi Ekspor Tangsel. Saya siap membantu menelusuri persyaratan ekspor, HS Code, sertifikasi internasional, dan kelengkapan dokumen kepabeanan.
 
 Saat ini konteks konsultasi terhubung ke: **${DEMO_SHIPMENT_CONTEXTS[0].label}**. Anda dapat menanyakan persyaratan regulasi spesifik untuk pengapalan ini atau memilih pengapalan lain melalui menu konteks di atas.`,
     timestamp: '08:30 WIB',
@@ -350,8 +350,8 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
       replyData = {
         reply: data.reply,
         citations: [{
-          title: 'OpenRouter Live Trade Intelligence (Ditjen PEN & INSW Grounded)',
-          source: 'Veylo Trade Chat Cloud Endpoint'
+          title: 'Referensi Regulasi Ekspor',
+          source: 'Tangsel Export AI'
         }]
       };
     } catch {
@@ -383,27 +383,24 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Top Banner */}
-      <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="p-3.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+          <div className="p-3 rounded-lg bg-emerald-50 text-emerald-700 shrink-0">
             <Bot size={28} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
-                OPENROUTER & RAG KEMENDAG
+              <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
+                ASISTEN REGULASI EKSPOR
               </span>
-              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-green-100 text-green-800 border border-green-300">
-                Live Trade Intelligence (OpenRouter Cloud + Offline Fallback)
-              </span>
-              <span className="text-xs text-slate-500 font-medium">Asisten Regulasi Ekspor Tangsel</span>
+              <span className="text-sm text-slate-500">Asisten Regulasi Ekspor Tangsel</span>
             </div>
             <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mt-1">
               Konsultasi Cerdas Regulasi, Sertifikasi, & Standar Perdagangan Internasional
             </h2>
-            <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+            <p className="text-sm text-slate-600 mt-1 leading-relaxed">
               Panduan interaktif kepatuhan regulasi ekspor (EUDR, Halal UAE, US FDA, SVLK) terintegrasi dengan data kargo IKM binaan Tangerang Selatan.
             </p>
           </div>
@@ -415,15 +412,15 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
             href="https://veylo.163.61.44.41.sslip.io/app"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5"
+            className="min-h-11 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center gap-1.5"
           >
             <Video size={14} />
             <span>Veylo Trade Room</span>
           </a>
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+          <div className="flex items-center rounded-lg bg-slate-100 p-1 text-sm">
             <button
               onClick={() => setActiveTab('chat')}
-              className={`px-3.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
+              className={`min-h-10 px-3.5 rounded-md font-semibold transition flex items-center gap-1.5 ${
                 activeTab === 'chat'
                   ? 'bg-white text-emerald-800 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -434,7 +431,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
             </button>
             <button
               onClick={() => setActiveTab('kb')}
-              className={`px-3.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
+              className={`min-h-10 px-3.5 rounded-md font-semibold transition flex items-center gap-1.5 ${
                 activeTab === 'kb'
                   ? 'bg-white text-emerald-800 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -451,12 +448,12 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
       {activeTab === 'chat' && (
         <div className="space-y-4">
           {/* SHIPMENT CONTEXT SELECTOR BAR */}
-          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm">
             <div className="flex items-center gap-2.5">
               <Package size={20} className="text-emerald-700 shrink-0" />
               <div>
                 <span className="font-bold text-slate-900 block">Pilih Konteks Pengiriman Kargo (Shipment Context):</span>
-                <span className="text-[11px] text-slate-500 font-medium">Pertanyaan dan respons AI akan merujuk ke data pengapalan komoditas terpilih</span>
+                <span className="text-xs text-slate-500">Pertanyaan dan respons AI akan merujuk ke data pengapalan komoditas terpilih</span>
               </div>
             </div>
 
@@ -464,7 +461,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
               <select
                 value={selectedShipment?.id || ''}
                 onChange={(e) => handleShipmentContextChange(e.target.value)}
-                className="w-full md:w-auto px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                className="w-full md:w-auto min-h-11 px-3.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600"
               >
                 <option value="">-- Umum / Tanpa Konteks Kargo Khusus --</option>
                 {DEMO_SHIPMENT_CONTEXTS.map(sc => (
@@ -475,7 +472,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
               {selectedShipment && (
                 <button
                   onClick={() => setSelectedShipment(null)}
-                  className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold shrink-0 transition"
+                  className="min-h-11 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold shrink-0 transition"
                   title="Bersihkan Konteks"
                 >
                   Clear
@@ -486,14 +483,14 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
 
           {/* Active Context Card (if selected) */}
           {selectedShipment && (
-            <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-xs space-y-2.5 shadow-xs">
+            <div className="rounded-xl bg-emerald-50/60 border border-emerald-200 p-4 text-sm space-y-2.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
                     Konteks Kargo Aktif
                   </span>
                   <span className="font-bold text-slate-900">{selectedShipment.productName}</span>
-                  <span className="text-slate-500 font-mono text-[11px] font-medium">(HS: {selectedShipment.hsCode})</span>
+                  <span className="text-xs text-slate-500 font-mono">(HS: {selectedShipment.hsCode})</span>
                 </div>
                 <div className="text-right text-xs">
                   <span className="text-slate-600">Nilai FOB: </span>
@@ -519,7 +516,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-emerald-200 text-[11px]">
+              <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-emerald-200 text-xs">
                 <span className="text-slate-600 font-bold">Standar Kepatuhan:</span>
                 {selectedShipment.keyCompliance.map((k, i) => (
                   <span key={i} className="px-2 py-0.5 rounded bg-white text-emerald-900 border border-emerald-300 font-bold shadow-2xs">
@@ -532,21 +529,21 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Chat Box (3 Cols) */}
-            <div className="lg:col-span-3 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col h-[600px] overflow-hidden">
+            <div className="lg:col-span-3 rounded-xl bg-white border border-slate-200 flex flex-col h-[65dvh] min-h-[500px] lg:h-[640px] lg:max-h-[760px] overflow-hidden">
               {/* Chat Box Top Header */}
-              <div className="p-3.5 px-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs">
+              <div className="px-4 py-3.5 sm:px-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
                   <span className="font-bold text-slate-900">Konsultasi AI Export Advisor</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    ONLINE RAG
+                  <span className="hidden sm:inline text-xs font-semibold text-emerald-700">
+                    Online
                   </span>
                   <span className="text-slate-400">•</span>
                   <span className="text-slate-600 font-medium">Disperindag Kota Tangsel</span>
                 </div>
                 <button
                   onClick={handleResetChat}
-                  className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-xs font-semibold shadow-2xs"
+                  className="min-h-10 flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition px-2.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-sm font-semibold"
                   title="Mulai percakapan baru"
                 >
                   <RotateCcw size={13} />
@@ -559,7 +556,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                 {messages.map((m) => (
                   <div
                     key={m.id}
-                    className={`flex gap-3 text-xs ${
+                    className={`flex gap-3 text-sm ${
                       m.sender === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
@@ -570,26 +567,26 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                     )}
 
                     <div
-                      className={`max-w-2xl p-4 rounded-2xl space-y-2.5 ${
+                      className={`max-w-2xl p-4 rounded-xl space-y-2.5 ${
                         m.sender === 'user'
                           ? 'bg-emerald-600 text-white rounded-br-none shadow-xs'
                           : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
                       }`}
                     >
                       {m.contextTag && m.sender === 'ai' && (
-                        <div className="text-[11px] text-emerald-800 font-bold border-b border-slate-100 pb-1 flex items-center gap-1">
+                        <div className="text-xs text-emerald-800 font-semibold border-b border-slate-100 pb-2 flex items-center gap-1">
                           <Package size={13} />
                           <span className="truncate">{m.contextTag}</span>
                         </div>
                       )}
 
-                      <div className="whitespace-pre-line leading-relaxed text-xs font-normal">
+                      <div className="whitespace-pre-line text-sm leading-6 font-normal">
                         {m.text}
                       </div>
 
                       {/* Citations Card if AI */}
                       {m.citations && m.citations.length > 0 && (
-                        <div className="pt-2 border-t border-slate-100 text-xs space-y-1">
+                        <div className="pt-3 border-t border-slate-100 text-sm space-y-1.5">
                           <span className="text-slate-600 font-bold flex items-center gap-1">
                             <BookOpen size={13} className="text-emerald-700" />
                             Rujukan Regulasi Resmi:
@@ -602,7 +599,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                         </div>
                       )}
 
-                      <div className={`text-[10px] text-right font-medium ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>
+                      <div className={`text-xs text-right font-medium ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>
                         {m.timestamp}
                       </div>
                     </div>
@@ -616,9 +613,9 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                 ))}
 
                 {isTyping && (
-                  <div className="flex items-center gap-2 text-slate-500 text-xs font-medium italic">
+                  <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
                     <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-                    AI Advisor sedang menelusuri basis regulasi ekspor Kemendag...
+                    Sedang menyiapkan jawaban berdasarkan referensi regulasi ekspor...
                   </div>
                 )}
               </div>
@@ -637,12 +634,12 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                     placeholder={selectedShipment ? `Tanyakan regulasi untuk ${selectedShipment.productName}...` : "Ketik pertanyaan regulasi ekspor, HS Code, sertifikasi, atau dokumen PEB..."}
                     value={inputPrompt}
                     onChange={e => setInputPrompt(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white text-xs font-medium transition"
+                    className="flex-1 min-h-11 px-4 rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white text-sm transition"
                   />
                   <button
                     type="submit"
                     disabled={!inputPrompt.trim() || isTyping}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-bold text-xs transition shadow-xs flex items-center gap-1.5"
+                    className="min-h-11 px-4 sm:px-5 rounded-lg bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 text-white font-semibold text-sm transition flex items-center gap-1.5"
                   >
                     <Send size={15} />
                     Kirim
@@ -653,12 +650,12 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
 
             {/* Sidecar Col: Context-Aware Quick Prompts */}
             <div className="space-y-4">
-              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-5 space-y-3">
+                <div className="text-xs font-semibold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
                   <HelpCircle size={15} className="text-emerald-700" />
                   {selectedShipment ? 'Pertanyaan Kargo Terpilih' : 'Pertanyaan Cepat (FAQ Ekspor)'}
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                <p className="text-sm text-slate-600 leading-relaxed">
                   {selectedShipment 
                     ? `Topik yang disesuaikan dengan ${selectedShipment.productName} (${selectedShipment.destinationCountry}):`
                     : 'Klik salah satu topik di bawah untuk melihat rujukan regulasi ekspor:'}
@@ -669,7 +666,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                     <button
                       key={idx}
                       onClick={() => handleSend(q)}
-                      className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-left text-xs text-slate-700 hover:text-slate-900 transition leading-snug font-medium shadow-2xs"
+                      className="w-full min-h-11 p-3 rounded-lg bg-slate-50 border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 text-left text-sm text-slate-700 hover:text-slate-900 transition leading-snug font-medium"
                     >
                       "{q}"
                     </button>
@@ -683,7 +680,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                   <Info size={14} className="text-blue-600" />
                   <span>Keterangan Basis Pengetahuan:</span>
                 </div>
-                <p className="leading-relaxed text-[11px]">
+                <p className="leading-relaxed text-xs">
                   Modul AI Advisor merujuk pada standar kepatuhan regulasi terkurasi Disperindag Tangsel, Kemendag RI, Bea Cukai, dan ketentuan standar pasar mitra internasional TEI 2026.
                 </p>
               </div>
@@ -732,7 +729,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                   <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition leading-tight">
                     {item.judul}
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 shrink-0">
+                  <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 shrink-0">
                     {item.negaraTujuan}
                   </span>
                 </div>
@@ -743,7 +740,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
 
                 {/* Required Documents */}
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <span className="text-[11px] font-bold text-slate-700 block">
+                  <span className="text-xs font-bold text-slate-700 block">
                     Dokumen & Sertifikasi Wajib:
                   </span>
                   <div className="space-y-1 text-xs">
@@ -754,14 +751,14 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                       </div>
                     ))}
                     {item.dokumenWajib.length > 3 && (
-                      <div className="text-[11px] text-emerald-700 font-bold pl-5">
+                      <div className="text-xs text-emerald-700 font-bold pl-5">
                         +{item.dokumenWajib.length - 3} dokumen lainnya (klik untuk melihat)
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
                   <span className="italic truncate max-w-[200px]">Ref: {item.sumberRegulasi}</span>
                   <span className="text-emerald-700 font-bold group-hover:translate-x-0.5 transition">
                     Buka Panduan Lengkap →
@@ -778,7 +775,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
               <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-5 text-xs max-h-[85vh] overflow-y-auto">
                 <div className="flex justify-between items-start border-b border-slate-200 pb-3">
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
                       Dokumen Regulasi Ekspor Resmi
                     </span>
                     <h3 className="text-base font-bold text-slate-900 mt-0.5">{selectedArticle.judul}</h3>

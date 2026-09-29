@@ -56,9 +56,9 @@ export const ReadinessDistributionChart: React.FC = () => {
       <div className="grid grid-cols-3 gap-2 pt-1 text-center">
         {data.map((item, idx) => (
           <div key={idx} className={`p-2.5 rounded-xl ${item.bg}`}>
-            <div className="text-[11px] font-bold">{item.grade}</div>
+            <div className="text-xs font-bold">{item.grade}</div>
             <div className="text-xl font-black text-slate-900 mt-0.5">{item.count} <span className="text-xs font-semibold text-slate-600">IKM</span></div>
-            <div className="text-[11px] font-medium text-slate-600 mt-0.5">{item.percent}%</div>
+            <div className="text-xs font-medium text-slate-600 mt-0.5">{item.percent}%</div>
           </div>
         ))}
       </div>
@@ -123,7 +123,7 @@ export const InquiriesTrendChart: React.FC = () => {
           <circle cx="280" cy="10" r="5" fill="#059669" stroke="#ffffff" strokeWidth="2" />
         </svg>
 
-        <div className="flex justify-between text-[11px] font-semibold text-slate-500 mt-1">
+        <div className="flex justify-between text-xs font-semibold text-slate-500 mt-1">
           {points.map((p, i) => (
             <span key={i}>{p.label}</span>
           ))}

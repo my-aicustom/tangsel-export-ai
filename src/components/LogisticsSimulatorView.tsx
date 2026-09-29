@@ -121,27 +121,27 @@ export const LogisticsSimulatorView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Partner Header: Disperindag Tangsel & Proposed Logistics Integration */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+    <div className="space-y-5 sm:space-y-6">
+      {/* Partner Header: Disperindag Tangsel & Simulasi Integrasi Logistik */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
               Disperindag Kota Tangerang Selatan
             </span>
             <span className="text-slate-300">•</span>
-            <span className="text-xs text-slate-500 font-medium">Tangsel Export AI</span>
+            <span className="text-sm text-slate-500">Tangsel Export AI</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">
             Simulasi Biaya Logistik & Kargo Ekspor
           </h1>
-          <p className="text-xs text-slate-600 mt-1 max-w-xl leading-relaxed">
+          <p className="text-sm text-slate-600 mt-1 max-w-xl leading-relaxed">
             Kalkulator rute kargo internasional, perbandingan moda Air Express vs Ocean LCL, serta estimasi landing cost IKM Tangsel untuk TEI 2026.
           </p>
         </div>
 
-        {/* Proposed Logistics Integration Block */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 shrink-0 self-start sm:self-center">
+        {/* Simulasi Integrasi Logistik Block */}
+        <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-3 shrink-0 self-start sm:self-center">
           <div className="p-1.5 bg-white rounded-lg border border-slate-200 shadow-2xs shrink-0">
             <img 
               src="/branding/logo-dhl.png" 
@@ -150,29 +150,26 @@ export const LogisticsSimulatorView: React.FC = () => {
             />
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Proposed Logistics Integration
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Simulasi Integrasi Logistik
             </div>
             <div className="text-xs font-bold text-slate-900">
-              Logistics Integration Demo
+              Estimasi Kargo Internasional
             </div>
-            <div className="text-[10px] text-amber-700 font-bold">
+            <div className="text-xs text-amber-700 font-bold">
               Kemitraan Dalam Pembahasan
             </div>
           </div>
         </div>
       </div>
 
-      {/* DEMO NOTICE & ANTI-HALLUCINATION GUARD */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs shadow-xs space-y-2">
+      {/* Disclaimer simulasi */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 sm:p-5 text-sm text-amber-950 space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2 font-bold text-amber-900 text-sm">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <AlertTriangle size={18} className="text-amber-700 shrink-0" />
-            <span>STATUS: DEMO RATE • SIMULASI INDIKATIF • BUKAN QUOTATION RESMI</span>
+            <span>Simulasi indikatif — bukan quotation resmi</span>
           </div>
-          <span className="px-2.5 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-400 text-[10px] font-extrabold uppercase">
-            NON-OFFICIAL RATE
-          </span>
         </div>
         <p className="leading-relaxed text-amber-900/90 font-medium">
           Seluruh tarif kargo, estimasi transit time, dan biaya bea cukai pada modul ini adalah <strong>kalkulasi simulasi matematis (DEMO RATE)</strong> untuk kebutuhan proyeksi kesiapan kontingensi pameran TEI 2026. Sesuai surat permohonan Disperindag Tangsel No. <code>/ /Disperindag/2026</code> tertanggal 24 September 2026, pembahasan kemitraan resmi bersama <strong>PT DHL Global Forwarding Indonesia</strong> saat ini sedang berproses.
@@ -181,14 +178,14 @@ export const LogisticsSimulatorView: React.FC = () => {
 
       {/* Exporter Forwarded Bridge Banner (if arriving from /readiness) */}
       {forwardedContext && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0">
+            <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-800 shrink-0">
               <PackageCheck size={20} />
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-emerald-800 block tracking-wider">
-                ✓ Data Terhubung dari Modul Kesiapan Ekspor (/readiness)
+              <span className="text-xs uppercase font-bold text-emerald-800 block tracking-wider">
+                Data dari modul Kesiapan Ekspor
               </span>
               <div className="text-slate-900 font-bold text-sm mt-0.5">
                 {forwardedContext.exporterName || 'IKM Tangsel'} — {forwardedContext.productName || 'Komoditas Unggulan'}
@@ -200,7 +197,7 @@ export const LogisticsSimulatorView: React.FC = () => {
           </div>
           <button
             onClick={() => setForwardedContext(null)}
-            className="px-3 py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 text-xs font-semibold text-emerald-900 self-start sm:self-auto transition"
+            className="min-h-11 px-3 rounded-lg bg-white hover:bg-emerald-100 border border-emerald-200 text-sm font-semibold text-emerald-900 self-start sm:self-auto transition"
           >
             Tutup Notifikasi
           </button>
@@ -208,11 +205,11 @@ export const LogisticsSimulatorView: React.FC = () => {
       )}
 
       {/* Step Indicator Header */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-              Forwarding & Shipping Cost Estimator
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+              Simulator Biaya Pengiriman
             </span>
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
               Wizard Simulasi Biaya Logistik Ekspor IKM
@@ -220,7 +217,7 @@ export const LogisticsSimulatorView: React.FC = () => {
           </div>
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition"
+            className="min-h-11 flex items-center gap-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition self-start sm:self-auto"
           >
             <RotateCcw size={14} />
             Reset Form
@@ -228,7 +225,7 @@ export const LogisticsSimulatorView: React.FC = () => {
         </div>
 
         {/* Stepper Progress */}
-        <div className="grid grid-cols-4 gap-2 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
           {[
             { s: 1, title: 'Destinasi Ekspor' },
             { s: 2, title: 'Dimensi & Koli' },
@@ -238,7 +235,7 @@ export const LogisticsSimulatorView: React.FC = () => {
             <div
               key={item.s}
               onClick={() => setStep(item.s as any)}
-              className={`p-3 rounded-xl border text-center transition cursor-pointer ${
+              className={`min-h-16 p-3 rounded-lg border text-center transition cursor-pointer ${
                 step === item.s
                   ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-900 font-bold shadow-2xs'
                   : step > item.s
@@ -246,7 +243,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                   : 'bg-slate-50 border-slate-200 text-slate-400'
               }`}
             >
-              <div className="text-[10px] text-slate-500 font-semibold">Langkah {item.s}</div>
+              <div className="text-xs text-slate-500 font-semibold">Langkah {item.s}</div>
               <div className="text-xs truncate mt-0.5">{item.title}</div>
             </div>
           ))}
@@ -257,7 +254,7 @@ export const LogisticsSimulatorView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Active Wizard Form */}
         <div className="lg:col-span-2">
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs min-h-[440px] flex flex-col justify-between">
+          <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-6 min-h-[440px] flex flex-col justify-between">
             {/* Step 1: Destination */}
             {step === 1 && (
               <div className="space-y-4">
@@ -281,13 +278,13 @@ export const LogisticsSimulatorView: React.FC = () => {
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-2xl">{port.flag}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-slate-700 border border-slate-200">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-white text-slate-700 border border-slate-200">
                           {port.region}
                         </span>
                       </div>
                       <div className="font-bold text-slate-900 text-sm">{port.country}</div>
                       <div className="text-slate-600 text-xs leading-tight font-medium">{port.name}</div>
-                      <div className="pt-2 flex justify-between text-[11px] text-slate-500 border-t border-slate-200">
+                      <div className="pt-2 flex justify-between text-xs text-slate-500 border-t border-slate-200">
                         <span>Udara: <strong className="text-blue-700">{port.transitDaysAir}</strong></span>
                         <span>Laut: <strong className="text-emerald-700">{port.transitDaysOcean}</strong></span>
                       </div>
@@ -309,7 +306,7 @@ export const LogisticsSimulatorView: React.FC = () => {
 
                 {/* Preset Tangsel Products */}
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <label className="text-[11px] font-bold text-emerald-800 block">
+                  <label className="text-xs font-bold text-emerald-800 block">
                     ⚡ Auto-Fill Preset Produk Komoditas Tangsel:
                   </label>
                   <select
@@ -377,9 +374,9 @@ export const LogisticsSimulatorView: React.FC = () => {
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
                   <span className="text-xs font-bold text-slate-800 block">Ukuran Dimensi per Karton (cm)</span>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="text-[11px] text-slate-600 font-semibold block mb-1">Panjang (P) cm</label>
+                      <label className="text-xs text-slate-600 font-semibold block mb-1">Panjang (P) cm</label>
                       <input
                         type="number"
                         min={1}
@@ -389,7 +386,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-slate-600 font-semibold block mb-1">Lebar (L) cm</label>
+                      <label className="text-xs text-slate-600 font-semibold block mb-1">Lebar (L) cm</label>
                       <input
                         type="number"
                         min={1}
@@ -399,7 +396,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-slate-600 font-semibold block mb-1">Tinggi (T) cm</label>
+                      <label className="text-xs text-slate-600 font-semibold block mb-1">Tinggi (T) cm</label>
                       <input
                         type="number"
                         min={1}
@@ -444,7 +441,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                 </div>
 
                 {/* Mode Select */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div
                     onClick={() => setParams({ ...params, mode: 'AIR_EXPRESS' })}
                     className={`p-4 rounded-xl border transition cursor-pointer text-xs space-y-2 ${
@@ -458,9 +455,6 @@ export const LogisticsSimulatorView: React.FC = () => {
                         <PlaneTakeoff size={18} className="text-blue-600" />
                         Air Express
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        DEMO RATE
-                      </span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed font-medium">
                       Cepat ({selectedPort.transitDaysAir}), cocok untuk sampel buyer TEI, dokumen, atau kargo urgent.
@@ -483,9 +477,6 @@ export const LogisticsSimulatorView: React.FC = () => {
                         <Ship size={18} className="text-emerald-600" />
                         Ocean LCL
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                        DEMO RATE
-                      </span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed font-medium">
                       Ekonomis ({selectedPort.transitDaysOcean}), dihitung per CBM, ideal untuk kargo komersial skala besar.
@@ -559,47 +550,99 @@ export const LogisticsSimulatorView: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-bold text-slate-900">
-                      Perbandingan Side-by-Side: Air Freight vs Ocean LCL
+                      Perbandingan Air Freight dan Ocean LCL
                     </h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                      DEMO RATE
-                    </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Evaluasi komprehensif antara kecepatan udara (Air Express) vs efisiensi laut (Ocean LCL) dari Tangsel ke {selectedPort.country}.
+                    Bandingkan estimasi biaya, waktu tempuh, dan bobot tagihan Air Express dengan Ocean LCL dari Tangsel ke {selectedPort.country}.
                   </p>
                 </div>
 
                 {/* Recommendation Alert */}
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-xs space-y-1">
+                <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-sm space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-sm">
                     <Sparkles size={16} className="text-emerald-700" />
-                    <span>Rekomendasi Rute & Moda: {comparison.recommendedMode === 'OCEAN_LCL' ? 'Ocean LCL (Laut)' : 'Air Freight (Udara)'}</span>
+                    <span>Saran moda berdasarkan simulasi: {comparison.recommendedMode === 'OCEAN_LCL' ? 'Ocean LCL (Laut)' : 'Air Freight (Udara)'}</span>
                   </div>
-                  <p className="text-slate-700 text-xs leading-relaxed font-medium">
+                  <p className="text-slate-700 text-sm leading-relaxed">
                     {comparison.recommendationReason}
                   </p>
                 </div>
 
-                {/* SIDE BY SIDE COMPARISON MATRIX TABLE */}
-                <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                {/* Mobile comparison summary */}
+                <div className="grid grid-cols-1 gap-3 md:hidden">
+                  {[
+                    {
+                      id: 'AIR_EXPRESS' as const,
+                      label: 'Air Freight',
+                      icon: PlaneTakeoff,
+                      totalUsd: comparison.air.totalEstimatedCostUsd,
+                      totalIdr: comparison.air.totalEstimatedCostIdr,
+                      transit: comparison.air.transitTimeEstimate,
+                      chargeable: `${comparison.air.chargeableWeightKg} kg`,
+                      inland: comparison.air.inlandTruckingCostUsd,
+                      ratio: comparison.air.logisticsCostPercentageOfFob,
+                    },
+                    {
+                      id: 'OCEAN_LCL' as const,
+                      label: 'Ocean LCL',
+                      icon: Ship,
+                      totalUsd: comparison.ocean.totalEstimatedCostUsd,
+                      totalIdr: comparison.ocean.totalEstimatedCostIdr,
+                      transit: comparison.ocean.transitTimeEstimate,
+                      chargeable: `${comparison.ocean.chargeableWeightKg} kg W/M`,
+                      inland: comparison.ocean.inlandTruckingCostUsd,
+                      ratio: comparison.ocean.logisticsCostPercentageOfFob,
+                    }
+                  ].map(option => {
+                    const Icon = option.icon;
+                    const active = params.mode === option.id;
+                    return (
+                      <div key={option.id} className={`rounded-xl border p-4 ${active ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200 bg-white'}`}>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 font-bold text-slate-950">
+                            <Icon size={18} className={option.id === 'AIR_EXPRESS' ? 'text-blue-600' : 'text-emerald-700'} />
+                            {option.label}
+                          </div>
+                          {active && <span className="text-xs font-semibold text-emerald-700">Moda aktif</span>}
+                        </div>
+                        <div className="mt-4 text-2xl font-extrabold tracking-tight text-slate-950">${option.totalUsd.toFixed(2)} USD</div>
+                        <div className="mt-1 text-sm font-medium text-slate-500">≈ Rp {option.totalIdr.toLocaleString('id-ID')}</div>
+                        <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                          <div><dt className="text-xs text-slate-500">Transit</dt><dd className="mt-0.5 font-semibold text-slate-800">{option.transit}</dd></div>
+                          <div><dt className="text-xs text-slate-500">Bobot tagihan</dt><dd className="mt-0.5 font-semibold text-slate-800">{option.chargeable}</dd></div>
+                          <div><dt className="text-xs text-slate-500">Inland trucking</dt><dd className="mt-0.5 font-semibold text-slate-800">${option.inland?.toFixed(2)} USD</dd></div>
+                          <div><dt className="text-xs text-slate-500">Biaya / FOB</dt><dd className="mt-0.5 font-semibold text-slate-800">{option.ratio}%</dd></div>
+                        </dl>
+                        <button
+                          type="button"
+                          onClick={() => setParams({ ...params, mode: option.id })}
+                          className={`mt-4 min-h-11 w-full rounded-lg px-3 text-sm font-semibold ${active ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-800'}`}
+                        >
+                          {active ? 'Moda dipilih' : `Pilih ${option.label}`}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop comparison matrix */}
+                <div className="hidden rounded-xl border border-slate-200 overflow-hidden bg-white md:block">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-[11px]">
+                      <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs">
                         <th className="py-3 px-4 font-bold">Komponen Logistik</th>
                         <th className={`py-3 px-4 font-bold transition ${params.mode === 'AIR_EXPRESS' ? 'bg-blue-50/80 text-blue-900' : 'text-slate-600'}`}>
                           <div className="flex items-center gap-1.5">
                             <PlaneTakeoff size={14} className="text-blue-600" />
                             <span>Air Freight Express</span>
                           </div>
-                          <span className="text-[10px] font-normal text-amber-700 font-mono">[DEMO RATE]</span>
                         </th>
                         <th className={`py-3 px-4 font-bold transition ${params.mode === 'OCEAN_LCL' ? 'bg-emerald-50/80 text-emerald-900' : 'text-slate-600'}`}>
                           <div className="flex items-center gap-1.5">
                             <Ship size={14} className="text-emerald-600" />
                             <span>Ocean Freight LCL</span>
                           </div>
-                          <span className="text-[10px] font-normal text-amber-700 font-mono">[DEMO RATE]</span>
                         </th>
                       </tr>
                     </thead>
@@ -627,17 +670,17 @@ export const LogisticsSimulatorView: React.FC = () => {
                       <tr className="bg-amber-50/60">
                         <td className="py-2.5 px-4 text-slate-700 font-bold">
                           Inland Trucking (Tangsel → Priok/CGK)
-                          <div className="text-[10px] text-slate-500 font-medium">Pick-up gudang IKM ke pelabuhan/bandara muat</div>
+                          <div className="text-xs text-slate-500 font-medium">Pick-up gudang IKM ke pelabuhan/bandara muat</div>
                         </td>
                         <td className="py-2.5 px-4 text-blue-900 font-semibold">
                           ${comparison.air.inlandTruckingCostUsd?.toFixed(2)} USD
-                          <div className="text-[10px] text-slate-500 font-normal">
+                          <div className="text-xs text-slate-500 font-normal">
                             {comparison.air.inlandTruckDetails} · Rp {comparison.air.inlandTruckingCostIdr?.toLocaleString('id-ID')}
                           </div>
                         </td>
                         <td className="py-2.5 px-4 text-emerald-900 font-semibold">
                           ${comparison.ocean.inlandTruckingCostUsd?.toFixed(2)} USD
-                          <div className="text-[10px] text-slate-500 font-normal">
+                          <div className="text-xs text-slate-500 font-normal">
                             {comparison.ocean.inlandTruckDetails} · Rp {comparison.ocean.inlandTruckingCostIdr?.toLocaleString('id-ID')}
                           </div>
                         </td>
@@ -667,16 +710,16 @@ export const LogisticsSimulatorView: React.FC = () => {
                         </td>
                       </tr>
                       <tr className="bg-slate-100 font-bold text-xs">
-                        <td className="py-3 px-4 text-slate-900">TOTAL ESTIMASI (DEMO RATE)</td>
+                        <td className="py-3 px-4 text-slate-900">TOTAL ESTIMASI</td>
                         <td className="py-3 px-4 text-blue-900">
                           <div className="text-sm">${comparison.air.totalEstimatedCostUsd.toFixed(2)} USD</div>
-                          <div className="text-[11px] text-slate-500 font-mono font-normal">
+                          <div className="text-xs text-slate-500 font-mono font-normal">
                             ≈ Rp {comparison.air.totalEstimatedCostIdr.toLocaleString('id-ID')}
                           </div>
                         </td>
                         <td className="py-3 px-4 text-emerald-900">
                           <div className="text-sm">${comparison.ocean.totalEstimatedCostUsd.toFixed(2)} USD</div>
-                          <div className="text-[11px] text-slate-500 font-mono font-normal">
+                          <div className="text-xs text-slate-500 font-mono font-normal">
                             ≈ Rp {comparison.ocean.totalEstimatedCostIdr.toLocaleString('id-ID')}
                           </div>
                         </td>
@@ -737,7 +780,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStep((step - 1) as any)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
+                  className="min-h-11 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold flex items-center gap-1.5 transition"
                 >
                   <ChevronLeft size={16} />
                   Kembali
@@ -750,18 +793,18 @@ export const LogisticsSimulatorView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setStep((step + 1) as any)}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs"
+                  className="min-h-11 px-5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold flex items-center gap-1.5 transition"
                 >
                   Lanjutkan
                   <ChevronRight size={16} />
                 </button>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <a
                     href="https://veylo.163.61.44.41.sslip.io/app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs"
+                    className="min-h-11 px-4 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold flex items-center gap-1.5 transition"
                   >
                     <Video size={15} />
                     Buka Veylo Room (Buat Dokumen Ekspor)
@@ -769,7 +812,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowExportModal(true)}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs"
+                    className="min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold flex items-center gap-1.5 transition"
                   >
                     <Printer size={15} />
                     Cetak Lembar Estimasi
@@ -780,16 +823,13 @@ export const LogisticsSimulatorView: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Col: Live Summary Card */}
+        {/* Right Col: Summary */}
         <div className="space-y-4">
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <Calculator size={16} className="text-emerald-600" />
-                Live Freight Summary
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                DEMO RATE
+                Ringkasan Pengiriman
               </span>
             </div>
 
@@ -842,7 +882,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                   Hemat ${Math.abs(comparison.air.totalEstimatedCostUsd - comparison.ocean.totalEstimatedCostUsd).toFixed(0)} USD via Laut
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-center text-[10px]">
+              <div className="grid grid-cols-2 gap-2 text-center text-xs">
                 <div className={`p-2.5 rounded-lg border ${params.mode === 'AIR_EXPRESS' ? 'bg-blue-50 border-blue-400 text-blue-900 font-bold' : 'bg-white border-slate-200 text-slate-600'}`}>
                   <div>Air Express</div>
                   <strong className="text-slate-900 text-xs block my-0.5">${comparison.air.totalEstimatedCostUsd.toFixed(0)}</strong>
@@ -861,7 +901,7 @@ export const LogisticsSimulatorView: React.FC = () => {
                 <Info size={14} className="text-blue-600" />
                 Catatan Teknis Forwarding:
               </div>
-              <p className="text-[11px] leading-relaxed">
+              <p className="text-xs leading-relaxed">
                 Chargeable weight: <strong>{result.chargeableWeightKg} kg</strong> (berdasarkan perbandingan berat fisik dan kubikasi W/M). Tarif resmi dikonfirmasi saat booking kargo.
               </p>
             </div>
@@ -876,10 +916,10 @@ export const LogisticsSimulatorView: React.FC = () => {
           <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 space-y-4 text-xs">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-700">Pemerintah Kota Tangerang Selatan — Disperindag</span>
+                <span className="text-xs uppercase font-bold text-emerald-700">Pemerintah Kota Tangerang Selatan — Disperindag</span>
                 <h3 className="text-base font-bold text-slate-900">Lembar Simulasi Logistik & Kargo Ekspor TEI 2026</h3>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
                 DEMO ESTIMATE
               </span>
             </div>
@@ -896,12 +936,12 @@ export const LogisticsSimulatorView: React.FC = () => {
               <p><strong>Nilai Kargo FOB:</strong> ${params.cargoValueUsd.toLocaleString()} USD</p>
               
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                <div className="font-bold text-slate-900">Perbandingan Biaya Pengiriman [DEMO RATE]:</div>
+                <div className="font-bold text-slate-900">Perbandingan Biaya Pengiriman:</div>
                 <div className="flex justify-between text-slate-700">
                   <span>✈️ Air Freight Express ({comparison.air.transitTimeEstimate}):</span>
                   <strong className="text-blue-800">${comparison.air.totalEstimatedCostUsd.toFixed(2)} USD ({comparison.air.logisticsCostPercentageOfFob}% of FOB)</strong>
                 </div>
-                <div className="flex justify-between text-slate-600 text-[11px]">
+                <div className="flex justify-between text-slate-600 text-xs">
                   <span>↳ Inland Tangsel → CGK:</span>
                   <strong>${comparison.air.inlandTruckingCostUsd?.toFixed(2)} USD · {comparison.air.inlandTruckDetails}</strong>
                 </div>
@@ -909,13 +949,13 @@ export const LogisticsSimulatorView: React.FC = () => {
                   <span>🚢 Ocean Freight LCL ({comparison.ocean.transitTimeEstimate}):</span>
                   <strong className="text-emerald-800">${comparison.ocean.totalEstimatedCostUsd.toFixed(2)} USD ({comparison.ocean.logisticsCostPercentageOfFob}% of FOB)</strong>
                 </div>
-                <div className="flex justify-between text-slate-600 text-[11px]">
+                <div className="flex justify-between text-slate-600 text-xs">
                   <span>↳ Inland Tangsel → Priok:</span>
                   <strong>${comparison.ocean.inlandTruckingCostUsd?.toFixed(2)} USD · {comparison.ocean.inlandTruckDetails}</strong>
                 </div>
               </div>
 
-              <p className="text-[11px] text-slate-500 italic">
+              <p className="text-xs text-slate-500 italic">
                 *Dokumen ini merupakan hasil estimasi simulasi sistem Tangsel Export AI untuk keperluan persiapan pameran TEI 2026 dan pembahasan kerja sama logistik Disperindag Tangsel bersama mitra logistik.
               </p>
             </div>

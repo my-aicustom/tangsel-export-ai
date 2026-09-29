@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, CheckCircle2, ShieldCheck, Building, Sparkles } from 'lucide-react';
+import { X, Plus, CheckCircle2, ShieldCheck, Building } from 'lucide-react';
 import type { IkmItem } from '../data/ikmData';
 
 interface NewIkmModalProps {
@@ -92,11 +92,11 @@ export const NewIkmModal: React.FC<NewIkmModalProps> = ({ isOpen, onClose, onAdd
         onClick={onClose} 
       />
 
-      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
               Registrasi Mandiri & Kurasi Baru
             </span>
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
@@ -259,7 +259,7 @@ export const NewIkmModal: React.FC<NewIkmModalProps> = ({ isOpen, onClose, onAdd
                     onClick={() => toggleCert(cert)}
                     className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition ${
                       isSelected
-                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-2xs'
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 '
                         : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
                     }`}
                   >
@@ -283,10 +283,10 @@ export const NewIkmModal: React.FC<NewIkmModalProps> = ({ isOpen, onClose, onAdd
             />
           </div>
 
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed flex items-center gap-2">
-            <Sparkles size={16} className="text-emerald-700 shrink-0" />
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 leading-relaxed flex items-center gap-2">
+            <ShieldCheck size={16} className="text-emerald-700 shrink-0" />
             <span>
-              Sistem AI Kurasi Disperindag akan otomatis menghitung estimasi grade kesiapan (Grade A/B/C) berdasarkan kelengkapan legalitas dan sertifikasi yang Anda masukkan.
+              Sistem menghitung estimasi grade kesiapan (A/B/C) dari legalitas dan sertifikasi yang dimasukkan. Hasil tetap perlu diverifikasi kurator Disperindag.
             </span>
           </div>
 
@@ -300,7 +300,7 @@ export const NewIkmModal: React.FC<NewIkmModalProps> = ({ isOpen, onClose, onAdd
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs transition flex items-center gap-2"
+              className="min-h-11 px-5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition flex items-center gap-2"
             >
               <Plus size={15} />
               Simpan IKM Baru

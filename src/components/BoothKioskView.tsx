@@ -156,9 +156,9 @@ export const BoothKioskView: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
       {/* Kiosk Hero Topbar */}
-      <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs relative overflow-hidden">
+      <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-6 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <img 
@@ -168,15 +168,15 @@ export const BoothKioskView: React.FC = () => {
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
                   {lang === 'ID' ? 'Kios Interaktif Booth' : 'Interactive Booth Kiosk'}
                 </span>
-                <span className="text-slate-500 text-xs font-semibold">TEI 2026 • ICE BSD City</span>
+                <span className="text-slate-500 text-sm font-medium">TEI 2026 • ICE BSD City</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-1">
                 {lang === 'ID' ? 'Katalog Komoditas Ekspor Tangerang Selatan' : 'South Tangerang Export Commodity Catalog'}
               </h1>
-              <p className="text-xs text-slate-600 mt-0.5 font-medium">
+              <p className="text-sm text-slate-600 mt-1">
                 {lang === 'ID'
                   ? 'Pemerintah Kota Tangerang Selatan — Dinas Perindustrian dan Perdagangan'
                   : 'Official Government of South Tangerang City — Department of Industry and Trade'}
@@ -185,11 +185,11 @@ export const BoothKioskView: React.FC = () => {
           </div>
 
           {/* Language Switcher & Actions */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex p-1 rounded-xl bg-slate-100 border border-slate-200 text-xs">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+            <div className="col-span-2 flex rounded-lg bg-slate-100 p-1 text-sm sm:col-span-1">
               <button
                 onClick={() => setLang('ID')}
-                className={`px-3 py-1.5 rounded-lg font-bold transition ${
+                className={`min-h-10 flex-1 px-3 rounded-md font-semibold transition ${
                   lang === 'ID' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -197,7 +197,7 @@ export const BoothKioskView: React.FC = () => {
               </button>
               <button
                 onClick={() => setLang('EN')}
-                className={`px-3 py-1.5 rounded-lg font-bold transition ${
+                className={`min-h-10 flex-1 px-3 rounded-md font-semibold transition ${
                   lang === 'EN' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -208,7 +208,7 @@ export const BoothKioskView: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowQrModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5"
+              className="min-h-11 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition flex items-center justify-center gap-1.5"
             >
               <QrCode size={15} />
               <span>{lang === 'ID' ? 'Buka di HP (QR Scan)' : 'Open on Phone (QR)'}</span>
@@ -218,7 +218,7 @@ export const BoothKioskView: React.FC = () => {
               href={selectedProduct ? getProductVeyloUrl(selectedProduct.ikm, selectedProduct.product) : getVeyloRoomUrl({})}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5"
+              className="min-h-11 px-3 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center justify-center gap-1.5"
             >
               <Video size={15} />
               <span>Veylo Room</span>
@@ -226,7 +226,7 @@ export const BoothKioskView: React.FC = () => {
 
             <a
               href="/command-center"
-              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition"
+              className="min-h-11 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition flex items-center justify-center"
             >
               ← Dashboard
             </a>
@@ -235,41 +235,41 @@ export const BoothKioskView: React.FC = () => {
       </div>
 
       {/* 3 Core Kiosk Modes Switcher Bar */}
-      <div className="p-1.5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap gap-2 text-xs">
+      <div className="grid grid-cols-3 gap-1 rounded-xl border border-slate-200 bg-white p-1.5 text-sm">
         <button
           onClick={() => setKioskMode('CATALOG')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition flex items-center justify-center gap-2 border ${
+          className={`min-h-12 px-2 sm:px-4 rounded-lg font-semibold transition flex items-center justify-center gap-2 border ${
             kioskMode === 'CATALOG'
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
               : 'text-slate-700 border-transparent hover:bg-slate-100'
           }`}
         >
           <Store size={16} />
-          <span>{lang === 'ID' ? 'Mode A: Katalog & Pencarian Buyer' : 'Mode A: Catalog & Buyer Discovery'}</span>
+          <span><span className="sm:hidden">{lang === 'ID' ? 'Katalog' : 'Catalog'}</span><span className="hidden sm:inline">{lang === 'ID' ? 'Katalog & Pencarian Buyer' : 'Catalog & Buyer Discovery'}</span></span>
         </button>
 
         <button
           onClick={() => setKioskMode('SELF_AUDIT')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition flex items-center justify-center gap-2 border ${
+          className={`min-h-12 px-2 sm:px-4 rounded-lg font-semibold transition flex items-center justify-center gap-2 border ${
             kioskMode === 'SELF_AUDIT'
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
               : 'text-slate-700 border-transparent hover:bg-slate-100'
           }`}
         >
           <FileCheck2 size={16} />
-          <span>{lang === 'ID' ? 'Mode B: Daftarkan IKM (Self-Audit AI)' : 'Mode B: MSME Self-Audit & Onboarding'}</span>
+          <span><span className="sm:hidden">{lang === 'ID' ? 'Self-Audit' : 'Self-Audit'}</span><span className="hidden sm:inline">{lang === 'ID' ? 'Daftarkan IKM & Self-Audit' : 'MSME Self-Audit & Onboarding'}</span></span>
         </button>
 
         <button
           onClick={() => setKioskMode('LOGISTICS')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition flex items-center justify-center gap-2 border ${
+          className={`min-h-12 px-2 sm:px-4 rounded-lg font-semibold transition flex items-center justify-center gap-2 border ${
             kioskMode === 'LOGISTICS'
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
               : 'text-slate-700 border-transparent hover:bg-slate-100'
           }`}
         >
           <PlaneTakeoff size={16} />
-          <span>{lang === 'ID' ? 'Mode C: Quick Estimator Kargo (DHL Demo)' : 'Mode C: Quick Freight Estimator (Demo)'}</span>
+          <span><span className="sm:hidden">{lang === 'ID' ? 'Logistik' : 'Freight'}</span><span className="hidden sm:inline">{lang === 'ID' ? 'Estimator Kargo' : 'Freight Estimator'}</span></span>
         </button>
       </div>
 
@@ -314,11 +314,11 @@ export const BoothKioskView: React.FC = () => {
           </div>
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filtered.map(({ ikm, product }) => (
               <div
                 key={product.id}
-                className="rounded-3xl bg-white border border-slate-200 shadow-xs overflow-hidden flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition group"
+                className="rounded-xl bg-white border border-slate-200 overflow-hidden flex flex-col justify-between hover:border-emerald-400 transition group"
               >
                 <div>
                   <div className="h-48 w-full bg-slate-100 relative overflow-hidden">
@@ -328,23 +328,23 @@ export const BoothKioskView: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                     <div className="absolute top-3 left-3 flex gap-2">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase shadow-xs ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase shadow-xs ${
                         ikm.grade === 'A' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
                       }`}>
                         Grade {ikm.grade}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md text-[10px] font-mono text-cyan-200 font-semibold">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md text-xs font-mono text-cyan-200 font-semibold">
                         HS: {product.hsCode}
                       </span>
                     </div>
                     <div className="absolute bottom-3 right-3 px-3 py-1 rounded-xl bg-white/90 backdrop-blur-md text-emerald-800 font-extrabold text-sm border border-slate-200 shadow-xs">
-                      ${product.fobPriceUsd.toFixed(2)} USD <span className="text-[10px] text-slate-500 font-normal">FOB</span>
+                      ${product.fobPriceUsd.toFixed(2)} USD <span className="text-xs text-slate-500 font-normal">FOB</span>
                     </div>
                   </div>
 
-                  <div className="p-5 space-y-3">
+                  <div className="p-4 sm:p-5 space-y-3">
                     <div>
-                      <div className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider">{ikm.brand}</div>
+                      <div className="text-xs text-emerald-700 font-bold uppercase tracking-wider">{ikm.brand}</div>
                       <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">
                         {product.name}
                       </h3>
@@ -357,20 +357,20 @@ export const BoothKioskView: React.FC = () => {
                       {product.description}
                     </p>
 
-                    <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+                    <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 text-sm text-slate-700">
                       <div>
-                        <span className="text-slate-500 block text-[11px]">{lang === 'ID' ? 'Kapasitas:' : 'Capacity:'}</span>
+                        <span className="text-slate-500 block text-xs">{lang === 'ID' ? 'Kapasitas:' : 'Capacity:'}</span>
                         <strong className="text-slate-900">{product.capacityPerMonth}</strong>
                       </div>
                       <div>
-                        <span className="text-slate-500 block text-[11px]">Min. Order (MOQ):</span>
+                        <span className="text-slate-500 block text-xs">Min. Order (MOQ):</span>
                         <strong className="text-slate-900">{product.moq}</strong>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-1">
                       {product.certifications.map((c, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-emerald-50 text-[10px] font-bold text-emerald-800 border border-emerald-200">
+                        <span key={idx} className="px-2 py-0.5 rounded bg-emerald-50 text-xs font-bold text-emerald-800 border border-emerald-200">
                           ✓ {c}
                         </span>
                       ))}
@@ -384,13 +384,13 @@ export const BoothKioskView: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Buka Ruang Negosiasi Veylo"
-                    className="p-2.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 transition shadow-2xs"
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white transition"
                   >
                     <Video size={16} />
                   </a>
                   <button
                     onClick={() => setSelectedProduct({ ikm, product })}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2"
+                    className="flex-1 min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2"
                   >
                     <span>{lang === 'ID' ? 'Request Pertemuan / Sampel' : 'Request Meeting / Sample'}</span>
                     <ArrowRight size={14} />
@@ -405,11 +405,11 @@ export const BoothKioskView: React.FC = () => {
       {/* ================= MODE B: UMKM SELF-AUDIT ================= */}
       {kioskMode === 'SELF_AUDIT' && (
         <div className="max-w-3xl mx-auto space-y-6 text-xs">
-          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-5">
+          <div className="rounded-xl bg-white border border-slate-200 p-5 sm:p-7 space-y-5">
             <div>
-              <div className="flex items-center gap-2 text-emerald-700 font-bold uppercase text-[11px]">
+              <div className="flex items-center gap-2 text-emerald-700 font-bold uppercase text-xs">
                 <Sparkles size={16} />
-                AI Export Gap Checklist (Self-Service Kiosk)
+                Checklist Kesiapan Ekspor
               </div>
               <h2 className="text-lg font-bold text-slate-900 mt-1">
                 {lang === 'ID' ? 'Audit Kesiapan Regulasi Komoditas UMKM' : 'MSME Export Regulation Self-Audit'}
@@ -428,7 +428,7 @@ export const BoothKioskView: React.FC = () => {
                   placeholder="Contoh: Kopi Rempah Pamulang"
                   value={auditNamaUsaha}
                   onChange={e => setAuditNamaUsaha(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:bg-white focus:border-emerald-600"
                 />
               </div>
 
@@ -438,7 +438,7 @@ export const BoothKioskView: React.FC = () => {
                   <select
                     value={auditKomoditas}
                     onChange={e => setAuditKomoditas(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600"
                   >
                     <option value="Kopi">Kopi Robusta / Arabika</option>
                     <option value="Gula Aren">Gula Aren / Pemanis Alami</option>
@@ -453,7 +453,7 @@ export const BoothKioskView: React.FC = () => {
                   <select
                     value={auditNegaraTarget}
                     onChange={e => setAuditNegaraTarget(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600"
                   >
                     <option value="Uni Eropa">🇪🇺 Uni Eropa (Jerman, Belanda, Prancis)</option>
                     <option value="Timur Tengah / UAE">🇦🇪 Timur Tengah & UAE (GCC)</option>
@@ -494,10 +494,10 @@ export const BoothKioskView: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2"
+                className="w-full min-h-12 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2"
               >
                 <Sparkles size={16} />
-                Jalankan Audit AI Kesiapan Ekspor
+                Jalankan Audit Kesiapan Ekspor
               </button>
             </form>
 
@@ -506,7 +506,7 @@ export const BoothKioskView: React.FC = () => {
               <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-300 space-y-4">
                 <div className="flex items-center justify-between border-b border-emerald-200 pb-3">
                   <div>
-                    <span className="text-[10px] text-slate-500 uppercase font-bold">Hasil Evaluasi AI Disperindag</span>
+                    <span className="text-xs text-slate-500 uppercase font-bold">Hasil Evaluasi Kesiapan</span>
                     <h3 className="text-base font-extrabold text-slate-900 mt-0.5">{auditNamaUsaha || 'IKM Anda'}</h3>
                   </div>
                   <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-white text-emerald-800 border border-emerald-300 shadow-2xs">
@@ -519,7 +519,7 @@ export const BoothKioskView: React.FC = () => {
                   {auditOutput.checklist.map((chk, i) => (
                     <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-200 shadow-2xs">
                       <span className="text-slate-800 font-medium">{chk.item}</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                         chk.ready ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {chk.ready ? 'Terpenuhi' : 'Belum Ada'}
@@ -541,7 +541,7 @@ export const BoothKioskView: React.FC = () => {
       {/* ================= MODE C: QUICK LOGISTICS ESTIMATOR ================= */}
       {kioskMode === 'LOGISTICS' && (
         <div className="max-w-3xl mx-auto space-y-6 text-xs">
-          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-5">
+          <div className="rounded-xl bg-white border border-slate-200 p-5 sm:p-7 space-y-5">
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs">
               <span className="font-bold block text-amber-900">DEMO RATE & KEMITRAAN LOGISTIK DALAM PEMBAHASAN</span>
               Perhitungan indikatif cepat kargo ekspor untuk buyer pameran TEI 2026.
@@ -553,7 +553,7 @@ export const BoothKioskView: React.FC = () => {
                 <select
                   value={quickPortId}
                   onChange={e => setQuickPortId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600"
                 >
                   {DESTINATION_PORTS.map(p => (
                     <option key={p.id} value={p.id}>{p.flag} {p.country}</option>
@@ -568,7 +568,7 @@ export const BoothKioskView: React.FC = () => {
                   min={5}
                   value={quickWeightKg}
                   onChange={e => setQuickWeightKg(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:bg-white focus:border-emerald-600"
                 />
               </div>
 
@@ -577,7 +577,7 @@ export const BoothKioskView: React.FC = () => {
                 <select
                   value={quickMode}
                   onChange={e => setQuickMode(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-sm font-medium focus:bg-white focus:border-emerald-600"
                 >
                   <option value="AIR_EXPRESS">Air Express (Cepat)</option>
                   <option value="OCEAN_LCL">Ocean LCL (Ekonomis)</option>
@@ -586,7 +586,7 @@ export const BoothKioskView: React.FC = () => {
             </div>
 
             {/* Quick Result Card */}
-            <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-300 text-center space-y-2">
+            <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
               <div className="text-xs text-slate-600 font-medium">Perkiraan Biaya Pengiriman Kargo (Indikatif)</div>
               <div className="text-3xl font-black text-slate-900">
                 ${quickSimResult.totalEstimatedCostUsd.toFixed(2)} <span className="text-sm font-bold text-slate-500">USD</span>
@@ -606,15 +606,15 @@ export const BoothKioskView: React.FC = () => {
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setSelectedProduct(null)} />
-          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-4">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200 rounded-xl shadow-2xl p-6 space-y-4">
             <div className="flex justify-between items-start border-b border-slate-200 pb-3">
               <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-700">Trade Expo Indonesia 2026</span>
+                <span className="text-xs uppercase font-bold text-emerald-700">Trade Expo Indonesia 2026</span>
                 <h3 className="text-base font-bold text-slate-900">
                   {lang === 'ID' ? 'Hubungi Perwakilan Booth Disperindag' : 'Contact Booth Delegation'}
                 </h3>
               </div>
-              <button onClick={() => setSelectedProduct(null)} className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900 transition">
+              <button onClick={() => setSelectedProduct(null)} className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900 transition">
                 <X size={18} />
               </button>
             </div>
@@ -625,7 +625,7 @@ export const BoothKioskView: React.FC = () => {
             </div>
 
             {inquirySent ? (
-              <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-300 text-center space-y-2">
+              <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
                 <CheckCircle2 size={36} className="text-emerald-700 mx-auto" />
                 <h4 className="text-sm font-bold text-slate-900">
                   {lang === 'ID' ? 'Inquiry Berhasil Dicatat!' : 'Inquiry Successfully Logged!'}
@@ -648,7 +648,7 @@ export const BoothKioskView: React.FC = () => {
                     value={buyerName}
                     onChange={e => setBuyerName(e.target.value)}
                     placeholder="e.g. John Doe / Pierre"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:bg-white focus:border-emerald-600"
                   />
                 </div>
 
@@ -662,7 +662,7 @@ export const BoothKioskView: React.FC = () => {
                     value={buyerCountry}
                     onChange={e => setBuyerCountry(e.target.value)}
                     placeholder="e.g. Cameroon, UAE, Germany, Japan"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:bg-white focus:border-emerald-600"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:bg-white focus:border-emerald-600"
                   />
                 </div>
 
@@ -676,7 +676,7 @@ export const BoothKioskView: React.FC = () => {
                     value={buyerContact}
                     onChange={e => setBuyerContact(e.target.value)}
                     placeholder="+237 ... or +971 ... or email@company.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs font-medium focus:bg-white focus:border-emerald-600 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:bg-white focus:border-emerald-600 font-mono"
                   />
                 </div>
 
@@ -708,15 +708,15 @@ export const BoothKioskView: React.FC = () => {
       {showQrModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setShowQrModal(false)} />
-          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 space-y-5 text-xs text-center">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-2xl p-6 space-y-5 text-xs text-center">
             <div className="flex justify-between items-start border-b border-slate-200 pb-3 text-left">
               <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-700">Booth Disperindag Tangsel • TEI 2026</span>
+                <span className="text-xs uppercase font-bold text-emerald-700">Booth Disperindag Tangsel • TEI 2026</span>
                 <h3 className="text-base font-bold text-slate-900 mt-0.5">
                   {lang === 'ID' ? 'Lanjutkan di Smartphone Anda' : 'Continue on Your Smartphone'}
                 </h3>
               </div>
-              <button onClick={() => setShowQrModal(false)} className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900 transition">
+              <button onClick={() => setShowQrModal(false)} className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900 transition">
                 <X size={18} />
               </button>
             </div>
@@ -773,7 +773,7 @@ export const BoothKioskView: React.FC = () => {
                 <p className="font-bold text-slate-800 text-xs">
                   {lang === 'ID' ? 'Arahkan Kamera HP ke QR Code' : 'Point Your Phone Camera at QR Code'}
                 </p>
-                <p className="text-slate-500 text-[11px] max-w-xs mx-auto">
+                <p className="text-slate-500 text-xs max-w-xs mx-auto">
                   {lang === 'ID'
                     ? 'Katalog interaktif & fitur self-audit IKM akan terbuka di browser smartphone Anda.'
                     : 'The interactive catalog will open directly on your mobile browser.'}
@@ -782,14 +782,14 @@ export const BoothKioskView: React.FC = () => {
             </div>
 
             {/* Direct Link Copier */}
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-2">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-2">
               <span className="text-slate-500 block font-medium">Atau salin tautan langsung berikut:</span>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   readOnly
                   value={kioskContinuationUrl}
-                  className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-mono text-[11px] select-all focus:outline-none"
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-800 font-mono text-xs select-all focus:outline-none"
                 />
                 <button
                   type="button"

@@ -60,21 +60,21 @@ Catatan: ${lead.notes}`;
         onClick={onClose} 
       />
 
-      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="p-6 border-b border-slate-200 bg-slate-50 flex items-start justify-between">
+        <div className="p-4 sm:p-6 border-b border-slate-200 bg-slate-50 flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-xl">{lead.flag}</span>
               <span className="text-sm font-bold text-slate-800">{lead.country}</span>
               <span className="text-slate-400 text-xs">•</span>
-              <span className={`px-2.5 py-0.5 rounded text-[11px] font-extrabold uppercase tracking-wider border ${
+              <span className={`px-2.5 py-0.5 rounded text-xs font-extrabold uppercase tracking-wider border ${
                 currentStatus === 'HOT'
                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                   : currentStatus === 'WARM'
                   ? 'bg-amber-100 text-amber-800 border-amber-300'
                   : currentStatus === 'DEAL'
-                  ? 'bg-purple-100 text-purple-800 border-purple-300'
+                  ? 'bg-blue-100 text-blue-800 border-blue-300'
                   : 'bg-slate-100 text-slate-800 border-slate-300'
               }`}>
                 {currentStatus} LEAD
@@ -87,17 +87,17 @@ Catatan: ${lead.notes}`;
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-900 transition"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           {/* Specific Inquiry */}
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-600">
               Kebutuhan Spesifik Buyer
             </div>
             <p className="text-sm text-slate-800 leading-relaxed font-medium">
@@ -119,38 +119,38 @@ Catatan: ${lead.notes}`;
             </div>
           </div>
 
-          {/* AI Matching Engine Breakdown */}
+          {/* Buyer-IKM match summary */}
           <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
                 <Award size={16} className="text-emerald-600" />
-                Hasil Rekomendasi Matching Engine
+                Kecocokan Buyer–IKM
               </div>
               <div className="text-sm font-extrabold text-emerald-700">
-                Score: {lead.score}%
+                Kecocokan {lead.score}%
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-between gap-3">
+            <div className="p-3 rounded-lg bg-white border border-slate-200  flex items-center justify-between gap-3">
               <div>
                 <div className="text-xs font-bold text-slate-900">{lead.matchedIkm}</div>
                 <div className="text-xs text-slate-600 font-medium mt-0.5">{lead.matchedProduct}</div>
               </div>
-              <span className="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+              <span className="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
                 Sangat Cocok
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-              <div className="p-2 rounded bg-white border border-slate-200 shadow-2xs">
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div className="p-2 rounded bg-white border border-slate-200 ">
                 <div className="text-slate-500 font-medium">Kategori / HS (50%)</div>
                 <div className="text-emerald-700 font-bold mt-0.5">100% Cocok</div>
               </div>
-              <div className="p-2 rounded bg-white border border-slate-200 shadow-2xs">
+              <div className="p-2 rounded bg-white border border-slate-200 ">
                 <div className="text-slate-500 font-medium">Sertifikasi (30%)</div>
                 <div className="text-emerald-700 font-bold mt-0.5">Lengkap (Halal/ISO)</div>
               </div>
-              <div className="p-2 rounded bg-white border border-slate-200 shadow-2xs">
+              <div className="p-2 rounded bg-white border border-slate-200 ">
                 <div className="text-slate-500 font-medium">Kapasitas (20%)</div>
                 <div className="text-blue-700 font-bold mt-0.5">Memenuhi Demand</div>
               </div>
@@ -191,11 +191,11 @@ Catatan: ${lead.notes}`;
                   onClick={() => handleStageChange(ps.id)}
                   className={`p-2.5 rounded-xl text-left border transition text-xs ${
                     currentStage === ps.id
-                      ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-900 font-bold shadow-2xs'
+                      ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-900 font-bold '
                       : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
-                  <div className="text-[10px] text-slate-400 font-semibold">Tahap {ps.stepNumber}</div>
+                  <div className="text-xs text-slate-400 font-semibold">Tahap {ps.stepNumber}</div>
                   <div className="truncate font-bold mt-0.5 text-slate-800">{ps.label}</div>
                 </button>
               ))}
@@ -215,12 +215,12 @@ Catatan: ${lead.notes}`;
                   className={`py-2 px-3 rounded-lg text-xs font-bold transition border ${
                     currentStatus === st
                       ? st === 'HOT'
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                        ? 'bg-emerald-600 text-white border-emerald-600 '
                         : st === 'WARM'
-                        ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                        ? 'bg-amber-600 text-white border-amber-600 '
                         : st === 'DEAL'
-                        ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                        : 'bg-slate-700 text-white border-slate-700 shadow-xs'
+                        ? 'bg-blue-700 text-white border-blue-700'
+                        : 'bg-slate-700 text-white border-slate-700 '
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
@@ -244,7 +244,7 @@ Catatan: ${lead.notes}`;
               href={veyloTradeRoomUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-2"
+              className="min-h-11 px-4 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center gap-2"
             >
               <Video size={14} />
               <span>Veylo Trade Room</span>
@@ -253,7 +253,7 @@ Catatan: ${lead.notes}`;
               href={`https://wa.me/${lead.contactWa.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${lead.buyerName}, this is official representative from Disperindag Tangerang Selatan regarding Trade Expo Indonesia 2026 inquiry for ${lead.categoryInterest}...`)}`}
               target="_blank"
               rel="noreferrer"
-              className="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-2"
+              className="min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition flex items-center gap-2"
             >
               <Phone size={14} />
               WhatsApp Buyer

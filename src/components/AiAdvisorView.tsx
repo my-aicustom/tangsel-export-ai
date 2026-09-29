@@ -332,7 +332,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
     const timeoutId = window.setTimeout(() => controller.abort(), 6000);
 
     try {
-      const response = await fetch('https://veylo.163.61.44.41.sslip.io/api/trade-chat', {
+      const response = await fetch('https://veylo.163.61.44.41.sslip.io/app/api/trade-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,

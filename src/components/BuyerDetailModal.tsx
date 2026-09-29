@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, CheckCircle, Globe, Calendar, User, Phone, Mail, Award, ArrowRight, ShieldCheck, RefreshCw, Layers, Video, FileText } from 'lucide-react';
 import { PIPELINE_STAGES, type BuyerLeadItem, type PipelineStage } from '../data/buyerLeadsData';
+import { getVeyloRoomUrl } from '../lib/veyloBridge';
 
 interface BuyerDetailModalProps {
   lead: BuyerLeadItem | null;
@@ -15,6 +16,13 @@ export const BuyerDetailModal: React.FC<BuyerDetailModalProps> = ({ lead, onClos
   const [currentStatus, setCurrentStatus] = useState<BuyerLeadItem['status']>(lead.status);
   const [currentStage, setCurrentStage] = useState<PipelineStage>(lead.pipelineStage);
   const [copied, setCopied] = useState(false);
+  const veyloTradeRoomUrl = getVeyloRoomUrl({
+    buyerId: lead.id,
+    buyerName: lead.buyerName,
+    buyerCountry: lead.country,
+    productName: lead.matchedProduct,
+    ikmName: lead.matchedIkm,
+  });
 
   const handleStatusChange = (status: BuyerLeadItem['status']) => {
     setCurrentStatus(status);
@@ -233,7 +241,7 @@ Catatan: ${lead.notes}`;
           </button>
           <div className="flex items-center gap-2">
             <a
-              href="https://veylo.163.61.44.41.sslip.io/app"
+              href={veyloTradeRoomUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-2"

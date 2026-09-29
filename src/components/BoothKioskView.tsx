@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { IKM_DATABASE, type IkmItem, type ProductItem } from '../data/ikmData';
 import { DESTINATION_PORTS, calculateLogisticsDemo } from '../data/dhlDemoRates';
+import { getVeyloRoomUrl } from '../lib/veyloBridge';
 
 export const BoothKioskView: React.FC = () => {
   const [lang, setLang] = useState<'ID' | 'EN'>('ID');
@@ -79,6 +80,21 @@ export const BoothKioskView: React.FC = () => {
                         product.description.toLowerCase().includes(search.toLowerCase()) ||
                         product.hsCode.includes(search);
     return matchZone && matchSearch;
+  });
+
+  const getProductVeyloUrl = (
+    ikm: IkmItem,
+    product: ProductItem,
+    buyer?: { name?: string; country?: string }
+  ) => getVeyloRoomUrl({
+    ikmId: ikm.id,
+    ikmName: ikm.namaUsaha,
+    productId: product.id,
+    productName: product.name,
+    fobPriceUsd: product.fobPriceUsd,
+    hsCode: product.hsCode,
+    buyerName: buyer?.name,
+    buyerCountry: buyer?.country,
   });
 
   const handleInquirySubmit = (e: React.FormEvent) => {
@@ -199,7 +215,7 @@ export const BoothKioskView: React.FC = () => {
             </button>
 
             <a
-              href="https://veylo.163.61.44.41.sslip.io/app"
+              href={selectedProduct ? getProductVeyloUrl(selectedProduct.ikm, selectedProduct.product) : getVeyloRoomUrl({})}
               target="_blank"
               rel="noopener noreferrer"
               className="px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5"
@@ -364,7 +380,7 @@ export const BoothKioskView: React.FC = () => {
 
                 <div className="p-5 pt-0 flex items-center gap-2">
                   <a
-                    href="https://veylo.163.61.44.41.sslip.io/app"
+                    href={getProductVeyloUrl(ikm, product)}
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Buka Ruang Negosiasi Veylo"
@@ -665,6 +681,15 @@ export const BoothKioskView: React.FC = () => {
                 </div>
 
                 <div className="pt-2">
+                  <a
+                    href={getProductVeyloUrl(selectedProduct.ikm, selectedProduct.product, { name: buyerName, country: buyerCountry })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-2 w-full py-3 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2"
+                  >
+                    <Video size={14} />
+                    Buka Veylo Room dengan Context Produk
+                  </a>
                   <button
                     type="submit"
                     className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2"

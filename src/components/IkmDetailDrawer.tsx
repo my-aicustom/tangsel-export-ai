@@ -19,6 +19,7 @@ import {
   FileText
 } from 'lucide-react';
 import type { IkmItem } from '../data/ikmData';
+import { getVeyloRoomUrl } from '../lib/veyloBridge';
 
 interface IkmDetailDrawerProps {
   ikm: IkmItem | null;
@@ -31,6 +32,16 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
   const [auditResult, setAuditResult] = useState<string | null>(null);
 
   if (!ikm) return null;
+
+  const primaryProduct = ikm.products[0];
+  const veyloTradeRoomUrl = getVeyloRoomUrl({
+    ikmId: ikm.id,
+    ikmName: ikm.namaUsaha,
+    productId: primaryProduct?.id,
+    productName: primaryProduct?.name,
+    fobPriceUsd: primaryProduct?.fobPriceUsd,
+    hsCode: primaryProduct?.hsCode,
+  });
 
   const handleRunAiAudit = () => {
     setRunningAudit(true);
@@ -289,7 +300,7 @@ export const IkmDetailDrawer: React.FC<IkmDetailDrawerProps> = ({ ikm, onClose, 
           {/* Drawer Footer Actions */}
           <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
             <a
-              href="https://veylo.163.61.44.41.sslip.io/app"
+              href={veyloTradeRoomUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-xs transition flex items-center justify-center gap-2"

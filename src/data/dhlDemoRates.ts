@@ -3,12 +3,15 @@ export interface DestinationPort {
   name: string;
   country: string;
   flag: string;
-  region: 'Africa' | 'Middle East' | 'Europe' | 'Asia' | 'North America';
+  region: string;
+  unLocode: string;
+  portType: 'SEA' | 'AIR' | 'MULTIMODAL';
   airBaseRatePerKg: number;    // USD per kg
   oceanBaseRatePerCbm: number; // USD per CBM
   transitDaysAir: string;
   transitDaysOcean: string;
-  customsRiskLevel: 'Standard' | 'Strict' | 'High Compliance';
+  customsRiskLevel?: 'Standard' | 'Strict' | 'High Compliance';
+  customsRequirements?: string[];
 }
 
 export const DESTINATION_PORTS: DestinationPort[] = [
@@ -17,6 +20,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "Singapore",
     "name": "Port of Singapore (PSA) / Changi Airport (SIN)",
     "region": "ASEAN & Asia Hub",
+    "unLocode": "SGSIN",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 4.8,
     "oceanBaseRatePerCbm": 42,
     "transitDaysAir": "1-2 Hari",
@@ -33,6 +38,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "China",
     "name": "Port of Shanghai (Yangshan) / Pudong Airport (PVG)",
     "region": "East Asia Hub",
+    "unLocode": "CNSHA",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 6.2,
     "oceanBaseRatePerCbm": 58,
     "transitDaysAir": "2-3 Hari",
@@ -49,6 +56,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "Japan",
     "name": "Port of Yokohama / Tokyo Narita Airport (NRT)",
     "region": "East Asia Pacific",
+    "unLocode": "JPYOK",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 7.8,
     "oceanBaseRatePerCbm": 75,
     "transitDaysAir": "2-4 Hari",
@@ -65,6 +74,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "United States",
     "name": "Port of Los Angeles (POLA) / LAX Airport",
     "region": "North America",
+    "unLocode": "USLAX",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 12.5,
     "oceanBaseRatePerCbm": 145,
     "transitDaysAir": "3-5 Hari",
@@ -81,6 +92,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "Netherlands",
     "name": "Port of Rotterdam (RTM) / Amsterdam Schiphol (AMS)",
     "region": "European Union",
+    "unLocode": "NLRTM",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 11.2,
     "oceanBaseRatePerCbm": 120,
     "transitDaysAir": "3-5 Hari",
@@ -97,6 +110,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "United Arab Emirates",
     "name": "Port of Jebel Ali / Dubai World Central (DWC)",
     "region": "Middle East & GCC",
+    "unLocode": "AEJEA",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 8.9,
     "oceanBaseRatePerCbm": 85,
     "transitDaysAir": "2-4 Hari",
@@ -113,6 +128,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "Australia",
     "name": "Port Botany (Sydney) / Sydney Kingsford Smith (SYD)",
     "region": "Oceania",
+    "unLocode": "AUSYD",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 9.8,
     "oceanBaseRatePerCbm": 95,
     "transitDaysAir": "3-5 Hari",
@@ -129,6 +146,8 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     "country": "Cameroon",
     "name": "Port of Douala (DLA) / Douala International Airport",
     "region": "West Africa",
+    "unLocode": "CMDLA",
+    "portType": "MULTIMODAL",
     "airBaseRatePerKg": 14.8,
     "oceanBaseRatePerCbm": 165,
     "transitDaysAir": "4-7 Hari",
@@ -141,6 +160,11 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     ]
   }
 ];
+
+export const ORIGIN_PORTS = {
+  seaport: { locode: 'IDJKT', name: 'Port of Tanjung Priok, Jakarta', province: 'DKI Jakarta / Banten Hinterland' },
+  airport: { locode: 'IDCGK', name: 'Soekarno-Hatta International Airport', province: 'Tangerang, Banten' }
+};
 
 export interface LogisticsSimulationParams {
   destinationId: string;

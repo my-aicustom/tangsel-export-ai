@@ -1,3 +1,41 @@
+export interface LabSpecs {
+  moisturePercent?: number;
+  defectRate?: string;
+  purityPercent?: number;
+  ffaPercent?: number;
+  meshSize?: string;
+  cuppingScore?: number;
+  grade?: string;
+  shelfLifeMonths?: number;
+  organicCertified?: boolean;
+}
+
+export interface ShippingSpecs {
+  masterCartonQty: number;
+  cartonDimensionsCm: { p: number; l: number; t: number };
+  cartonGrossWeightKg: number;
+  cartonsPerPallet: number;
+  palletStandard: 'ISO (100x120cm)' | 'EURO (80x120cm)';
+  fcl20ftCapacityCartons: number;
+  fcl40ftCapacityCartons: number;
+  ispm15Pallet: boolean;
+}
+
+export interface ProductRegistrations {
+  bpom?: string;
+  halal?: string;
+  sni?: string;
+  fda?: string;
+  cites?: string;
+  svlk?: string;
+}
+
+export type LartasStatus =
+  | 'Bebas Ekspor (NPE Otomatis)'
+  | 'Lartas LS (Laporan Surveyor)'
+  | 'Lartas PE Kemendag'
+  | 'Lartas CITES / Karantina';
+
 export interface ProductItem {
   id: string;
   name: string;
@@ -10,6 +48,10 @@ export interface ProductItem {
   dimensionsCm: { p: number; l: number; t: number; weightKg: number };
   description: string;
   photoUrl: string;
+  labSpecs?: LabSpecs;
+  shippingSpecs?: ShippingSpecs;
+  registrations?: ProductRegistrations;
+  lartasStatus?: LartasStatus;
 }
 
 export interface IkmItem {
@@ -29,7 +71,7 @@ export interface IkmItem {
   products: ProductItem[];
 }
 
-export const IKM_DATABASE: IkmItem[] = [
+const IKM_DATABASE_BASE: IkmItem[] = [
   {
     "id": "ikm-01",
     "namaUsaha": "PT Java Palm Sugar Nusantara",
@@ -1214,3 +1256,182 @@ export const IKM_DATABASE: IkmItem[] = [
     ]
   }
 ];
+
+const PRODUCT_EXPORT_SPECS: Record<string, Pick<ProductItem, 'labSpecs' | 'shippingSpecs' | 'registrations' | 'lartasStatus'>> = {
+  'prod-01': {
+    labSpecs: { moisturePercent: 1.4, purityPercent: 98.5, meshSize: '20-40 mesh', grade: 'Organic retail grade', shelfLifeMonths: 24, organicCertified: true },
+    shippingSpecs: { masterCartonQty: 24, cartonDimensionsCm: { p: 42, l: 32, t: 28 }, cartonGrossWeightKg: 13.2, cartonsPerPallet: 60, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1100, fcl40ftCapacityCartons: 2350, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 268812001234', halal: 'BPJPH ID321100001234', fda: 'FDA FFR 19181234562' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-02': {
+    labSpecs: { defectRate: '<1.0% dimensional reject', purityPercent: 58, grade: 'CW617N forged brass', shelfLifeMonths: 120 },
+    shippingSpecs: { masterCartonQty: 100, cartonDimensionsCm: { p: 36, l: 28, t: 22 }, cartonGrossWeightKg: 23.5, cartonsPerPallet: 48, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 820, fcl40ftCapacityCartons: 1760, ispm15Pallet: true },
+    registrations: { sni: 'SNI 0111:2022', fda: 'RoHS/REACH supplier declaration' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-03': {
+    labSpecs: { moisturePercent: 0.04, ffaPercent: 0.18, purityPercent: 99.8, grade: 'Food and cosmetic grade', shelfLifeMonths: 24, organicCertified: false },
+    shippingSpecs: { masterCartonQty: 12, cartonDimensionsCm: { p: 34, l: 26, t: 30 }, cartonGrossWeightKg: 13.1, cartonsPerPallet: 64, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1200, fcl40ftCapacityCartons: 2550, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 210812345678', halal: 'BPJPH ID321100005678', fda: 'FDA FFR 19180987654' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-04': {
+    labSpecs: { purityPercent: 92.5, defectRate: '<2% finish tolerance', grade: 'Sterling Silver 925', shelfLifeMonths: 120 },
+    shippingSpecs: { masterCartonQty: 50, cartonDimensionsCm: { p: 30, l: 24, t: 18 }, cartonGrossWeightKg: 5.2, cartonsPerPallet: 90, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 2400, fcl40ftCapacityCartons: 5200, ispm15Pallet: true },
+    registrations: { sni: 'Balai Uji Kadar Ag 925', fda: 'Conflict mineral supplier declaration' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-05': {
+    labSpecs: { moisturePercent: 11.8, defectRate: '<5 defects/300g', cuppingScore: 84.5, grade: 'Grade 1 Fine Robusta', shelfLifeMonths: 18, organicCertified: true },
+    shippingSpecs: { masterCartonQty: 1, cartonDimensionsCm: { p: 90, l: 60, t: 30 }, cartonGrossWeightKg: 61, cartonsPerPallet: 10, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 320, fcl40ftCapacityCartons: 640, ispm15Pallet: true },
+    registrations: { halal: 'BPJPH ID321100009001', fda: 'FDA FFR 19180123455' },
+    lartasStatus: 'Lartas LS (Laporan Surveyor)',
+  },
+  'prod-06': {
+    labSpecs: { moisturePercent: 9, defectRate: '<2% warp/crack', grade: 'A-grade solid teak', shelfLifeMonths: 60 },
+    shippingSpecs: { masterCartonQty: 12, cartonDimensionsCm: { p: 42, l: 30, t: 24 }, cartonGrossWeightKg: 11.2, cartonsPerPallet: 50, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 980, fcl40ftCapacityCartons: 2100, ispm15Pallet: true },
+    registrations: { svlk: 'VLHH-32-0021/SVLK', fda: 'FDA food contact coating statement' },
+    lartasStatus: 'Lartas PE Kemendag',
+  },
+  'prod-07': {
+    labSpecs: { moisturePercent: 0.5, defectRate: '<3% glaze pinhole', grade: 'High-fired decorative ceramic', shelfLifeMonths: 120 },
+    shippingSpecs: { masterCartonQty: 4, cartonDimensionsCm: { p: 62, l: 62, t: 52 }, cartonGrossWeightKg: 19.5, cartonsPerPallet: 12, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 220, fcl40ftCapacityCartons: 480, ispm15Pallet: true },
+    registrations: { sni: 'SNI 15-1327-1989' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-08': {
+    labSpecs: { moisturePercent: 18, purityPercent: 99, defectRate: 'HMF <40 mg/kg', grade: 'Raw forest honey', shelfLifeMonths: 24 },
+    shippingSpecs: { masterCartonQty: 12, cartonDimensionsCm: { p: 36, l: 28, t: 20 }, cartonGrossWeightKg: 10.1, cartonsPerPallet: 72, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1400, fcl40ftCapacityCartons: 3000, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 252812009876', halal: 'BPJPH ID321100007654', fda: 'FDA FFR 19180678901' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+  'prod-09': {
+    labSpecs: { defectRate: '<1.5% color variation', grade: 'OEKO-TEX silk scarf', shelfLifeMonths: 60, organicCertified: false },
+    shippingSpecs: { masterCartonQty: 40, cartonDimensionsCm: { p: 42, l: 32, t: 22 }, cartonGrossWeightKg: 11, cartonsPerPallet: 70, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 1500, fcl40ftCapacityCartons: 3200, ispm15Pallet: true },
+    registrations: { sni: 'SNI Batik Mark 8305:2016', halal: 'Halal lifestyle self-declare' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-10': {
+    labSpecs: { defectRate: '<2% stitch/rework', grade: 'OEKO-TEX Class 1 garment', shelfLifeMonths: 48 },
+    shippingSpecs: { masterCartonQty: 30, cartonDimensionsCm: { p: 55, l: 38, t: 35 }, cartonGrossWeightKg: 14.8, cartonsPerPallet: 32, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 620, fcl40ftCapacityCartons: 1320, ispm15Pallet: true },
+    registrations: { sni: 'SNI 7617:2013', halal: 'BPJPH halal supply chain file' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-11': {
+    labSpecs: { moisturePercent: 0.12, purityPercent: 99, ffaPercent: 0.7, grade: 'Patchouli Alcohol min 32%', shelfLifeMonths: 36 },
+    shippingSpecs: { masterCartonQty: 1, cartonDimensionsCm: { p: 34, l: 34, t: 52 }, cartonGrossWeightKg: 28, cartonsPerPallet: 24, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 420, fcl40ftCapacityCartons: 900, ispm15Pallet: true },
+    registrations: { halal: 'BPJPH ID321100003210', fda: 'IFRA/GHS SDS available' },
+    lartasStatus: 'Lartas LS (Laporan Surveyor)',
+  },
+  'prod-12': {
+    labSpecs: { moisturePercent: 2.2, defectRate: '<1.5% broken chips', grade: 'Vacuum fried snack grade', shelfLifeMonths: 12 },
+    shippingSpecs: { masterCartonQty: 48, cartonDimensionsCm: { p: 50, l: 32, t: 38 }, cartonGrossWeightKg: 9.6, cartonsPerPallet: 36, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 780, fcl40ftCapacityCartons: 1680, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 272812004321', halal: 'BPJPH ID321100004321', fda: 'Nutrition facts FDA format' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+  'prod-13': {
+    labSpecs: { moisturePercent: 42, defectRate: 'Commercial sterility F0 >3.0', grade: 'Retort shelf-stable sauce', shelfLifeMonths: 18 },
+    shippingSpecs: { masterCartonQty: 36, cartonDimensionsCm: { p: 39, l: 29, t: 24 }, cartonGrossWeightKg: 6.4, cartonsPerPallet: 64, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1280, fcl40ftCapacityCartons: 2700, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 256812008888', halal: 'BPJPH ID321100008888', fda: 'FDA Prior Notice ready' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+  'prod-14': {
+    labSpecs: { defectRate: '<2% seam/QC reject', grade: 'Vegan PU export grade', shelfLifeMonths: 48 },
+    shippingSpecs: { masterCartonQty: 20, cartonDimensionsCm: { p: 58, l: 42, t: 45 }, cartonGrossWeightKg: 13.5, cartonsPerPallet: 24, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 520, fcl40ftCapacityCartons: 1120, ispm15Pallet: true },
+    registrations: { sni: 'SNI tas sekolah/aksesoris internal QC', fda: 'REACH azo-free declaration' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-15': {
+    labSpecs: { moisturePercent: 1.8, purityPercent: 70, defectRate: '<1% bloom at 25C', grade: 'Couverture chocolate bar', shelfLifeMonths: 18 },
+    shippingSpecs: { masterCartonQty: 80, cartonDimensionsCm: { p: 46, l: 28, t: 24 }, cartonGrossWeightKg: 8.2, cartonsPerPallet: 70, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1450, fcl40ftCapacityCartons: 3100, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 266812003333', halal: 'BPJPH ID321100003333', fda: 'FDA FFR 19180333344' },
+    lartasStatus: 'Lartas LS (Laporan Surveyor)',
+  },
+  'prod-16': {
+    labSpecs: { defectRate: 'Color fastness ISO 105 score 4-5', grade: 'Botanical silk shawl', shelfLifeMonths: 48 },
+    shippingSpecs: { masterCartonQty: 35, cartonDimensionsCm: { p: 42, l: 32, t: 20 }, cartonGrossWeightKg: 7.6, cartonsPerPallet: 80, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 1650, fcl40ftCapacityCartons: 3500, ispm15Pallet: true },
+    registrations: { sni: 'OEKO-TEX Eco Passport supplier file' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-17': {
+    labSpecs: { moisturePercent: 10, defectRate: '<2% split/rough finish', grade: 'LFGB food contact bamboo', shelfLifeMonths: 36, organicCertified: true },
+    shippingSpecs: { masterCartonQty: 100, cartonDimensionsCm: { p: 48, l: 36, t: 32 }, cartonGrossWeightKg: 13.4, cartonsPerPallet: 48, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 980, fcl40ftCapacityCartons: 2100, ispm15Pallet: true },
+    registrations: { svlk: 'FSC/Bamboo legal origin file', fda: 'EU LFGB + FDA food contact safe' },
+    lartasStatus: 'Lartas PE Kemendag',
+  },
+  'prod-18': {
+    labSpecs: { defectRate: '<0.5% burn-in failure', grade: 'IP67 / UN38.3 LiFePO4', shelfLifeMonths: 60 },
+    shippingSpecs: { masterCartonQty: 1, cartonDimensionsCm: { p: 82, l: 38, t: 20 }, cartonGrossWeightKg: 8.1, cartonsPerPallet: 18, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 360, fcl40ftCapacityCartons: 760, ispm15Pallet: true },
+    registrations: { sni: 'SNI IEC 60598 test report', fda: 'CE/RoHS/UN38.3 technical file' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-19': {
+    labSpecs: { moisturePercent: 5, purityPercent: 98, meshSize: '80 mesh', grade: 'Organic leaf powder', shelfLifeMonths: 24, organicCertified: true },
+    shippingSpecs: { masterCartonQty: 40, cartonDimensionsCm: { p: 45, l: 32, t: 28 }, cartonGrossWeightKg: 9.5, cartonsPerPallet: 56, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1150, fcl40ftCapacityCartons: 2450, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 210812001919', halal: 'BPJPH ID321100001919', fda: 'FDA FFR 19180191920' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+  'prod-20': {
+    labSpecs: { moisturePercent: 12, defectRate: '<3% weaving reject', grade: 'Export fumigated rattan', shelfLifeMonths: 48 },
+    shippingSpecs: { masterCartonQty: 6, cartonDimensionsCm: { p: 58, l: 58, t: 52 }, cartonGrossWeightKg: 8.2, cartonsPerPallet: 14, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 260, fcl40ftCapacityCartons: 560, ispm15Pallet: true },
+    registrations: { svlk: 'V-Legal Rattan Origin VL-RTN-2026', sni: 'Fumigation certificate available' },
+    lartasStatus: 'Lartas PE Kemendag',
+  },
+  'prod-21': {
+    labSpecs: { defectRate: '<1% leak test failure', purityPercent: 99, grade: 'PLA/PHA cosmetic packaging', shelfLifeMonths: 36 },
+    shippingSpecs: { masterCartonQty: 250, cartonDimensionsCm: { p: 60, l: 40, t: 38 }, cartonGrossWeightKg: 12.8, cartonsPerPallet: 30, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 640, fcl40ftCapacityCartons: 1360, ispm15Pallet: true },
+    registrations: { fda: 'FDA food/drug contact material statement', sni: 'EN 13432 compostable certificate' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-22': {
+    labSpecs: { moisturePercent: 1.8, defectRate: '<2% broken slices', grade: 'Freeze-dried fruit snack', shelfLifeMonths: 18 },
+    shippingSpecs: { masterCartonQty: 60, cartonDimensionsCm: { p: 50, l: 35, t: 35 }, cartonGrossWeightKg: 5.2, cartonsPerPallet: 42, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 880, fcl40ftCapacityCartons: 1900, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 272812002222', halal: 'BPJPH ID321100002222', fda: 'FDA FFR 19180222233' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+  'prod-23': {
+    labSpecs: { defectRate: '<2% flex/cosmetic reject', grade: 'Full grain leather footwear', shelfLifeMonths: 48 },
+    shippingSpecs: { masterCartonQty: 10, cartonDimensionsCm: { p: 60, l: 42, t: 38 }, cartonGrossWeightKg: 15.2, cartonsPerPallet: 28, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 620, fcl40ftCapacityCartons: 1320, ispm15Pallet: true },
+    registrations: { sni: 'SNI 12-0172-1987 footwear QC', fda: 'REACH chrome VI declaration' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-24': {
+    labSpecs: { moisturePercent: 3, purityPercent: 95, defectRate: '<1% tablet chip', grade: 'CPOTB effervescent tablet', shelfLifeMonths: 24 },
+    shippingSpecs: { masterCartonQty: 72, cartonDimensionsCm: { p: 48, l: 34, t: 26 }, cartonGrossWeightKg: 7.4, cartonsPerPallet: 60, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 1250, fcl40ftCapacityCartons: 2700, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM TR 213612345', halal: 'BPJPH ID321100006789', fda: 'FDA supplement label draft' },
+    lartasStatus: 'Lartas LS (Laporan Surveyor)',
+  },
+  'prod-25': {
+    labSpecs: { moisturePercent: 4, purityPercent: 95, meshSize: '60 mesh', grade: 'Curcumin 95% HPLC', shelfLifeMonths: 36 },
+    shippingSpecs: { masterCartonQty: 1, cartonDimensionsCm: { p: 40, l: 40, t: 58 }, cartonGrossWeightKg: 28, cartonsPerPallet: 20, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 380, fcl40ftCapacityCartons: 820, ispm15Pallet: true },
+    registrations: { bpom: 'BPOM MD 210812005555', halal: 'BPJPH ID321100005555', fda: 'FDA FFR 19180555566' },
+    lartasStatus: 'Lartas LS (Laporan Surveyor)',
+  },
+  'prod-26': {
+    labSpecs: { purityPercent: 99, defectRate: '<1% contamination flask', grade: 'In vitro sterile orchid seedling', shelfLifeMonths: 3 },
+    shippingSpecs: { masterCartonQty: 24, cartonDimensionsCm: { p: 48, l: 36, t: 30 }, cartonGrossWeightKg: 16.5, cartonsPerPallet: 36, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 740, fcl40ftCapacityCartons: 1580, ispm15Pallet: true },
+    registrations: { cites: 'CITES Export Permit BKSDA-ORC-2026', bpom: 'Phytosanitary certificate per shipment' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+  'prod-27': {
+    labSpecs: { purityPercent: 99.5, defectRate: '<0.8% machining tolerance reject', grade: 'SS316L sanitary Ra <0.4um', shelfLifeMonths: 120 },
+    shippingSpecs: { masterCartonQty: 80, cartonDimensionsCm: { p: 34, l: 28, t: 22 }, cartonGrossWeightKg: 29.2, cartonsPerPallet: 36, palletStandard: 'EURO (80x120cm)', fcl20ftCapacityCartons: 700, fcl40ftCapacityCartons: 1500, ispm15Pallet: true },
+    registrations: { sni: 'EN 10204 3.1 MTC file', fda: '3A sanitary material declaration' },
+    lartasStatus: 'Bebas Ekspor (NPE Otomatis)',
+  },
+  'prod-28': {
+    labSpecs: { moisturePercent: 11, defectRate: '<3% weave variance', grade: 'Sun-dried natural fiber', shelfLifeMonths: 36 },
+    shippingSpecs: { masterCartonQty: 24, cartonDimensionsCm: { p: 52, l: 38, t: 32 }, cartonGrossWeightKg: 12.5, cartonsPerPallet: 36, palletStandard: 'ISO (100x120cm)', fcl20ftCapacityCartons: 780, fcl40ftCapacityCartons: 1680, ispm15Pallet: true },
+    registrations: { sni: 'Fumigation certificate available', svlk: 'Natural fiber origin statement' },
+    lartasStatus: 'Lartas CITES / Karantina',
+  },
+};
+
+export const IKM_DATABASE: IkmItem[] = IKM_DATABASE_BASE.map((ikm) => ({
+  ...ikm,
+  products: ikm.products.map((product) => ({
+    ...product,
+    ...PRODUCT_EXPORT_SPECS[product.id],
+  })),
+}));

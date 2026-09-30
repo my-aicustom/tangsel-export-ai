@@ -184,13 +184,6 @@ export const AiAdvisorView: React.FC = () => {
   // Selected Shipment Context for Consulting
   const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(SHIPMENT_CONTEXTS[0]);
 
-  // Auto-scroll chat to latest message
-  useEffect(() => {
-    if (activeTab === 'chat') {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isTyping, activeTab]);
-
   const initialMessage: ChatMessage = {
     id: 'm-1',
     sender: 'ai',
@@ -202,6 +195,13 @@ Saat ini konteks konsultasi terhubung ke: **${SHIPMENT_CONTEXTS[0].label}**. And
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
+
+  // Auto-scroll chat to latest message (placed after messages is defined)
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping, activeTab]);
 
   const generalPrompts = [
     'Syarat ekspor Kopi Robusta ke Uni Eropa (EUDR)?',

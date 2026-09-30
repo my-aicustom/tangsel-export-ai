@@ -11,8 +11,8 @@ export interface VeyloBridgeParams {
   roomId?: string;
 }
 
-export const VEYLO_BASE_URL = 'https://veylo-swart.vercel.app/app';
-export const VEYLO_CHAT_API_URL = 'https://veylo-swart.vercel.app/app/api/trade-chat';
+export const VEYLO_BASE_URL = 'https://veylo-live.vercel.app/app';
+export const VEYLO_CHAT_API_URL = 'https://veylo-live.vercel.app/app/api/trade-chat';
 
 export function getVeyloRoomUrl(params: VeyloBridgeParams): string {
   const roomId = params.roomId || 'TEI2026';

@@ -21,7 +21,7 @@ import {
   Ship,
   Info,
   Video,
-  Zap
+  ArrowRight
 } from 'lucide-react';
 import { REGULASI_KB_DATA, type RegulasiKbItem } from '../data/regulasiKbData';
 import { CountryFlag } from './CountryFlag';
@@ -172,6 +172,68 @@ const renderMessageText = (text: string) => {
   });
 };
 
+
+type ContextInputMode = 'saved' | 'manual';
+
+type ManualContextState = {
+  exporterName: string;
+  productName: string;
+  hsCode: string;
+  destinationCountry: string;
+  destinationPort: string;
+  volume: string;
+  fobValueUsd: string;
+  incoterm: ShipmentContext['incoterm'];
+  shippingMode: ShipmentContext['shippingMode'];
+  certifications: string;
+  primaryNeed: string;
+};
+
+const EMPTY_MANUAL_CONTEXT: ManualContextState = {
+  exporterName: '',
+  productName: '',
+  hsCode: '',
+  destinationCountry: '',
+  destinationPort: '',
+  volume: '',
+  fobValueUsd: '',
+  incoterm: 'FOB',
+  shippingMode: 'AIR_EXPRESS',
+  certifications: '',
+  primaryNeed: ''
+};
+
+const resolveCountryCode = (country: string): string => {
+  const normalized = country.trim().toLowerCase();
+  const mappings: Array<[string[], string]> = [
+    [['belanda', 'netherlands', 'holland'], 'NL'],
+    [['kamerun', 'cameroon'], 'CM'],
+    [['uni emirat arab', 'uae', 'emirates', 'dubai'], 'AE'],
+    [['amerika serikat', 'united states', 'usa', 'us'], 'US'],
+    [['jerman', 'germany'], 'DE'],
+    [['singapura', 'singapore'], 'SG'],
+    [['china', 'tiongkok'], 'CN'],
+    [['jepang', 'japan'], 'JP'],
+    [['australia'], 'AU'],
+    [['indonesia'], 'ID']
+  ];
+  return mappings.find(([names]) => names.some(name => normalized.includes(name)))?.[1]
+    || normalized.replace(/[^a-z]/g, '').slice(0, 2).toUpperCase();
+};
+
+const currentWibTime = () => new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+
+const createWelcomeMessage = (context: ShipmentContext | null): ChatMessage => ({
+  id: `welcome-${Date.now()}`,
+  sender: 'ai',
+  text: context
+    ? `Data ekspor sudah aktif untuk **${context.productName}** menuju **${context.destinationCountry}**. Saya akan menggunakan informasi produk, HS Code, tujuan, moda pengiriman, Incoterm, dan kepatuhan yang Anda berikan sebagai konteks jawaban.\n\nSilakan tulis kebutuhan utama Anda, misalnya dokumen wajib, klasifikasi HS Code, sertifikasi, ketentuan negara tujuan, atau prosedur kepabeanan.`
+    : 'Konsultasi umum siap digunakan. Tanyakan HS Code, dokumen ekspor, sertifikasi, ketentuan negara tujuan, atau prosedur kepabeanan. Anda dapat menambahkan Data Ekspor kapan saja agar jawaban lebih spesifik.',
+  timestamp: currentWibTime(),
+  contextTag: context?.label,
+  sourceType: 'knowledge_base'
+});
+
 export const AiAdvisorView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'kb'>('chat');
   const [inputPrompt, setInputPrompt] = useState('');
@@ -181,27 +243,20 @@ export const AiAdvisorView: React.FC = () => {
   const [selectedArticle, setSelectedArticle] = useState<RegulasiKbItem | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Selected Shipment Context for Consulting
-  const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(SHIPMENT_CONTEXTS[0]);
+  const [contextMode, setContextMode] = useState<ContextInputMode>('saved');
+  const [savedContextId, setSavedContextId] = useState(SHIPMENT_CONTEXTS[0].id);
+  const [manualContext, setManualContext] = useState<ManualContextState>(EMPTY_MANUAL_CONTEXT);
+  const [showAdvancedContext, setShowAdvancedContext] = useState(false);
+  const [contextError, setContextError] = useState('');
+  const [consultationStarted, setConsultationStarted] = useState(false);
+  const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  const initialMessage: ChatMessage = {
-    id: 'm-1',
-    sender: 'ai',
-    text: `Halo! Saya Asisten Regulasi Ekspor Tangsel. Saya siap membantu menelusuri persyaratan ekspor, HS Code, sertifikasi internasional, dan kelengkapan dokumen kepabeanan.
-
-Saat ini konteks konsultasi terhubung ke: **${SHIPMENT_CONTEXTS[0].label}**. Anda dapat menanyakan persyaratan regulasi spesifik untuk pengapalan ini atau memilih pengapalan lain melalui menu konteks di atas.`,
-    timestamp: '08:30 WIB',
-    contextTag: SHIPMENT_CONTEXTS[0].label
-  };
-
-  const [messages, setMessages] = useState<ChatMessage[]>([initialMessage]);
-
-  // Auto-scroll chat to latest message (placed after messages is defined)
   useEffect(() => {
-    if (activeTab === 'chat') {
+    if (activeTab === 'chat' && consultationStarted) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isTyping, activeTab]);
+  }, [messages, isTyping, activeTab, consultationStarted]);
 
   const generalPrompts = [
     'Syarat ekspor Kopi Robusta ke Uni Eropa (EUDR)?',
@@ -214,35 +269,85 @@ Saat ini konteks konsultasi terhubung ke: **${SHIPMENT_CONTEXTS[0].label}**. And
   const activePrompts = selectedShipment ? selectedShipment.suggestedQuestions : generalPrompts;
 
   const handleResetChat = () => {
-    setMessages([initialMessage]);
+    setMessages([createWelcomeMessage(selectedShipment)]);
     setInputPrompt('');
     setIsTyping(false);
   };
 
-  const handleShipmentContextChange = (contextId: string) => {
-    if (!contextId) {
-      setSelectedShipment(null);
-      return;
-    }
-    const found = SHIPMENT_CONTEXTS.find(s => s.id === contextId) || null;
-    setSelectedShipment(found);
-    if (found) {
-      const switchNotice: ChatMessage = {
-        id: `sys-${Date.now()}`,
-        sender: 'ai',
-        text: `📌 **Konteks Pengiriman Dialihkan ke:** ${found.label}
-- **Eksportir:** ${found.exporterName}
-- **Komoditas & HS Code:** ${found.productName} (HS: ${found.hsCode})
-- **Tujuan:** ${found.destinationCountry} via ${found.destinationPort}
-- **Moda & Incoterm:** ${found.shippingMode} - ${found.incoterm}
-- **Standar Kepatuhan Kunci:** ${found.keyCompliance.join(' • ')}
+  const handleChangeContext = () => {
+    setConsultationStarted(false);
+    setMessages([]);
+    setInputPrompt('');
+    setIsTyping(false);
+    setContextError('');
+  };
 
-Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan dengan kargo ini.`,
-        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-        contextTag: found.label
+  const handleStartGeneralConsultation = () => {
+    setSelectedShipment(null);
+    setMessages([createWelcomeMessage(null)]);
+    setConsultationStarted(true);
+    setInputPrompt('');
+    setContextError('');
+  };
+
+  const handleStartConsultation = (event: React.FormEvent) => {
+    event.preventDefault();
+    setContextError('');
+
+    let nextContext: ShipmentContext | null = null;
+    let firstQuestion = '';
+
+    if (contextMode === 'saved') {
+      nextContext = SHIPMENT_CONTEXTS.find(item => item.id === savedContextId) || null;
+      if (!nextContext) {
+        setContextError('Pilih data pengiriman yang ingin digunakan.');
+        return;
+      }
+    } else {
+      if (!manualContext.productName.trim() || !manualContext.destinationCountry.trim()) {
+        setContextError('Nama produk dan negara tujuan wajib diisi.');
+        return;
+      }
+
+      const keyCompliance = manualContext.certifications
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+      const hsCode = manualContext.hsCode.trim() || 'Belum ditentukan';
+      const destination = manualContext.destinationCountry.trim();
+      const product = manualContext.productName.trim();
+      const primaryNeed = manualContext.primaryNeed.trim();
+
+      nextContext = {
+        id: `manual-${Date.now()}`,
+        label: `${product} → ${destination}`,
+        exporterName: manualContext.exporterName.trim() || 'IKM / eksportir',
+        productName: product,
+        hsCode,
+        destinationCountry: destination,
+        countryCode: resolveCountryCode(destination),
+        destinationPort: manualContext.destinationPort.trim() || 'Belum ditentukan',
+        volume: manualContext.volume.trim() || 'Belum diisi',
+        fobValueUsd: Number(manualContext.fobValueUsd) || 0,
+        incoterm: manualContext.incoterm,
+        shippingMode: manualContext.shippingMode,
+        keyCompliance,
+        suggestedQuestions: [
+          ...(primaryNeed ? [primaryNeed] : []),
+          `Dokumen apa saja yang wajib untuk ekspor ${product} ke ${destination}?`,
+          hsCode === 'Belum ditentukan'
+            ? `Bagaimana menentukan HS Code yang tepat untuk ${product}?`
+            : `Apakah HS Code ${hsCode} memiliki ketentuan khusus untuk tujuan ${destination}?`,
+          `Sertifikasi atau standar apa yang perlu dipenuhi untuk ${product} di ${destination}?`
+        ].slice(0, 3)
       };
-      setMessages(prev => [...prev, switchNotice]);
+      firstQuestion = primaryNeed;
     }
+
+    setSelectedShipment(nextContext);
+    setMessages([createWelcomeMessage(nextContext)]);
+    setConsultationStarted(true);
+    setInputPrompt(firstQuestion);
   };
 
   const isMetaQuery = (queryText: string): boolean => {
@@ -281,7 +386,7 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
 
     // 1. Pertanyaan Seputar Sumber Data / Internet
     if (q.includes('internet') || q.includes('sumber data') || q.includes('dapat data') || q.includes('ambil data') || q.includes('database') || q.includes('akurasi') || q.includes('valid')) {
-      reply = `Betul! Basis data saya bersumber dari penelusuran **live intelligence real-time (OpenRouter)** yang dipadukan dengan repositori regulasi resmi terkurasi:
+      reply = `Basis jawaban saya menggabungkan **referensi regulasi terkurasi** dengan layanan AI untuk membantu menelusuri konteks ekspor:
 1. **INSW (Indonesia National Single Window)**: Ketentuan Lartas & tarif BTKI 2022.
 2. **Kementerian Perdagangan & Bea Cukai RI**: Regulasi ekspor, PEB (PER-07/BC/2023), dan SKA.
 3. **Badan Karantina Indonesia & BPOM**: Standar SPS (Sanitary & Phytosanitary) dan keamanan pangan.
@@ -452,7 +557,19 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
           signal: controller.signal,
           body: JSON.stringify({
             message: (selectedShipment && !isMetaQuery(query))
-              ? `[Konteks Kargo: ${selectedShipment.productName} (HS: ${selectedShipment.hsCode}) ke ${selectedShipment.destinationCountry}]\n\n${query}`
+              ? `[Data Ekspor]
+Eksportir: ${selectedShipment.exporterName}
+Produk: ${selectedShipment.productName}
+HS Code: ${selectedShipment.hsCode}
+Negara Tujuan: ${selectedShipment.destinationCountry}
+Pelabuhan/Bandara: ${selectedShipment.destinationPort}
+Volume: ${selectedShipment.volume}
+Nilai FOB: USD ${selectedShipment.fobValueUsd}
+Incoterm: ${selectedShipment.incoterm}
+Moda: ${selectedShipment.shippingMode}
+Kepatuhan/Sertifikasi: ${selectedShipment.keyCompliance.join(', ') || 'Belum diisi'}
+
+Pertanyaan: ${query}`
               : query,
             history: messages.slice(-4).map(m => ({
               speaker: m.sender === 'user' ? 'user' : 'advisor',
@@ -469,8 +586,8 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
               sourceType: 'live',
               citations: [
                 {
-                  title: `Veylo AI Trade Intelligence · ${data.recommendedView ? 'Panel ' + data.recommendedView : 'Konsultasi Ekspor'}`,
-                  source: data.recommendedRoute ? `Rute Rekomendasi: ${data.recommendedRoute}` : 'Live OpenRouter Model'
+                  title: `Asisten Regulasi Ekspor${data.recommendedView ? ' · ' + data.recommendedView : ''}`,
+                  source: data.recommendedRoute ? `Rute rekomendasi: ${data.recommendedRoute}` : 'Layanan AI Regulasi Ekspor Tangsel'
                 }
               ]
             };
@@ -515,12 +632,14 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
     return matchCat && matchSearch;
   });
 
+  const savedPreview = SHIPMENT_CONTEXTS.find(item => item.id === savedContextId) || SHIPMENT_CONTEXTS[0];
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 selection:bg-emerald-100 selection:text-slate-950">
       <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
         <div className="min-w-0">
           <div className="ui-label">Workspace konsultasi ekspor</div>
-          <div className="mt-1 text-sm text-slate-600">Pilih konteks kargo, ajukan pertanyaan, lalu buka rujukan regulasi bila perlu.</div>
+          <div className="mt-1 text-sm text-slate-600">Masukkan data ekspor agar jawaban regulasi mengikuti produk dan negara tujuan Anda.</div>
         </div>
         <div className="flex w-full items-center rounded-lg bg-slate-100 p-1 sm:w-auto">
           <button
@@ -540,163 +659,270 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
         </div>
       </div>
 
-      {activeTab === 'chat' && (
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
-          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-200 bg-white p-4 sm:p-5">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"><Package size={17}/></span>
-                    Konteks konsultasi
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">Jawaban akan memprioritaskan komoditas, negara tujuan, HS Code, dan kebutuhan dokumen pada konteks terpilih.</p>
-                </div>
-                <div className="flex min-w-0 flex-1 items-center gap-2 lg:max-w-xl">
-                  <select
-                    value={selectedShipment?.id || ''}
-                    onChange={(e) => handleShipmentContextChange(e.target.value)}
-                    className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-800 focus:border-emerald-600 focus:bg-white focus:outline-none"
-                    aria-label="Pilih konteks pengiriman"
-                  >
-                    <option value="">Umum / tanpa konteks kargo</option>
-                    {SHIPMENT_CONTEXTS.map(sc => <option key={sc.id} value={sc.id}>{sc.label}</option>)}
-                  </select>
-                  {selectedShipment && (
-                    <button type="button" onClick={() => setSelectedShipment(null)} className="min-h-11 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 hover:bg-slate-50">Hapus</button>
-                  )}
-                </div>
+      {activeTab === 'chat' && !consultationStarted && (
+        <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-5 sm:px-7 sm:py-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-2xl">
+                <div className="ui-label">Data ekspor</div>
+                <h2 className="mt-1 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">Siapkan konteks sebelum mulai konsultasi</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Gunakan data pengiriman yang sudah tersedia atau isi data produk secara manual. Hanya nama produk dan negara tujuan yang wajib untuk konsultasi terarah.</p>
               </div>
+              <div className="inline-flex h-10 items-center rounded-full bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">Langkah 1 dari 2</div>
             </div>
+          </div>
 
-            <div className="flex h-[min(66dvh,700px)] min-h-[540px] flex-col bg-slate-50/50">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600 animate-pulse" />
-                  <span className="truncate text-sm font-semibold text-slate-900">Asisten Regulasi Ekspor Tangsel</span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
-                    <Zap size={11} className="text-emerald-600" /> Live AI Engine
-                  </span>
-                </div>
-                <button type="button" onClick={handleResetChat} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900">
-                  <RotateCcw size={14}/> Reset
+          <form onSubmit={handleStartConsultation} className="p-5 sm:p-7">
+            <fieldset>
+              <legend className="text-sm font-semibold text-slate-900">Pilih sumber data</legend>
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1.5">
+                <button
+                  type="button"
+                  onClick={() => { setContextMode('saved'); setContextError(''); }}
+                  className={`min-h-11 rounded-lg px-3 text-sm font-semibold transition ${contextMode === 'saved' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                  aria-pressed={contextMode === 'saved'}
+                >
+                  Data tersimpan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setContextMode('manual'); setContextError(''); }}
+                  className={`min-h-11 rounded-lg px-3 text-sm font-semibold transition ${contextMode === 'manual' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                  aria-pressed={contextMode === 'manual'}
+                >
+                  Input manual
                 </button>
               </div>
+            </fieldset>
 
-              <div className="flex-1 overflow-y-auto p-4 sm:p-5">
-                <div className="mx-auto max-w-3xl space-y-4">
-                  {messages.map((m) => (
-                    <div key={m.id} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      {m.sender === 'ai' && <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800"><Bot size={18}/></div>}
-                      <div className={`max-w-[88%] rounded-xl px-4 py-3 text-sm leading-6 sm:max-w-[82%] ${m.sender === 'user' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
-                        {m.sender === 'ai' && (
-                          <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 text-[11px]">
-                            {m.contextTag ? (
-                              <div className="flex items-center gap-1.5 font-semibold text-emerald-800 truncate">
-                                <Package size={12}/>
-                                <span className="truncate">{m.contextTag}</span>
-                              </div>
-                            ) : (
-                              <span className="font-semibold text-slate-500">Konsultasi Ekspor</span>
-                            )}
-                            <span className={`shrink-0 rounded px-1.5 py-0.5 font-medium ${
-                              m.sourceType === 'live'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}>
-                              {m.sourceType === 'live' ? '⚡ Live AI Advisor' : '📚 Basis Regulasi'}
-                            </span>
-                          </div>
-                        )}
-                        <div>{renderMessageText(m.text)}</div>
-                        {m.citations && m.citations.length > 0 && (
-                          <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><BookOpen size={13} className="text-emerald-700"/> Rujukan</div>
-                            {m.citations.map((c, i) => <div key={i} className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><strong className="text-slate-800">{c.title}</strong><span className="mx-1">·</span>{c.source}</div>)}
-                          </div>
-                        )}
-                        <div className={`mt-2 text-right text-[11px] ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>{m.timestamp}</div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {messages.length <= 1 && !isTyping && (
-                    <div className="ml-0 rounded-xl border border-dashed border-slate-300 bg-white/70 p-4 sm:ml-12">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Mulai dari pertanyaan berikut</div>
-                      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-                        {activePrompts.slice(0, 4).map((q, idx) => (
-                          <button key={idx} type="button" onClick={() => handleSend(q)} className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {isTyping && <div className="flex items-center gap-2 text-sm text-slate-500"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600"/> Menyiapkan jawaban berdasarkan referensi regulasi...</div>}
-                  <div ref={messagesEndRef} />
+            {contextMode === 'saved' ? (
+              <div className="mt-6 space-y-4">
+                <div>
+                  <label htmlFor="saved-shipment" className="mb-1.5 block text-sm font-semibold text-slate-800">Data pengiriman</label>
+                  <select
+                    id="saved-shipment"
+                    value={savedContextId}
+                    onChange={event => setSavedContextId(event.target.value)}
+                    className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                  >
+                    {SHIPMENT_CONTEXTS.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+                  </select>
                 </div>
-              </div>
 
-              <div className="border-t border-slate-200 bg-white p-3 sm:p-4">
-                <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="mx-auto flex max-w-3xl items-end gap-2">
-                  <div className="min-w-0 flex-1">
-                    <label htmlFor="advisor-message" className="sr-only">Pertanyaan regulasi ekspor</label>
-                    <input
-                      id="advisor-message"
-                      type="text"
-                      placeholder={selectedShipment ? `Tanyakan persyaratan untuk ${selectedShipment.productName}...` : 'Tanyakan HS Code, sertifikasi, dokumen, atau aturan negara tujuan...'}
-                      value={inputPrompt}
-                      onChange={e => setInputPrompt(e.target.value)}
-                      className="min-h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none"
-                    />
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                  <div className="flex items-start gap-3">
+                    <CountryFlag code={savedPreview.countryCode} title={savedPreview.destinationCountry} className="h-8 w-12 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-bold text-slate-950">{savedPreview.productName}</div>
+                      <div className="mt-0.5 text-sm text-slate-600">{savedPreview.exporterName}</div>
+                    </div>
                   </div>
-                  <button type="submit" disabled={!inputPrompt.trim() || isTyping} className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40"><Send size={16}/> <span className="hidden sm:inline">Kirim</span></button>
-                </form>
-              </div>
-            </div>
-          </section>
-
-          <aside className="space-y-4">
-            {selectedShipment ? (
-              <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <div className="flex items-start gap-3">
-                  <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-7 w-10 shrink-0" />
-                  <div className="min-w-0">
-                    <div className="ui-label">Konteks aktif</div>
-                    <div className="mt-1 text-sm font-bold leading-5 text-slate-900">{selectedShipment.productName}</div>
-                    <div className="mt-0.5 text-xs text-slate-500">HS {selectedShipment.hsCode} · {selectedShipment.destinationCountry}</div>
-                  </div>
-                </div>
-                <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-slate-100 pt-4 text-xs">
-                  <div><dt className="text-slate-400">FOB</dt><dd className="mt-0.5 font-semibold text-slate-800">${selectedShipment.fobValueUsd.toLocaleString()}</dd></div>
-                  <div><dt className="text-slate-400">Incoterm</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.incoterm}</dd></div>
-                  <div><dt className="text-slate-400">Moda</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.shippingMode === 'AIR_EXPRESS' ? 'Air Express' : 'Ocean LCL'}</dd></div>
-                  <div><dt className="text-slate-400">Volume</dt><dd className="mt-0.5 font-semibold text-slate-800 line-clamp-2">{selectedShipment.volume}</dd></div>
-                </dl>
-                <div className="mt-4 border-t border-slate-100 pt-4">
-                  <div className="text-xs font-semibold text-slate-700">Kepatuhan utama</div>
-                  <div className="mt-2 space-y-2">
-                    {selectedShipment.keyCompliance.map((item, i) => <div key={i} className="flex items-start gap-2 text-xs leading-5 text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600"/><span>{item}</span></div>)}
-                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-200 pt-4 text-sm sm:grid-cols-4">
+                    <div><dt className="text-xs text-slate-500">Tujuan</dt><dd className="mt-1 font-semibold text-slate-800">{savedPreview.destinationCountry}</dd></div>
+                    <div><dt className="text-xs text-slate-500">HS Code</dt><dd className="mt-1 font-mono font-semibold text-slate-800">{savedPreview.hsCode}</dd></div>
+                    <div><dt className="text-xs text-slate-500">Incoterm</dt><dd className="mt-1 font-semibold text-slate-800">{savedPreview.incoterm}</dd></div>
+                    <div><dt className="text-xs text-slate-500">Moda</dt><dd className="mt-1 font-semibold text-slate-800">{savedPreview.shippingMode === 'AIR_EXPRESS' ? 'Air Freight' : 'Ocean LCL'}</dd></div>
+                  </dl>
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600"><div className="font-semibold text-slate-900">Konsultasi umum</div><p className="mt-1 leading-5">Pilih konteks kargo jika Anda ingin jawaban disesuaikan dengan produk, HS Code, dan negara tujuan tertentu.</p></div>
+              <div className="mt-6 space-y-5">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="ctx-exporter" className="mb-1.5 block text-sm font-semibold text-slate-800">Nama IKM / eksportir <span className="font-normal text-slate-400">(opsional)</span></label>
+                    <input id="ctx-exporter" type="text" value={manualContext.exporterName} onChange={e => setManualContext(prev => ({ ...prev, exporterName: e.target.value }))} placeholder="Contoh: CV Kopi Tangsel" className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                  </div>
+                  <div>
+                    <label htmlFor="ctx-product" className="mb-1.5 block text-sm font-semibold text-slate-800">Produk / komoditas <span className="text-red-600">*</span></label>
+                    <input id="ctx-product" type="text" required value={manualContext.productName} onChange={e => setManualContext(prev => ({ ...prev, productName: e.target.value }))} placeholder="Contoh: Kopi Robusta Sangrai" className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                  </div>
+                  <div>
+                    <label htmlFor="ctx-hs" className="mb-1.5 block text-sm font-semibold text-slate-800">HS Code <span className="font-normal text-slate-400">(boleh kosong)</span></label>
+                    <input id="ctx-hs" type="text" inputMode="decimal" value={manualContext.hsCode} onChange={e => setManualContext(prev => ({ ...prev, hsCode: e.target.value }))} placeholder="Contoh: 0901.21.00" className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 font-mono text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                    <p className="mt-1.5 text-xs text-slate-500">Kosongkan jika Anda ingin meminta bantuan identifikasi HS Code.</p>
+                  </div>
+                  <div>
+                    <label htmlFor="ctx-country" className="mb-1.5 block text-sm font-semibold text-slate-800">Negara tujuan <span className="text-red-600">*</span></label>
+                    <input id="ctx-country" type="text" required value={manualContext.destinationCountry} onChange={e => setManualContext(prev => ({ ...prev, destinationCountry: e.target.value }))} placeholder="Contoh: Netherlands / Belanda" className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="ctx-need" className="mb-1.5 block text-sm font-semibold text-slate-800">Kebutuhan utama <span className="font-normal text-slate-400">(opsional)</span></label>
+                  <textarea id="ctx-need" rows={3} value={manualContext.primaryNeed} onChange={e => setManualContext(prev => ({ ...prev, primaryNeed: e.target.value }))} placeholder="Contoh: Dokumen apa yang wajib untuk mengirim kopi ke Rotterdam dan apakah perlu phytosanitary?" className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                </div>
+
+                <div className="rounded-xl border border-slate-200">
+                  <button type="button" onClick={() => setShowAdvancedContext(value => !value)} className="flex min-h-12 w-full items-center justify-between gap-3 px-4 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50" aria-expanded={showAdvancedContext}>
+                    <span>Detail tambahan pengiriman</span>
+                    <span className="text-xs font-medium text-slate-500">{showAdvancedContext ? 'Tutup' : 'Pelabuhan, volume, FOB, moda, sertifikasi'}</span>
+                  </button>
+
+                  {showAdvancedContext && (
+                    <div className="grid grid-cols-1 gap-4 border-t border-slate-200 p-4 md:grid-cols-2">
+                      <div>
+                        <label htmlFor="ctx-port" className="mb-1.5 block text-sm font-semibold text-slate-800">Pelabuhan / bandara tujuan</label>
+                        <input id="ctx-port" type="text" value={manualContext.destinationPort} onChange={e => setManualContext(prev => ({ ...prev, destinationPort: e.target.value }))} placeholder="Contoh: Port of Rotterdam" className="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                      </div>
+                      <div>
+                        <label htmlFor="ctx-volume" className="mb-1.5 block text-sm font-semibold text-slate-800">Jumlah / berat kargo</label>
+                        <input id="ctx-volume" type="text" value={manualContext.volume} onChange={e => setManualContext(prev => ({ ...prev, volume: e.target.value }))} placeholder="Contoh: 15 koli / 172.5 kg" className="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                      </div>
+                      <div>
+                        <label htmlFor="ctx-fob" className="mb-1.5 block text-sm font-semibold text-slate-800">Nilai FOB (USD)</label>
+                        <input id="ctx-fob" type="number" min="0" step="0.01" inputMode="decimal" value={manualContext.fobValueUsd} onChange={e => setManualContext(prev => ({ ...prev, fobValueUsd: e.target.value }))} placeholder="Contoh: 1425" className="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                      </div>
+                      <div>
+                        <label htmlFor="ctx-incoterm" className="mb-1.5 block text-sm font-semibold text-slate-800">Incoterm</label>
+                        <select id="ctx-incoterm" value={manualContext.incoterm} onChange={e => setManualContext(prev => ({ ...prev, incoterm: e.target.value as ShipmentContext['incoterm'] }))} className="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none">
+                          <option value="EXW">EXW — Ex Works</option>
+                          <option value="FOB">FOB — Free on Board</option>
+                          <option value="CIF">CIF — Cost, Insurance & Freight</option>
+                        </select>
+                      </div>
+                      <fieldset>
+                        <legend className="mb-1.5 text-sm font-semibold text-slate-800">Moda pengiriman</legend>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button type="button" onClick={() => setManualContext(prev => ({ ...prev, shippingMode: 'AIR_EXPRESS' }))} className={`min-h-11 rounded-lg border px-3 text-sm font-semibold ${manualContext.shippingMode === 'AIR_EXPRESS' ? 'border-blue-400 bg-blue-50 text-blue-800' : 'border-slate-200 bg-white text-slate-700'}`} aria-pressed={manualContext.shippingMode === 'AIR_EXPRESS'}><span className="inline-flex items-center gap-2"><PlaneTakeoff size={15}/> Udara</span></button>
+                          <button type="button" onClick={() => setManualContext(prev => ({ ...prev, shippingMode: 'OCEAN_LCL' }))} className={`min-h-11 rounded-lg border px-3 text-sm font-semibold ${manualContext.shippingMode === 'OCEAN_LCL' ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-700'}`} aria-pressed={manualContext.shippingMode === 'OCEAN_LCL'}><span className="inline-flex items-center gap-2"><Ship size={15}/> Laut</span></button>
+                        </div>
+                      </fieldset>
+                      <div>
+                        <label htmlFor="ctx-certs" className="mb-1.5 block text-sm font-semibold text-slate-800">Sertifikasi / kepatuhan yang sudah dimiliki</label>
+                        <input id="ctx-certs" type="text" value={manualContext.certifications} onChange={e => setManualContext(prev => ({ ...prev, certifications: e.target.value }))} placeholder="Pisahkan dengan koma: Halal BPJPH, HACCP, BPOM MD" className="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 text-sm text-slate-900 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><HelpCircle size={14} className="text-emerald-700"/> Pertanyaan cepat</div>
-              <div className="mt-3 space-y-2">
-                {activePrompts.slice(0, 3).map((q, idx) => <button key={idx} type="button" onClick={() => handleSend(q)} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>)}
-              </div>
-            </div>
+            {contextError && <div role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{contextError}</div>}
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-5 text-slate-500">
-              <div className="flex items-center gap-2 font-semibold text-slate-800"><ShieldCheck size={14} className="text-emerald-700"/> Basis referensi</div>
-              <p className="mt-2">Jawaban mengacu pada basis regulasi terkurasi dan perlu diverifikasi kembali terhadap ketentuan terbaru instansi penerbit sebelum transaksi atau pengapalan.</p>
-              <a href="https://veylo.163.61.44.41.sslip.io/app" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 font-semibold text-white hover:bg-slate-800"><Video size={14}/> Buka Ruang Negosiasi</a>
+            <div className="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <button type="button" onClick={handleStartGeneralConsultation} className="min-h-11 px-3 text-sm font-semibold text-slate-500 hover:text-slate-900">Konsultasi umum tanpa data ekspor</button>
+              <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 text-sm font-semibold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+                Mulai Konsultasi <ArrowRight size={16}/>
+              </button>
             </div>
-          </aside>
-        </div>
+          </form>
+        </section>
+      )}
+
+      {activeTab === 'chat' && consultationStarted && (
+        <>
+          <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            {selectedShipment ? (
+              <div className="flex min-w-0 items-center gap-3">
+                <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-8 w-12 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Data ekspor aktif</div>
+                  <div className="mt-0.5 truncate text-sm font-bold text-slate-950">{selectedShipment.productName} <span className="font-normal text-slate-400">→</span> {selectedShipment.destinationCountry}</div>
+                  <div className="mt-0.5 text-xs text-slate-500">HS {selectedShipment.hsCode} · {selectedShipment.incoterm} · {selectedShipment.shippingMode === 'AIR_EXPRESS' ? 'Air Freight' : 'Ocean LCL'}</div>
+                </div>
+              </div>
+            ) : (
+              <div><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Mode konsultasi</div><div className="mt-0.5 text-sm font-bold text-slate-950">Konsultasi umum tanpa data pengiriman</div></div>
+            )}
+            <button type="button" onClick={handleChangeContext} className="min-h-11 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Ganti Data</button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
+            <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="flex h-[min(68dvh,720px)] min-h-[560px] flex-col bg-slate-50/50">
+                <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600" />
+                    <span className="truncate text-sm font-semibold text-slate-900">Asisten Regulasi Ekspor Tangsel</span>
+                    <span className="hidden text-xs font-medium text-emerald-700 sm:inline">Online</span>
+                  </div>
+                  <button type="button" onClick={handleResetChat} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+                    <RotateCcw size={14}/> Percakapan Baru
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+                  <div className="mx-auto max-w-3xl space-y-4">
+                    {messages.map((m) => (
+                      <div key={m.id} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        {m.sender === 'ai' && <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800"><Bot size={18}/></div>}
+                        <div className={`max-w-[92%] rounded-xl px-4 py-3 text-sm leading-6 sm:max-w-[84%] ${m.sender === 'user' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
+                          {m.sender === 'ai' && m.contextTag && (
+                            <div className="mb-2 flex items-center gap-1.5 border-b border-slate-100 pb-2 text-xs font-semibold text-emerald-800"><Package size={12}/><span className="truncate">{m.contextTag}</span></div>
+                          )}
+                          <div>{renderMessageText(m.text)}</div>
+                          {m.citations && m.citations.length > 0 && (
+                            <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><BookOpen size={13} className="text-emerald-700"/> Rujukan</div>
+                              {m.citations.map((c, i) => <div key={i} className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><strong className="text-slate-800">{c.title}</strong><span className="mx-1">·</span>{c.source}</div>)}
+                            </div>
+                          )}
+                          <div className={`mt-2 text-right text-xs ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>{m.timestamp}</div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {messages.length <= 1 && !isTyping && (
+                      <div className="ml-0 rounded-xl border border-dashed border-slate-300 bg-white/70 p-4 sm:ml-12">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pertanyaan yang bisa dicoba</div>
+                        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+                          {activePrompts.slice(0, 4).map((q, idx) => <button key={idx} type="button" onClick={() => handleSend(q)} className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>)}
+                        </div>
+                      </div>
+                    )}
+
+                    {isTyping && <div className="flex items-center gap-2 text-sm text-slate-500"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600"/> Menyiapkan jawaban berdasarkan referensi regulasi...</div>}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-200 bg-white p-3 sm:p-4">
+                  <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="mx-auto flex max-w-3xl items-end gap-2">
+                    <div className="min-w-0 flex-1">
+                      <label htmlFor="advisor-message" className="sr-only">Pertanyaan regulasi ekspor</label>
+                      <input id="advisor-message" type="text" placeholder={selectedShipment ? `Tanyakan persyaratan untuk ${selectedShipment.productName}...` : 'Tanyakan HS Code, sertifikasi, dokumen, atau aturan negara tujuan...'} value={inputPrompt} onChange={e => setInputPrompt(e.target.value)} className="min-h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                    </div>
+                    <button type="submit" disabled={!inputPrompt.trim() || isTyping} className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40"><Send size={16}/> <span className="hidden sm:inline">Kirim</span></button>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <aside className="space-y-4">
+              {selectedShipment ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <div className="flex items-start gap-3">
+                    <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-7 w-10 shrink-0" />
+                    <div className="min-w-0"><div className="ui-label">Data ekspor</div><div className="mt-1 text-sm font-bold leading-5 text-slate-900">{selectedShipment.productName}</div><div className="mt-0.5 text-xs text-slate-500">HS {selectedShipment.hsCode} · {selectedShipment.destinationCountry}</div></div>
+                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-slate-100 pt-4 text-xs">
+                    <div><dt className="text-slate-400">FOB</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.fobValueUsd > 0 ? `$${selectedShipment.fobValueUsd.toLocaleString()}` : 'Belum diisi'}</dd></div>
+                    <div><dt className="text-slate-400">Incoterm</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.incoterm}</dd></div>
+                    <div><dt className="text-slate-400">Moda</dt><dd className="mt-0.5 font-semibold text-slate-800">{selectedShipment.shippingMode === 'AIR_EXPRESS' ? 'Air Freight' : 'Ocean LCL'}</dd></div>
+                    <div><dt className="text-slate-400">Volume</dt><dd className="mt-0.5 line-clamp-2 font-semibold text-slate-800">{selectedShipment.volume}</dd></div>
+                  </dl>
+                  <div className="mt-4 border-t border-slate-100 pt-4">
+                    <div className="text-xs font-semibold text-slate-700">Kepatuhan / sertifikasi</div>
+                    {selectedShipment.keyCompliance.length > 0 ? <div className="mt-2 space-y-2">{selectedShipment.keyCompliance.map((item, i) => <div key={i} className="flex items-start gap-2 text-xs leading-5 text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600"/><span>{item}</span></div>)}</div> : <p className="mt-2 text-xs leading-5 text-slate-500">Belum ada sertifikasi yang dimasukkan.</p>}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600"><div className="font-semibold text-slate-900">Konsultasi umum</div><p className="mt-1 leading-5">Tambahkan Data Ekspor jika Anda ingin jawaban disesuaikan dengan produk dan negara tujuan tertentu.</p></div>
+              )}
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><HelpCircle size={14} className="text-emerald-700"/> Pertanyaan cepat</div>
+                <div className="mt-3 space-y-2">{activePrompts.slice(0, 3).map((q, idx) => <button key={idx} type="button" onClick={() => handleSend(q)} className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>)}</div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-5 text-slate-500">
+                <div className="flex items-center gap-2 font-semibold text-slate-800"><ShieldCheck size={14} className="text-emerald-700"/> Basis referensi</div>
+                <p className="mt-2">Jawaban mengacu pada basis regulasi terkurasi dan perlu diverifikasi kembali terhadap ketentuan terbaru instansi penerbit sebelum transaksi atau pengapalan.</p>
+                <a href="https://veylo.163.61.44.41.sslip.io/app" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 font-semibold text-white hover:bg-slate-800"><Video size={14}/> Buka Ruang Negosiasi</a>
+              </div>
+            </aside>
+          </div>
+        </>
       )}
 
       {activeTab === 'kb' && (
@@ -719,9 +945,7 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
               <button type="button" key={item.id} onClick={() => setSelectedArticle(item)} className="group rounded-xl border border-slate-200 bg-white p-5 text-left transition hover:border-emerald-400 hover:shadow-sm">
                 <div className="flex items-start justify-between gap-3"><h3 className="text-sm font-bold leading-5 text-slate-900 group-hover:text-emerald-800">{item.judul}</h3><span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{item.negaraTujuan}</span></div>
                 <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{item.ringkasan}</p>
-                <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">
-                  {item.dokumenWajib.slice(0, 3).map((doc, i) => <div key={i} className="flex items-start gap-2 text-xs leading-5 text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600"/>{doc}</div>)}
-                </div>
+                <div className="mt-4 space-y-2 border-t border-slate-100 pt-4">{item.dokumenWajib.slice(0, 3).map((doc, i) => <div key={i} className="flex items-start gap-2 text-xs leading-5 text-slate-600"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-emerald-600"/>{doc}</div>)}</div>
                 <div className="mt-4 text-xs font-semibold text-emerald-700">Buka panduan lengkap →</div>
               </button>
             ))}

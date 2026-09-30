@@ -11,9 +11,12 @@ export interface VeyloBridgeParams {
   roomId?: string;
 }
 
+export const VEYLO_BASE_URL = 'https://veylo-swart.vercel.app/app';
+export const VEYLO_CHAT_API_URL = 'https://veylo-swart.vercel.app/app/api/trade-chat';
+
 export function getVeyloRoomUrl(params: VeyloBridgeParams): string {
   const roomId = params.roomId || 'TEI2026';
-  const baseUrl = `https://veylo.163.61.44.41.sslip.io/app/rooms/${roomId}`;
+  const baseUrl = `${VEYLO_BASE_URL}/rooms/${roomId}`;
   const search = new URLSearchParams();
   if (params.ikmId) search.set('ikmId', params.ikmId);
   if (params.ikmName) search.set('ikmName', params.ikmName);

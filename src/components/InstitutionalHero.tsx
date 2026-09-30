@@ -7,6 +7,7 @@ import {
   PlaneTakeoff
 } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventConfig';
+import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 export const InstitutionalHero: React.FC = () => {
   return (
@@ -68,7 +69,7 @@ export const InstitutionalHero: React.FC = () => {
 
         <div className="space-y-2">
           <a
-            href="https://veylo.163.61.44.41.sslip.io/app"
+            href={VEYLO_BASE_URL}
             target="_blank"
             rel="noreferrer"
             className="flex min-h-12 items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-900 transition hover:border-emerald-300 hover:bg-emerald-50"

@@ -20,6 +20,7 @@ import {
 import { IKM_DATABASE, type IkmItem } from '../data/ikmData';
 import { IkmDetailDrawer } from './IkmDetailDrawer';
 import { NewIkmModal } from './NewIkmModal';
+import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 export const ExportReadinessView: React.FC = () => {
   const [ikms, setIkms] = useState<IkmItem[]>(IKM_DATABASE);
@@ -77,7 +78,7 @@ export const ExportReadinessView: React.FC = () => {
 
         <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 md:flex md:w-auto md:items-center md:shrink-0">
           <a
-            href="https://veylo.163.61.44.41.sslip.io/app"
+            href={VEYLO_BASE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="min-h-11 px-4 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center justify-center gap-2"
@@ -345,7 +346,7 @@ export const ExportReadinessView: React.FC = () => {
                           </a>
                         )}
                         <a
-                          href="https://veylo.163.61.44.41.sslip.io/app"
+                          href={VEYLO_BASE_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}

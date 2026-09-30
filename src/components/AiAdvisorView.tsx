@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { REGULASI_KB_DATA, type RegulasiKbItem } from '../data/regulasiKbData';
 import { CountryFlag } from './CountryFlag';
+import { VEYLO_BASE_URL, VEYLO_CHAT_API_URL } from '../lib/veyloBridge';
 
 export interface ShipmentContext {
   id: string;
@@ -675,7 +676,7 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
     let liveSuccess = false;
     const endpoints = [
       '/api/trade-chat',
-      'https://veylo.163.61.44.41.sslip.io/app/api/trade-chat'
+      VEYLO_CHAT_API_URL
     ];
 
     for (const url of endpoints) {
@@ -1106,7 +1107,7 @@ Pertanyaan: ${query}`
               <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-5 text-slate-500">
                 <div className="flex items-center gap-2 font-semibold text-slate-800"><ShieldCheck size={14} className="text-emerald-700"/> Basis referensi</div>
                 <p className="mt-2">Jawaban mengacu pada basis regulasi terkurasi dan perlu diverifikasi kembali terhadap ketentuan terbaru instansi penerbit sebelum transaksi atau pengapalan.</p>
-                <a href="https://veylo.163.61.44.41.sslip.io/app" target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 font-semibold text-white hover:bg-slate-800"><Video size={14}/> Buka Ruang Negosiasi</a>
+                <a href={VEYLO_BASE_URL} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 font-semibold text-white hover:bg-slate-800"><Video size={14}/> Buka Ruang Negosiasi</a>
               </div>
             </aside>
           </div>

@@ -6,6 +6,7 @@ import {
   Video,
   AlertCircle
 } from 'lucide-react';
+import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 interface HeaderProps {
   title: string;
@@ -78,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle, actions }) => {
           </div>
 
           <a
-            href="https://veylo.163.61.44.41.sslip.io/app"
+            href={VEYLO_BASE_URL}
             target="_blank"
             rel="noreferrer"
             className="tap-target inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-3.5 text-sm font-semibold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"

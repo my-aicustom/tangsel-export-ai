@@ -21,6 +21,7 @@ import { LeadStatusChart, ReadinessDistributionChart, InquiriesTrendChart } from
 import { BuyerDetailModal } from './BuyerDetailModal';
 import { InaExportRadarModal } from './InaExportRadarModal';
 import { InstitutionalHero } from './InstitutionalHero';
+import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 export const CommandCenterView: React.FC = () => {
   const [leads, setLeads] = useState<BuyerLeadItem[]>(BUYER_LEADS);
@@ -79,7 +80,7 @@ export const CommandCenterView: React.FC = () => {
         </div>
         <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
           <a
-            href="https://veylo.163.61.44.41.sslip.io/app"
+            href={VEYLO_BASE_URL}
             target="_blank"
             rel="noreferrer"
             className="min-h-11 px-3.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold transition flex items-center gap-1.5"

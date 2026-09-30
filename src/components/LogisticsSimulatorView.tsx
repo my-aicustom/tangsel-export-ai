@@ -39,6 +39,7 @@ import {
   fetchUsdIdrRate,
   type FreightMarketEstimates
 } from '../lib/openFreightEstimate';
+import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 export const LogisticsSimulatorView: React.FC = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -932,7 +933,7 @@ export const LogisticsSimulatorView: React.FC = () => {
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   <a
-                    href="https://veylo.163.61.44.41.sslip.io/app"
+                    href={VEYLO_BASE_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="min-h-11 px-4 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold flex items-center gap-1.5 transition"

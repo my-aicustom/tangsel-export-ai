@@ -14,6 +14,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import { EVENT_CONFIG } from '../data/eventConfig';
+import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 interface SidebarProps {
   currentPath: string;
@@ -48,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath }) => {
     { label: 'Kiosk Booth TEI', href: '/kiosk', icon: Store },
     {
       label: 'Meeting & Dokumen B2B',
-      href: 'https://veylo.163.61.44.41.sslip.io/app',
+      href: VEYLO_BASE_URL,
       icon: Video,
       isExternal: true
     }

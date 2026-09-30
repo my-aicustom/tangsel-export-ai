@@ -154,7 +154,14 @@ interface ChatMessage {
   citations?: { title: string; source: string }[];
   contextTag?: string;
   sourceType?: 'live' | 'knowledge_base';
+  followUps?: string[];
+  kind?: 'message' | 'context_notice';
 }
+
+type CitationPreviewState = {
+  citation: { title: string; source: string };
+  matches: RegulasiKbItem[];
+};
 
 const renderMessageText = (text: string) => {
   return text.split('\n').map((line, lineIndex) => {
@@ -231,7 +238,112 @@ const createWelcomeMessage = (context: ShipmentContext | null): ChatMessage => (
     : 'Konsultasi umum siap digunakan. Tanyakan HS Code, dokumen ekspor, sertifikasi, ketentuan negara tujuan, atau prosedur kepabeanan. Anda dapat menambahkan Data Ekspor kapan saja agar jawaban lebih spesifik.',
   timestamp: currentWibTime(),
   contextTag: context?.label,
-  sourceType: 'knowledge_base'
+  sourceType: 'knowledge_base',
+  followUps: context ? context.suggestedQuestions.slice(0, 3) : [
+    'Apa dokumen dasar yang harus disiapkan sebelum ekspor?',
+    'Bagaimana menentukan HS Code produk saya?',
+    'Sertifikasi apa yang biasanya diminta negara tujuan?'
+  ]
+});
+
+const PRODUCT_CONTEXT_HINTS: Array<{ contextId: string; patterns: RegExp[] }> = [
+  { contextId: 'shipment-01', patterns: [/\bkopi\b/i, /robusta/i, /coffee/i] },
+  { contextId: 'shipment-02', patterns: [/gula\s*aren/i, /palm\s*sugar/i, /arenga/i] },
+  { contextId: 'shipment-03', patterns: [/jahe/i, /ginger/i] },
+  { contextId: 'shipment-04', patterns: [/bambu/i, /bamboo/i, /cutlery/i] },
+  { contextId: 'shipment-05', patterns: [/sambal/i, /\broa\b/i, /retort/i] }
+];
+
+const COUNTRY_CONTEXT_HINTS: Array<{ contextId: string; patterns: RegExp[] }> = [
+  { contextId: 'shipment-01', patterns: [/belanda/i, /netherlands/i, /amsterdam/i, /rotterdam/i] },
+  { contextId: 'shipment-02', patterns: [/kamerun/i, /cameroon/i, /douala/i] },
+  { contextId: 'shipment-03', patterns: [/uni emirat arab/i, /\buae\b/i, /dubai/i, /emirates/i] },
+  { contextId: 'shipment-04', patterns: [/jerman/i, /germany/i, /munich/i, /hamburg/i] },
+  { contextId: 'shipment-05', patterns: [/amerika/i, /united states/i, /\busa\b/i, /los angeles/i, /\bfda\b/i] }
+];
+
+const getContextById = (id?: string | null) => SHIPMENT_CONTEXTS.find(item => item.id === id) || null;
+
+const detectContextFromQuery = (query: string, current: ShipmentContext | null): ShipmentContext | null => {
+  const productHint = PRODUCT_CONTEXT_HINTS.find(hint => hint.patterns.some(pattern => pattern.test(query)));
+  const countryHint = COUNTRY_CONTEXT_HINTS.find(hint => hint.patterns.some(pattern => pattern.test(query)));
+  const productContext = getContextById(productHint?.contextId);
+  const countryContext = getContextById(countryHint?.contextId);
+
+  if (productContext && countryContext) {
+    if (productContext.id === countryContext.id) return productContext;
+    return {
+      ...productContext,
+      id: `detected-${productContext.id}-${countryContext.countryCode}`,
+      label: `${productContext.productName} → ${countryContext.destinationCountry}`,
+      destinationCountry: countryContext.destinationCountry,
+      countryCode: countryContext.countryCode,
+      destinationPort: countryContext.destinationPort,
+      keyCompliance: [],
+      suggestedQuestions: [
+        `Dokumen apa saja yang wajib untuk ekspor ${productContext.productName} ke ${countryContext.destinationCountry}?`,
+        `Apakah HS Code ${productContext.hsCode} memiliki ketentuan khusus di ${countryContext.destinationCountry}?`,
+        `Sertifikasi apa yang perlu diprioritaskan untuk ${productContext.productName} di ${countryContext.destinationCountry}?`
+      ]
+    };
+  }
+
+  if (productContext && productContext.id !== current?.id) return productContext;
+
+  if (countryContext && current && countryContext.countryCode !== current.countryCode) {
+    return {
+      ...current,
+      id: `detected-${current.id}-${countryContext.countryCode}`,
+      label: `${current.productName} → ${countryContext.destinationCountry}`,
+      destinationCountry: countryContext.destinationCountry,
+      countryCode: countryContext.countryCode,
+      destinationPort: countryContext.destinationPort,
+      keyCompliance: [],
+      suggestedQuestions: [
+        `Apa persyaratan impor untuk ${current.productName} di ${countryContext.destinationCountry}?`,
+        `Dokumen asal dan kepabeanan apa yang perlu disiapkan untuk ${countryContext.destinationCountry}?`,
+        `Apakah ada sertifikasi khusus untuk ${current.productName} di ${countryContext.destinationCountry}?`
+      ]
+    };
+  }
+
+  return null;
+};
+
+const buildDynamicFollowUps = (query: string, context: ShipmentContext | null): string[] => {
+  const q = query.toLowerCase();
+  if (q.includes('phytosanitary') || q.includes('eudr') || q.includes('kopi') || q.includes('residu')) {
+    return ['Berapa biaya dan alur pemeriksaan karantina di CGK?', 'Bagaimana format Due Diligence Statement EUDR?', 'Berapa batas residu pestisida (MRL) untuk produk ini?'];
+  }
+  if (q.includes('sambal') || q.includes('retort') || q.includes('fda') || q.includes('amerika')) {
+    return ['Bagaimana proses FCE & SID untuk pangan retort?', 'Kapan Prior Notice FDA harus diajukan?', 'Apa format label Nutrition Facts yang harus dipakai?'];
+  }
+  if (q.includes('halal') || q.includes('uae') || q.includes('dubai') || q.includes('jahe')) {
+    return ['Apakah sertifikat Halal BPJPH langsung diakui?', 'Apa syarat label Arab–Inggris?', 'Health Certificate apa yang perlu disiapkan?'];
+  }
+  if (q.includes('bambu') || q.includes('svlk') || q.includes('v-legal') || q.includes('jerman')) {
+    return ['Bagaimana validasi dokumen V-Legal?', 'Apakah fumigasi wajib untuk pengiriman ini?', 'Uji food-contact apa yang diperlukan di Uni Eropa?'];
+  }
+  if (q.includes('kamerun') || q.includes('cameroon') || q.includes('gula aren')) {
+    return ['Apakah perlu inspeksi pra-pengapalan ke Kamerun?', 'Dokumen COO/SKA apa yang digunakan?', 'Bagaimana melindungi produk dari kelembapan selama pelayaran?'];
+  }
+  if (q.includes('peb') || q.includes('bea cukai') || q.includes('kepabeanan') || q.includes('lartas')) {
+    return ['Dokumen apa saja yang dilampirkan ke PEB?', 'Bagaimana mengecek status Lartas HS Code?', 'Kapan NPE diterbitkan oleh Bea Cukai?'];
+  }
+  const candidates = context?.suggestedQuestions?.length ? context.suggestedQuestions : [
+    'Dokumen ekspor apa yang perlu diprioritaskan?',
+    'Apakah HS Code produk ini sudah tepat?',
+    'Sertifikasi apa yang perlu diverifikasi berikutnya?'
+  ];
+  return candidates.filter(item => item.toLowerCase() !== q).slice(0, 3);
+};
+
+const createContextNotice = (context: ShipmentContext | null): ChatMessage => ({
+  id: `context-${Date.now()}`,
+  sender: 'ai',
+  kind: 'context_notice',
+  text: context ? `Konteks dialihkan ke: ${context.productName} → ${context.destinationCountry}` : 'Konteks data ekspor dilepas. Konsultasi dilanjutkan dalam mode umum.',
+  timestamp: currentWibTime()
 });
 
 export const AiAdvisorView: React.FC = () => {
@@ -241,22 +353,31 @@ export const AiAdvisorView: React.FC = () => {
   const [kbSearch, setKbSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedArticle, setSelectedArticle] = useState<RegulasiKbItem | null>(null);
+  const [citationPreview, setCitationPreview] = useState<CitationPreviewState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
 
   const [contextMode, setContextMode] = useState<ContextInputMode>('saved');
   const [savedContextId, setSavedContextId] = useState(SHIPMENT_CONTEXTS[0].id);
   const [manualContext, setManualContext] = useState<ManualContextState>(EMPTY_MANUAL_CONTEXT);
   const [showAdvancedContext, setShowAdvancedContext] = useState(false);
   const [contextError, setContextError] = useState('');
-  const [consultationStarted, setConsultationStarted] = useState(false);
+  const [contextPanelOpen, setContextPanelOpen] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [createWelcomeMessage(null)]);
 
   useEffect(() => {
-    if (activeTab === 'chat' && consultationStarted) {
+    if (activeTab === 'chat') {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isTyping, activeTab, consultationStarted]);
+  }, [messages, isTyping, activeTab]);
+
+  useEffect(() => {
+    const input = messageInputRef.current;
+    if (!input) return;
+    input.style.height = '0px';
+    input.style.height = `${Math.min(Math.max(input.scrollHeight, 48), 160)}px`;
+  }, [inputPrompt]);
 
   const generalPrompts = [
     'Syarat ekspor Kopi Robusta ke Uni Eropa (EUDR)?',
@@ -275,19 +396,20 @@ export const AiAdvisorView: React.FC = () => {
   };
 
   const handleChangeContext = () => {
-    setConsultationStarted(false);
-    setMessages([]);
-    setInputPrompt('');
-    setIsTyping(false);
+    if (selectedShipment && SHIPMENT_CONTEXTS.some(item => item.id === selectedShipment.id)) {
+      setContextMode('saved');
+      setSavedContextId(selectedShipment.id);
+    }
+    setContextPanelOpen(true);
     setContextError('');
   };
 
   const handleStartGeneralConsultation = () => {
+    const hadContext = Boolean(selectedShipment);
     setSelectedShipment(null);
-    setMessages([createWelcomeMessage(null)]);
-    setConsultationStarted(true);
-    setInputPrompt('');
+    setContextPanelOpen(false);
     setContextError('');
+    if (hadContext) setMessages(prev => [...prev, createContextNotice(null)]);
   };
 
   const handleStartConsultation = (event: React.FormEvent) => {
@@ -344,10 +466,11 @@ export const AiAdvisorView: React.FC = () => {
       firstQuestion = primaryNeed;
     }
 
+    const contextChanged = nextContext?.label !== selectedShipment?.label;
     setSelectedShipment(nextContext);
-    setMessages([createWelcomeMessage(nextContext)]);
-    setConsultationStarted(true);
-    setInputPrompt(firstQuestion);
+    setContextPanelOpen(false);
+    if (contextChanged) setMessages(prev => [...prev, createContextNotice(nextContext)]);
+    if (firstQuestion) setInputPrompt(firstQuestion);
   };
 
   const isMetaQuery = (queryText: string): boolean => {
@@ -363,10 +486,11 @@ export const AiAdvisorView: React.FC = () => {
     return patterns.some(pattern => pattern.test(q));
   };
 
-  const buildOfflineAdvisorReply = (query: string): { reply: string; citations: { title: string; source: string }[] } => {
+  const buildOfflineAdvisorReply = (query: string, contextOverride: ShipmentContext | null = selectedShipment): { reply: string; citations: { title: string; source: string }[] } => {
     let reply = '';
     let citations: { title: string; source: string }[] = [];
     const q = query.toLowerCase().trim();
+    const context = contextOverride;
     const isMeta = isMetaQuery(query);
     const kbHit = REGULASI_KB_DATA.find(item => {
       const haystack = [
@@ -380,8 +504,8 @@ export const AiAdvisorView: React.FC = () => {
       return q.split(/\s+/).filter(word => word.length > 3).some(word => haystack.includes(word));
     });
 
-    const ctxPrefix = (selectedShipment && !isMeta)
-      ? `[Konteks Kargo: ${selectedShipment.productName} - HS: ${selectedShipment.hsCode} ke ${selectedShipment.destinationCountry}]\n\n`
+    const ctxPrefix = (context && !isMeta)
+      ? `[Konteks Kargo: ${context.productName} - HS: ${context.hsCode} ke ${context.destinationCountry}]\n\n`
       : '';
 
     // 1. Pertanyaan Seputar Sumber Data / Internet
@@ -439,8 +563,8 @@ Silakan ketik pertanyaan spesifik seputar komoditas atau pilih salah satu pertan
         title: 'Simulator Logistik & Kargo Multimoda Tangsel',
         source: 'Disperindag Tangsel & Standar Freight Forwarding 2026'
       }];
-    } else if (q.includes('kopi') || q.includes('eudr') || q.includes('eropa') || (selectedShipment?.id === 'shipment-01' && (q.includes('deforestasi') || q.includes('traces') || q.includes('mrl') || q.includes('residu') || q.includes('phytosanitary')))) {
-      reply = `${ctxPrefix}Untuk ekspor Kopi Robusta (${selectedShipment?.exporterName || 'Koperasi Kopi Robusta Ciputat'}) ke Uni Eropa berdasarkan regulasi EUDR (Regulation 2023/1115):
+    } else if (q.includes('kopi') || q.includes('eudr') || q.includes('eropa') || (context?.id === 'shipment-01' && (q.includes('deforestasi') || q.includes('traces') || q.includes('mrl') || q.includes('residu') || q.includes('phytosanitary')))) {
+      reply = `${ctxPrefix}Untuk ekspor Kopi Robusta (${context?.exporterName || 'Koperasi Kopi Robusta Ciputat'}) ke Uni Eropa berdasarkan regulasi EUDR (Regulation 2023/1115):
 1. **Bukti Bebas Deforestasi**: Wajib melampirkan data geolocation poligon GPS kebun budidaya petani (cut-off date 31 Des 2020).
 2. **Due Diligence Statement (DDS)**: Diunggah melalui sistem TRACES-NT Uni Eropa sebelum kargo sandar di Rotterdam.
 3. **Dokumen Pendukung**: Phytosanitary Certificate dari Karantina Tumbuhan RI (Bandara CGK / Pelabuhan Tanjung Priok), Form A/COO, dan uji residu pestisida (MRL) akreditasi ISO 17025.
@@ -449,9 +573,9 @@ Silakan ketik pertanyaan spesifik seputar komoditas atau pilih salah satu pertan
         title: 'Regulasi Bebas Deforestasi Uni Eropa (EUDR Regulation 2023/1115)',
         source: 'European Commission Regulation (EU) 2023/1115'
       }];
-    } else if (q.includes('halal') || q.includes('uae') || q.includes('emirates') || q.includes('timur tengah') || (selectedShipment?.id === 'shipment-03')) {
+    } else if (q.includes('halal') || q.includes('uae') || q.includes('emirates') || q.includes('timur tengah') || (context?.id === 'shipment-03')) {
       reply = `${ctxPrefix}Sertifikat Halal resmi BPJPH Kemenag RI telah memiliki perjanjian pengakuan timbal balik (**Mutual Recognition Agreement / MRA**) dengan MoIAT/ESMA Uni Emirat Arab (UEA).
-Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekstrak Jahe Merah'}):
+Persyaratan teknis untuk komoditas F&B (${context?.productName || 'Ekstrak Jahe Merah'}):
 - Sertifikat Halal resmi BPJPH dengan logo Garuda Nasional & QR Code aktif.
 - Label kemasan bilingual: Keterangan komposisi dan petunjuk saji wajib memuat Bahasa Arab & Inggris.
 - Health Certificate dari BPOM RI dan Certificate of Analysis (COA) mikrobiologi dari Sucofindo/SGS.
@@ -460,8 +584,8 @@ Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekst
         title: 'Ketentuan Sertifikasi Halal MRA untuk Ekspor Pangan ke UAE',
         source: 'MoIAT UAE Technical Regulation 2055-1'
       }];
-    } else if (q.includes('bambu') || q.includes('svlk') || q.includes('kayu') || q.includes('v-legal') || (selectedShipment?.id === 'shipment-04')) {
-      reply = `${ctxPrefix}Untuk produk perabot dan perlengkapan makan berbahan bambu (${selectedShipment?.exporterName || 'UD Bambu Kriya BSD'}):
+    } else if (q.includes('bambu') || q.includes('svlk') || q.includes('kayu') || q.includes('v-legal') || (context?.id === 'shipment-04')) {
+      reply = `${ctxPrefix}Untuk produk perabot dan perlengkapan makan berbahan bambu (${context?.exporterName || 'UD Bambu Kriya BSD'}):
 1. **Dokumen V-Legal (SVLK)**: Wajib diterbitkan oleh Lembaga Penilai & Verifikasi Independen (LPVI) terakreditasi KAN sesuai Permendag No. 23/2023. Nomor V-Legal langsung divalidasi ke modul ekspor PEB Bea Cukai.
 2. **Fumigasi**: Wajib melalui perlakuan fumigasi berstandar AFAS atau Heat Treatment bersertifikat Phytosanitary resmi.
 3. **Food Grade Testing**: Wajib menyertakan sertifikat uji migrasi zat kimia aman kontak pangan (SGS / Sucofindo) sesuai standar EU Framework Regulation (EC) No 1935/2004.`;
@@ -469,8 +593,8 @@ Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekst
         title: 'Sistem Verifikasi Legalitas Kayu (SVLK / V-Legal)',
         source: 'Permendag No. 23 Tahun 2023'
       }];
-    } else if (q.includes('fda') || q.includes('retort') || q.includes('roa') || q.includes('sambal') || (selectedShipment?.id === 'shipment-05')) {
-      reply = `${ctxPrefix}Untuk produk pangan kemasan retort tahan suhu ruang (${selectedShipment?.productName || 'Sambal Roa Retort Pouch'}) tujuan Amerika Serikat:
+    } else if (q.includes('fda') || q.includes('retort') || q.includes('roa') || q.includes('sambal') || (context?.id === 'shipment-05')) {
+      reply = `${ctxPrefix}Untuk produk pangan kemasan retort tahan suhu ruang (${context?.productName || 'Sambal Roa Retort Pouch'}) tujuan Amerika Serikat:
 1. **FDA Facility Registration**: Registrasi fasilitas dapur produksi di portal FDA FURLS.
 2. **FCE & SID (Food Canning Establishment & Submission Identifier)**: Pengajuan jadwal proses sterilisasi panas (F0 value) ke US FDA untuk kategori Low-Acid/Acidified Foods (21 CFR Part 108/113).
 3. **Prior Notice**: Wajib mengirimkan pemberitahuan awal (PN Confirm Number) ke US Customs & Border Protection (CBP) sebelum kargo mendarat di pelabuhan LAX/Long Beach.`;
@@ -478,8 +602,8 @@ Persyaratan teknis untuk komoditas F&B (${selectedShipment?.productName || 'Ekst
         title: 'Regulasi Pangan Kemasan Retort US FDA (FCE & SID)',
         source: 'US 21 CFR Part 108 & 113'
       }];
-    } else if (q.includes('kamerun') || q.includes('gula') || q.includes('aren') || (selectedShipment?.id === 'shipment-02')) {
-      reply = `${ctxPrefix}Untuk ekspor kargo Gula Aren Kristal Organik (${selectedShipment?.exporterName || 'PT Java Palm Sugar Nusantara'}) ke Port of Douala, Kamerun:
+    } else if (q.includes('kamerun') || q.includes('gula') || q.includes('aren') || (context?.id === 'shipment-02')) {
+      reply = `${ctxPrefix}Untuk ekspor kargo Gula Aren Kristal Organik (${context?.exporterName || 'PT Java Palm Sugar Nusantara'}) ke Port of Douala, Kamerun:
 1. **Inspeksi Pra-Pengapalan**: Importir Kamerun biasanya memerlukan laporan pemeriksaan kesesuaian mutu (Clean Report of Findings / CRF) dari BIVAC/Bureau Veritas sebelum keberangkatan kapal.
 2. **Dokumen Kepabeanan**: Pemberitahuan Ekspor Barang (PEB), Commercial Invoice, Packing List, Bill of Lading (B/L), dan Certificate of Origin (Form A/SKA).
 3. **Sertifikasi Mutu**: Certificate of Analysis (COA) kadar air < 1.5%, uji bebas aflatoksin, dan sertifikat Halal BPJPH.
@@ -525,16 +649,22 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || inputPrompt;
-    if (!query.trim()) return;
+    if (!query.trim() || isTyping) return;
+
+    const detectedContext = isMetaQuery(query) ? null : detectContextFromQuery(query, selectedShipment);
+    const effectiveShipment = detectedContext || selectedShipment;
+    const contextChanged = Boolean(detectedContext && detectedContext.label !== selectedShipment?.label);
+
+    if (contextChanged && detectedContext) setSelectedShipment(detectedContext);
 
     const userMsg: ChatMessage = {
       id: `usr-${Date.now()}`,
       sender: 'user',
       text: query,
-      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+      timestamp: currentWibTime()
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    setMessages(prev => [...prev, userMsg, ...(contextChanged && detectedContext ? [createContextNotice(detectedContext)] : [])]);
     setInputPrompt('');
     setIsTyping(true);
 
@@ -556,18 +686,18 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            message: (selectedShipment && !isMetaQuery(query))
+            message: (effectiveShipment && !isMetaQuery(query))
               ? `[Data Ekspor]
-Eksportir: ${selectedShipment.exporterName}
-Produk: ${selectedShipment.productName}
-HS Code: ${selectedShipment.hsCode}
-Negara Tujuan: ${selectedShipment.destinationCountry}
-Pelabuhan/Bandara: ${selectedShipment.destinationPort}
-Volume: ${selectedShipment.volume}
-Nilai FOB: USD ${selectedShipment.fobValueUsd}
-Incoterm: ${selectedShipment.incoterm}
-Moda: ${selectedShipment.shippingMode}
-Kepatuhan/Sertifikasi: ${selectedShipment.keyCompliance.join(', ') || 'Belum diisi'}
+Eksportir: ${effectiveShipment.exporterName}
+Produk: ${effectiveShipment.productName}
+HS Code: ${effectiveShipment.hsCode}
+Negara Tujuan: ${effectiveShipment.destinationCountry}
+Pelabuhan/Bandara: ${effectiveShipment.destinationPort}
+Volume: ${effectiveShipment.volume}
+Nilai FOB: USD ${effectiveShipment.fobValueUsd}
+Incoterm: ${effectiveShipment.incoterm}
+Moda: ${effectiveShipment.shippingMode}
+Kepatuhan/Sertifikasi: ${effectiveShipment.keyCompliance.join(', ') || 'Belum diisi'}
 
 Pertanyaan: ${query}`
               : query,
@@ -602,7 +732,7 @@ Pertanyaan: ${query}`
     window.clearTimeout(timeoutId);
 
     if (!liveSuccess) {
-      const offline = buildOfflineAdvisorReply(query);
+      const offline = buildOfflineAdvisorReply(query, effectiveShipment);
       replyData = {
         ...offline,
         sourceType: 'knowledge_base'
@@ -615,12 +745,45 @@ Pertanyaan: ${query}`
       text: replyData.reply,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
       citations: replyData.citations,
-      contextTag: isMetaQuery(query) ? undefined : selectedShipment?.label,
-      sourceType: replyData.sourceType
+      contextTag: isMetaQuery(query) ? undefined : effectiveShipment?.label,
+      sourceType: replyData.sourceType,
+      followUps: buildDynamicFollowUps(query, effectiveShipment)
     };
 
     setMessages(prev => [...prev, aiMsg]);
     setIsTyping(false);
+  };
+
+  const handleComposerKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (inputPrompt.trim() && !isTyping) void handleSend();
+    }
+  };
+
+  const getRelatedKbForCitation = (citation: { title: string; source: string }): RegulasiKbItem[] => {
+    const terms = `${citation.title} ${citation.source}`
+      .toLowerCase()
+      .split(/[^a-z0-9]+/i)
+      .filter(term => term.length > 3);
+    return REGULASI_KB_DATA
+      .map(item => ({
+        item,
+        score: terms.filter(term => `${item.judul} ${item.sumberRegulasi} ${item.tags.join(' ')}`.toLowerCase().includes(term)).length
+      }))
+      .filter(entry => entry.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map(entry => entry.item);
+  };
+
+  const handleCitationOpen = (citation: { title: string; source: string }) => {
+    const matches = getRelatedKbForCitation(citation);
+    if (matches.length === 1) {
+      setSelectedArticle(matches[0]);
+      return;
+    }
+    setCitationPreview({ citation, matches });
   };
 
   const filteredKb = REGULASI_KB_DATA.filter(item => {
@@ -659,16 +822,18 @@ Pertanyaan: ${query}`
         </div>
       </div>
 
-      {activeTab === 'chat' && !consultationStarted && (
-        <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {activeTab === 'chat' && contextPanelOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <button type="button" className="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px]" onClick={() => setContextPanelOpen(false)} aria-label="Tutup editor data ekspor" />
+          <section className="relative h-full w-full max-w-xl overflow-y-auto border-l border-slate-200 bg-white shadow-2xl">
           <div className="border-b border-slate-200 px-5 py-5 sm:px-7 sm:py-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
                 <div className="ui-label">Data ekspor</div>
-                <h2 className="mt-1 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">Siapkan konteks sebelum mulai konsultasi</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">Gunakan data pengiriman yang sudah tersedia atau isi data produk secara manual. Hanya nama produk dan negara tujuan yang wajib untuk konsultasi terarah.</p>
+                <h2 className="mt-1 text-xl font-extrabold tracking-tight text-slate-950 sm:text-2xl">Data ekspor untuk membantu jawaban AI</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Pilih data tersimpan atau isi manual. Chat tetap aman saat data diganti; perubahan konteks hanya memengaruhi jawaban berikutnya.</p>
               </div>
-              <div className="inline-flex h-10 items-center rounded-full bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-200">Langkah 1 dari 2</div>
+              <button type="button" onClick={() => setContextPanelOpen(false)} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200" aria-label="Tutup editor data ekspor"><X size={18}/></button>
             </div>
           </div>
 
@@ -800,16 +965,17 @@ Pertanyaan: ${query}`
             {contextError && <div role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{contextError}</div>}
 
             <div className="mt-7 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-              <button type="button" onClick={handleStartGeneralConsultation} className="min-h-11 px-3 text-sm font-semibold text-slate-500 hover:text-slate-900">Konsultasi umum tanpa data ekspor</button>
+              <button type="button" onClick={handleStartGeneralConsultation} className="min-h-11 px-3 text-sm font-semibold text-slate-500 hover:text-slate-900">Gunakan mode umum</button>
               <button type="submit" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-700 px-6 text-sm font-semibold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
-                Mulai Konsultasi <ArrowRight size={16}/>
+                Terapkan Data <ArrowRight size={16}/>
               </button>
             </div>
           </form>
-        </section>
+          </section>
+        </div>
       )}
 
-      {activeTab === 'chat' && consultationStarted && (
+      {activeTab === 'chat' && (
         <>
           <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             {selectedShipment ? (
@@ -824,7 +990,7 @@ Pertanyaan: ${query}`
             ) : (
               <div><div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Mode konsultasi</div><div className="mt-0.5 text-sm font-bold text-slate-950">Konsultasi umum tanpa data pengiriman</div></div>
             )}
-            <button type="button" onClick={handleChangeContext} className="min-h-11 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">Ganti Data</button>
+            <button type="button" onClick={handleChangeContext} className="min-h-11 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">{selectedShipment ? 'Ganti Data' : 'Tambah Data'}</button>
           </div>
 
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -843,7 +1009,13 @@ Pertanyaan: ${query}`
 
                 <div className="flex-1 overflow-y-auto p-4 sm:p-5">
                   <div className="mx-auto max-w-3xl space-y-4">
-                    {messages.map((m) => (
+                    {messages.map((m) => m.kind === 'context_notice' ? (
+                      <div key={m.id} className="flex justify-center py-1">
+                        <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                          <Package size={13} className="shrink-0"/><span className="truncate">{m.text}</span>
+                        </div>
+                      </div>
+                    ) : (
                       <div key={m.id} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {m.sender === 'ai' && <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800"><Bot size={18}/></div>}
                         <div className={`max-w-[92%] rounded-xl px-4 py-3 text-sm leading-6 sm:max-w-[84%] ${m.sender === 'user' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
@@ -854,22 +1026,27 @@ Pertanyaan: ${query}`
                           {m.citations && m.citations.length > 0 && (
                             <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
                               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600"><BookOpen size={13} className="text-emerald-700"/> Rujukan</div>
-                              {m.citations.map((c, i) => <div key={i} className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600"><strong className="text-slate-800">{c.title}</strong><span className="mx-1">·</span>{c.source}</div>)}
+                              {m.citations.map((c, i) => (
+                                <button key={i} type="button" onClick={() => handleCitationOpen(c)} className="group flex w-full items-start justify-between gap-3 rounded-lg border border-transparent bg-slate-50 px-3 py-2 text-left text-xs text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50">
+                                  <span><strong className="text-slate-800 group-hover:text-emerald-900">{c.title}</strong><span className="mx-1">·</span>{c.source}</span>
+                                  <ArrowRight size={13} className="mt-0.5 shrink-0 text-slate-400 group-hover:text-emerald-700"/>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          {m.sender === 'ai' && m.followUps && m.followUps.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+                              {m.followUps.map((followUp, index) => (
+                                <button key={index} type="button" onClick={() => handleSend(followUp)} disabled={isTyping} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-left text-xs font-medium leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900 disabled:opacity-50">
+                                  {followUp}
+                                </button>
+                              ))}
                             </div>
                           )}
                           <div className={`mt-2 text-right text-xs ${m.sender === 'user' ? 'text-emerald-100' : 'text-slate-400'}`}>{m.timestamp}</div>
                         </div>
                       </div>
                     ))}
-
-                    {messages.length <= 1 && !isTyping && (
-                      <div className="ml-0 rounded-xl border border-dashed border-slate-300 bg-white/70 p-4 sm:ml-12">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pertanyaan yang bisa dicoba</div>
-                        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-                          {activePrompts.slice(0, 4).map((q, idx) => <button key={idx} type="button" onClick={() => handleSend(q)} className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm leading-5 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">{q}</button>)}
-                        </div>
-                      </div>
-                    )}
 
                     {isTyping && <div className="flex items-center gap-2 text-sm text-slate-500"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600"/> Menyiapkan jawaban berdasarkan referensi regulasi...</div>}
                     <div ref={messagesEndRef} />
@@ -880,7 +1057,18 @@ Pertanyaan: ${query}`
                   <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="mx-auto flex max-w-3xl items-end gap-2">
                     <div className="min-w-0 flex-1">
                       <label htmlFor="advisor-message" className="sr-only">Pertanyaan regulasi ekspor</label>
-                      <input id="advisor-message" type="text" placeholder={selectedShipment ? `Tanyakan persyaratan untuk ${selectedShipment.productName}...` : 'Tanyakan HS Code, sertifikasi, dokumen, atau aturan negara tujuan...'} value={inputPrompt} onChange={e => setInputPrompt(e.target.value)} className="min-h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none" />
+                      <textarea
+                        ref={messageInputRef}
+                        id="advisor-message"
+                        rows={1}
+                        placeholder={selectedShipment ? `Tanyakan persyaratan untuk ${selectedShipment.productName}...` : 'Tanyakan HS Code, sertifikasi, dokumen, atau aturan negara tujuan...'}
+                        value={inputPrompt}
+                        onChange={e => setInputPrompt(e.target.value)}
+                        onKeyDown={handleComposerKeyDown}
+                        className="min-h-12 max-h-40 w-full resize-none overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white focus:outline-none"
+                        aria-describedby="advisor-message-hint"
+                      />
+                      <div id="advisor-message-hint" className="mt-1 hidden text-xs text-slate-400 sm:block">Enter untuk kirim · Shift+Enter untuk baris baru</div>
                     </div>
                     <button type="submit" disabled={!inputPrompt.trim() || isTyping} className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40"><Send size={16}/> <span className="hidden sm:inline">Kirim</span></button>
                   </form>
@@ -950,6 +1138,30 @@ Pertanyaan: ${query}`
               </button>
             ))}
           </div>
+
+          {citationPreview && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <button type="button" className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs" onClick={() => setCitationPreview(null)} aria-label="Tutup pratinjau rujukan" />
+              <div className="relative w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-6">
+                <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+                  <div><div className="ui-label">Rujukan jawaban</div><h3 className="mt-1 text-lg font-bold text-slate-900">{citationPreview.citation.title}</h3><div className="mt-1 text-sm text-slate-500">{citationPreview.citation.source}</div></div>
+                  <button type="button" onClick={() => setCitationPreview(null)} className="tap-target inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200" aria-label="Tutup"><X size={18}/></button>
+                </div>
+                {citationPreview.matches.length > 0 ? (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm leading-6 text-slate-600">Basis regulasi terkait yang bisa dibuka tanpa meninggalkan percakapan:</p>
+                    {citationPreview.matches.map(item => (
+                      <button key={item.id} type="button" onClick={() => { setCitationPreview(null); setSelectedArticle(item); }} className="w-full rounded-xl border border-slate-200 p-3 text-left hover:border-emerald-300 hover:bg-emerald-50">
+                        <div className="text-sm font-semibold text-slate-900">{item.judul}</div><div className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{item.ringkasan}</div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">Rujukan ini berasal dari respons layanan AI dan belum memiliki artikel Basis Regulasi yang cocok secara langsung. Gunakan nama sumber di atas untuk verifikasi pada instansi penerbit.</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {selectedArticle && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

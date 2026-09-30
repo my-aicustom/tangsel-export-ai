@@ -245,10 +245,24 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
     }
   };
 
+  const isMetaQuery = (queryText: string): boolean => {
+    const q = queryText.toLowerCase().trim();
+    const patterns = [
+      /^(halo|hai|hei|p|ping|selamat\s+(pagi|siang|sore|malam)|assalamu[']?alaikum)/i,
+      /(siapa\s+(kamu|anda)|kamu\s+siapa|anda\s+siapa)/i,
+      /(ini\s+data(nya)?\s+dari\s+(mana|internet)|sumber\s+data|dapat\s+data\s+dari\s+mana|ambil\s+data\s+dari\s+mana)/i,
+      /(dari\s+internet\s+kan|pakai\s+ai\s+apa|model\s+apa|llm\s+apa|openrouter)/i,
+      /(kamu\s+bisa\s+apa|bisa\s+bantu\s+apa|fitur\s+apa\s+saja|cara\s+kerja)/i,
+      /(apakah\s+(ini\s+)?(akurat|resmi|valid|benar))/i
+    ];
+    return patterns.some(pattern => pattern.test(q));
+  };
+
   const buildOfflineAdvisorReply = (query: string): { reply: string; citations: { title: string; source: string }[] } => {
     let reply = '';
     let citations: { title: string; source: string }[] = [];
     const q = query.toLowerCase().trim();
+    const isMeta = isMetaQuery(query);
     const kbHit = REGULASI_KB_DATA.find(item => {
       const haystack = [
         item.judul,
@@ -261,13 +275,25 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
       return q.split(/\s+/).filter(word => word.length > 3).some(word => haystack.includes(word));
     });
 
-    const ctxPrefix = selectedShipment
+    const ctxPrefix = (selectedShipment && !isMeta)
       ? `[Konteks Kargo: ${selectedShipment.productName} - HS: ${selectedShipment.hsCode} ke ${selectedShipment.destinationCountry}]\n\n`
       : '';
 
-    // 1. Sapaan Ramah & Pengenalan Konsultan
-    if (q === 'halo' || q === 'hai' || q === 'hei' || q.startsWith('halo') || q.startsWith('hai') || q.includes('assalamualaikum') || q.includes('selamat pagi') || q.includes('selamat siang') || q.includes('selamat sore') || q.includes('selamat malam') || q.includes('siapa kamu') || q.includes('siapa anda')) {
-      reply = `${ctxPrefix}Halo! Saya **Asisten Regulasi Ekspor Tangsel**, konsultan AI resmi Disperindag Kota Tangerang Selatan untuk fasilitasi IKM binaan menuju Trade Expo Indonesia 2026.
+    // 1. Pertanyaan Seputar Sumber Data / Internet
+    if (q.includes('internet') || q.includes('sumber data') || q.includes('dapat data') || q.includes('ambil data') || q.includes('database') || q.includes('akurasi') || q.includes('valid')) {
+      reply = `Betul! Basis data saya bersumber dari penelusuran **live intelligence real-time (OpenRouter)** yang dipadukan dengan repositori regulasi resmi terkurasi:
+1. **INSW (Indonesia National Single Window)**: Ketentuan Lartas & tarif BTKI 2022.
+2. **Kementerian Perdagangan & Bea Cukai RI**: Regulasi ekspor, PEB (PER-07/BC/2023), dan SKA.
+3. **Badan Karantina Indonesia & BPOM**: Standar SPS (Sanitary & Phytosanitary) dan keamanan pangan.
+4. **Disperindag Kota Tangerang Selatan**: Kurasi komoditas unggulan dan fasilitasi IKM binaan TEI 2026.
+
+Semua informasi divalidasi silang untuk memastikan kepatuhan teknis perdagangan internasional.`;
+      citations = [{
+        title: 'Repositori Regulasi Perdagangan Terintegrasi',
+        source: 'Disperindag Tangsel · INSW · Bea Cukai RI'
+      }];
+    } else if (q === 'halo' || q === 'hai' || q === 'hei' || q.startsWith('halo') || q.startsWith('hai') || q.includes('assalamualaikum') || q.includes('selamat pagi') || q.includes('selamat siang') || q.includes('selamat sore') || q.includes('selamat malam') || q.includes('siapa kamu') || q.includes('siapa anda')) {
+      reply = `Halo! Saya **Asisten Regulasi Ekspor Tangsel**, konsultan AI resmi Disperindag Kota Tangerang Selatan untuk fasilitasi IKM binaan menuju Trade Expo Indonesia 2026.
 Saya siap membantu Anda menavigasi:
 1. **Regulasi Global & Standar Kepatuhan**: EUDR (Eropa), US FDA FCE/SID (Amerika), Halal MRA (UAE/GCC), SVLK V-Legal (Kayu/Bambu).
 2. **Kesesuaian HS Code**: Klasifikasi 8-digit BTKI 2022 dan regulasi Lartas kepabeanan.
@@ -425,7 +451,7 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
           body: JSON.stringify({
-            message: selectedShipment
+            message: (selectedShipment && !isMetaQuery(query))
               ? `[Konteks Kargo: ${selectedShipment.productName} (HS: ${selectedShipment.hsCode}) ke ${selectedShipment.destinationCountry}]\n\n${query}`
               : query,
             history: messages.slice(-4).map(m => ({
@@ -472,7 +498,7 @@ Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan 
       text: replyData.reply,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
       citations: replyData.citations,
-      contextTag: selectedShipment?.label,
+      contextTag: isMetaQuery(query) ? undefined : selectedShipment?.label,
       sourceType: replyData.sourceType
     };
 

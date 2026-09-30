@@ -20,7 +20,8 @@ import {
   Smartphone,
   Copy,
   Check,
-  Video
+  Video,
+  Bot
 } from 'lucide-react';
 import { IKM_DATABASE, type IkmItem, type ProductItem } from '../data/ikmData';
 import { DESTINATION_PORTS, calculateLogisticsEstimate } from '../data/logisticsRates';
@@ -98,6 +99,20 @@ export const BoothKioskView: React.FC = () => {
     buyerName: buyer?.name,
     buyerCountry: buyer?.country,
   });
+
+  const getProductAdvisorUrl = (ikm: IkmItem, product: ProductItem) => {
+    const params = new URLSearchParams({
+      source: 'kiosk',
+      ikmId: ikm.id,
+      ikmName: ikm.namaUsaha,
+      productId: product.id,
+      productName: product.name,
+      hsCode: product.hsCode,
+      fob: String(product.fobPriceUsd),
+      certs: product.certifications.join('|')
+    });
+    return `/ai-advisor?${params.toString()}`;
+  };
 
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -380,23 +395,33 @@ export const BoothKioskView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-5 pt-0 flex items-center gap-2">
+                <div className="p-5 pt-0 space-y-2">
                   <a
-                    href={getProductVeyloUrl(ikm, product)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Buka Ruang Negosiasi Veylo"
-                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white transition"
+                    href={getProductAdvisorUrl(ikm, product)}
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-100"
                   >
-                    <Video size={16} />
-                  </a>
-                  <button
-                    onClick={() => setSelectedProduct({ ikm, product })}
-                    className="flex-1 min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2"
-                  >
-                    <span>{lang === 'ID' ? 'Request Pertemuan / Sampel' : 'Request Meeting / Sample'}</span>
+                    <Bot size={16} />
+                    <span>{lang === 'ID' ? 'Tanya Regulasi Produk Ini ke AI' : 'Ask AI About Export Rules'}</span>
                     <ArrowRight size={14} />
-                  </button>
+                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={getProductVeyloUrl(ikm, product)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Buka Ruang Negosiasi Veylo"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white transition"
+                    >
+                      <Video size={16} />
+                    </a>
+                    <button
+                      onClick={() => setSelectedProduct({ ikm, product })}
+                      className="flex-1 min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2"
+                    >
+                      <span>{lang === 'ID' ? 'Request Pertemuan / Sampel' : 'Request Meeting / Sample'}</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

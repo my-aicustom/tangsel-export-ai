@@ -13,7 +13,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen
 } from 'lucide-react';
-import { EVENT_CONFIG } from '../data/eventConfig';
+import { EVENT_CONFIG, getEventCountdownLabel } from '../data/eventConfig';
 import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 interface SidebarProps {
@@ -23,11 +23,19 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [countdownLabel, setCountdownLabel] = useState(() => getEventCountdownLabel());
 
   useEffect(() => {
     const saved = window.localStorage.getItem('tangsel-sidebar-collapsed') === '1';
     setCollapsed(saved);
     document.documentElement.dataset.sidebar = saved ? 'collapsed' : 'expanded';
+  }, []);
+
+  useEffect(() => {
+    const updateCountdown = () => setCountdownLabel(getEventCountdownLabel());
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 60 * 60 * 1000);
+    return () => window.clearInterval(timer);
   }, []);
 
   const toggleCollapsed = () => {
@@ -140,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath }) => {
                 <Calendar size={15} className="shrink-0 text-emerald-700" />
                 <span className="truncate">{EVENT_CONFIG.eventShortName} · {EVENT_CONFIG.eventLocation.split(',')[0]}</span>
               </span>
-              <span className="shrink-0 font-semibold text-slate-800">{EVENT_CONFIG.countdownDays}</span>
+              <span className="shrink-0 font-semibold text-slate-800">{countdownLabel}</span>
             </div>
           )}
         </div>

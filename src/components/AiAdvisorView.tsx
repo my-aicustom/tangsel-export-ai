@@ -368,6 +368,66 @@ export const AiAdvisorView: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(() => [createWelcomeMessage(null)]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('source') !== 'kiosk') return;
+
+    const productName = params.get('productName')?.trim();
+    if (!productName) return;
+
+    const exporterName = params.get('ikmName')?.trim() || 'IKM Tangerang Selatan';
+    const hsCode = params.get('hsCode')?.trim() || 'Belum ditentukan';
+    const productId = params.get('productId')?.trim() || 'product';
+    const certifications = (params.get('certs') || '').split('|').map(item => item.trim()).filter(Boolean);
+    const fobValueUsd = Number(params.get('fob')) || 0;
+
+    const kioskContext: ShipmentContext = {
+      id: `kiosk-${productId}`,
+      label: `${productName} · dari Kiosk`,
+      exporterName,
+      productName,
+      hsCode,
+      destinationCountry: 'Belum dipilih',
+      countryCode: '',
+      destinationPort: 'Belum ditentukan',
+      volume: 'Belum diisi',
+      fobValueUsd,
+      incoterm: 'FOB',
+      shippingMode: 'AIR_EXPRESS',
+      keyCompliance: certifications,
+      suggestedQuestions: [
+        `Apa dokumen dan sertifikasi dasar untuk ekspor ${productName}?`,
+        hsCode === 'Belum ditentukan' ? `Bagaimana menentukan HS Code untuk ${productName}?` : `Apakah HS Code ${hsCode} sudah tepat untuk ${productName}?`,
+        `Regulasi negara tujuan apa yang perlu dicek untuk ${productName}?`
+      ]
+    };
+
+    setSelectedShipment(kioskContext);
+    setContextMode('manual');
+    setManualContext({
+      exporterName,
+      productName,
+      hsCode: hsCode === 'Belum ditentukan' ? '' : hsCode,
+      destinationCountry: '',
+      destinationPort: '',
+      volume: '',
+      fobValueUsd: fobValueUsd > 0 ? String(fobValueUsd) : '',
+      incoterm: 'FOB',
+      shippingMode: 'AIR_EXPRESS',
+      certifications: certifications.join(', '),
+      primaryNeed: ''
+    });
+    setMessages([{
+      id: `kiosk-welcome-${Date.now()}`,
+      sender: 'ai',
+      text: `Produk **${productName}** dari **${exporterName}** sudah dijadikan konteks konsultasi. HS Code: **${hsCode}**. Negara tujuan belum dipilih, jadi Anda bisa langsung bertanya secara umum atau sebutkan negara tujuan di pertanyaan berikutnya agar konteks diperbarui otomatis.`,
+      timestamp: currentWibTime(),
+      contextTag: `${productName} · Kiosk`,
+      sourceType: 'knowledge_base',
+      followUps: kioskContext.suggestedQuestions
+    }]);
+  }, []);
+
+  useEffect(() => {
     if (activeTab === 'chat') {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
@@ -981,7 +1041,7 @@ Pertanyaan: ${query}`
           <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             {selectedShipment ? (
               <div className="flex min-w-0 items-center gap-3">
-                <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-8 w-12 shrink-0" />
+                {selectedShipment.countryCode ? <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-8 w-12 shrink-0" /> : <span className="inline-flex h-8 w-12 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 ring-1 ring-slate-200"><Package size={17}/></span>}
                 <div className="min-w-0">
                   <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Data ekspor aktif</div>
                   <div className="mt-0.5 truncate text-sm font-bold text-slate-950">{selectedShipment.productName} <span className="font-normal text-slate-400">→</span> {selectedShipment.destinationCountry}</div>
@@ -996,7 +1056,7 @@ Pertanyaan: ${query}`
 
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_330px]">
             <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <div className="flex h-[min(68dvh,720px)] min-h-[560px] flex-col bg-slate-50/50">
+              <div className="flex h-[clamp(360px,58dvh,620px)] flex-col bg-slate-50/50 sm:h-[min(68dvh,720px)] sm:min-h-[560px]">
                 <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600" />
@@ -1081,7 +1141,7 @@ Pertanyaan: ${query}`
               {selectedShipment ? (
                 <div className="rounded-xl border border-slate-200 bg-white p-4">
                   <div className="flex items-start gap-3">
-                    <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-7 w-10 shrink-0" />
+                    {selectedShipment.countryCode ? <CountryFlag code={selectedShipment.countryCode} title={selectedShipment.destinationCountry} className="h-7 w-10 shrink-0" /> : <span className="inline-flex h-7 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 ring-1 ring-slate-200"><Package size={15}/></span>}
                     <div className="min-w-0"><div className="ui-label">Data ekspor</div><div className="mt-1 text-sm font-bold leading-5 text-slate-900">{selectedShipment.productName}</div><div className="mt-0.5 text-xs text-slate-500">HS {selectedShipment.hsCode} · {selectedShipment.destinationCountry}</div></div>
                   </div>
                   <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-slate-100 pt-4 text-xs">

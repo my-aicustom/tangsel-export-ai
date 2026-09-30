@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Globe2,
   Calendar,
@@ -6,10 +6,18 @@ import {
   Video,
   PlaneTakeoff
 } from 'lucide-react';
-import { EVENT_CONFIG } from '../data/eventConfig';
+import { EVENT_CONFIG, getEventCountdownLabel } from '../data/eventConfig';
 import { VEYLO_BASE_URL } from '../lib/veyloBridge';
 
 export const InstitutionalHero: React.FC = () => {
+  const [countdownLabel, setCountdownLabel] = useState(() => getEventCountdownLabel());
+
+  useEffect(() => {
+    const updateCountdown = () => setCountdownLabel(getEventCountdownLabel());
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 60 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="h-1 w-full bg-emerald-700" />
@@ -63,7 +71,7 @@ export const InstitutionalHero: React.FC = () => {
               <Globe2 size={16} className="text-emerald-700" />
               {EVENT_CONFIG.boothLocation}
             </span>
-            <span className="font-semibold text-slate-800">{EVENT_CONFIG.countdownDays}</span>
+            <span className="font-semibold text-slate-800">{countdownLabel}</span>
           </div>
         </div>
 

@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/trade-chat",
+      "destination": "https://veylo.163.61.44.41.sslip.io/app/api/trade-chat"
+    },
+    {
+      "source": "/app/api/trade-chat",
+      "destination": "https://veylo.163.61.44.41.sslip.io/app/api/trade-chat"
+    }
+  ]
+}

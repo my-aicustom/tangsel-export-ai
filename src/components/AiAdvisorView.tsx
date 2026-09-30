@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Bot,
   Send,
@@ -20,7 +20,8 @@ import {
   PlaneTakeoff,
   Ship,
   Info,
-  Video
+  Video,
+  Zap
 } from 'lucide-react';
 import { REGULASI_KB_DATA, type RegulasiKbItem } from '../data/regulasiKbData';
 import { CountryFlag } from './CountryFlag';
@@ -152,6 +153,7 @@ interface ChatMessage {
   timestamp: string;
   citations?: { title: string; source: string }[];
   contextTag?: string;
+  sourceType?: 'live' | 'knowledge_base';
 }
 
 const renderMessageText = (text: string) => {
@@ -177,9 +179,17 @@ export const AiAdvisorView: React.FC = () => {
   const [kbSearch, setKbSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedArticle, setSelectedArticle] = useState<RegulasiKbItem | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Selected Shipment Context for Consulting
   const [selectedShipment, setSelectedShipment] = useState<ShipmentContext | null>(SHIPMENT_CONTEXTS[0]);
+
+  // Auto-scroll chat to latest message
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isTyping, activeTab]);
 
   const initialMessage: ChatMessage = {
     id: 'm-1',
@@ -238,7 +248,7 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
   const buildOfflineAdvisorReply = (query: string): { reply: string; citations: { title: string; source: string }[] } => {
     let reply = '';
     let citations: { title: string; source: string }[] = [];
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
     const kbHit = REGULASI_KB_DATA.find(item => {
       const haystack = [
         item.judul,
@@ -251,12 +261,54 @@ Silakan tanyakan regulasi atau klik pertanyaan cepat yang telah disesuaikan deng
       return q.split(/\s+/).filter(word => word.length > 3).some(word => haystack.includes(word));
     });
 
-    // If tied to shipment context, provide tailored response
     const ctxPrefix = selectedShipment
-      ? `[Konteks: ${selectedShipment.productName} - HS: ${selectedShipment.hsCode} ke ${selectedShipment.destinationCountry}]\n\n`
+      ? `[Konteks Kargo: ${selectedShipment.productName} - HS: ${selectedShipment.hsCode} ke ${selectedShipment.destinationCountry}]\n\n`
       : '';
 
-    if (q.includes('kopi') || q.includes('eudr') || q.includes('eropa') || (selectedShipment?.id === 'shipment-01' && (q.includes('deforestasi') || q.includes('traces') || q.includes('mrl') || q.includes('residu') || q.includes('phytosanitary')))) {
+    // 1. Sapaan Ramah & Pengenalan Konsultan
+    if (q === 'halo' || q === 'hai' || q === 'hei' || q.startsWith('halo') || q.startsWith('hai') || q.includes('assalamualaikum') || q.includes('selamat pagi') || q.includes('selamat siang') || q.includes('selamat sore') || q.includes('selamat malam') || q.includes('siapa kamu') || q.includes('siapa anda')) {
+      reply = `${ctxPrefix}Halo! Saya **Asisten Regulasi Ekspor Tangsel**, konsultan AI resmi Disperindag Kota Tangerang Selatan untuk fasilitasi IKM binaan menuju Trade Expo Indonesia 2026.
+Saya siap membantu Anda menavigasi:
+1. **Regulasi Global & Standar Kepatuhan**: EUDR (Eropa), US FDA FCE/SID (Amerika), Halal MRA (UAE/GCC), SVLK V-Legal (Kayu/Bambu).
+2. **Kesesuaian HS Code**: Klasifikasi 8-digit BTKI 2022 dan regulasi Lartas kepabeanan.
+3. **Simulasi Rute & Freight**: Estimasi biaya kargo udara (CGK) dan laut (Tanjung Priok) ke 8 pelabuhan utama dunia.
+4. **Trisula Dokumen Pabean**: Commercial Invoice, Packing List, PEB, dan SKA (Form A/D/AK).
+
+Silakan ketik pertanyaan spesifik seputar komoditas atau pilih salah satu pertanyaan cepat yang tersedia!`;
+      citations = [{
+        title: 'Layanan Konsultasi Ekspor Disperindag Tangsel',
+        source: 'Dinas Perindustrian dan Perdagangan Kota Tangerang Selatan'
+      }];
+    } else if (q.includes('cara ekspor') || q.includes('langkah ekspor') || q.includes('tahapan ekspor') || q.includes('mulai ekspor') || q.includes('prosedur ekspor') || q.includes('syarat awal')) {
+      reply = `${ctxPrefix}Panduan 5 Langkah Praktis Memulai Ekspor bagi IKM Tangerang Selatan:
+1. **Legalitas Usaha**: Pastikan memiliki NIB berbasis risiko melalui OSS RBA dengan akses kepabeanan aktif.
+2. **Standardisasi Produk**: Penuhi legalitas domestik (P-IRT/BPOM/Halal BPJPH/SNI) serta uji laboratorium parameter ekspor (ISO 17025).
+3. **Penetapan Harga & Incoterms**: Hitung Ex-Works, FOB (Priok/CGK), atau CIF tujuan buyer menggunakan kalkulator logistik kami.
+4. **Dokumen Ekspor (Trisula Dokumen)**: Siapkan Commercial Invoice, Packing List, dan ajukan Pemberitahuan Ekspor Barang (PEB) ke CEISA Bea Cukai.
+5. **Business Matching**: Manfaatkan fasilitas temu bisnis buyer internasional di booth Disperindag Tangsel pada TEI 2026.`;
+      citations = [{
+        title: 'Panduan Akselerasi Ekspor IKM Nasional',
+        source: 'Kementerian Perdagangan RI & Disperindag Tangsel'
+      }];
+    } else if (q.includes('pembayaran') || q.includes('letter of credit') || q.includes('lc') || q.includes('t/t') || q.includes('dp') || q.includes('modal') || q.includes('pembiayaan')) {
+      reply = `${ctxPrefix}Ketentuan Pembayaran & Fasilitas Pembiayaan Ekspor untuk IKM Tangsel:
+1. **Metode Pembayaran Aman**: Gunakan **Irrevocable Confirmed Letter of Credit (L/C)** at sight atau kombinasi T/T (Telegraphic Transfer) DP minimal 30-50% sebelum produksi dan pelunasan saat copy Bill of Lading (B/L) diterbitkan.
+2. **Asuransi Ekspor**: Disarankan memproteksi risiko gagal bayar buyer melalui asuransi ekspor ASEI / Indonesia Eximbank.
+3. **Fasilitas Pembiayaan**: Lembaga Pembiayaan Ekspor Indonesia (LPEI / Eximbank) menyediakan program Penjaminan & Pembiayaan Modal Kerja Ekspor khusus IKM berorientasi ekspor yang difasilitasi dinas.`;
+      citations = [{
+        title: 'Mekanisme Transaksi & Pembiayaan Ekspor',
+        source: 'Lembaga Pembiayaan Ekspor Indonesia (LPEI) & Bank Indonesia'
+      }];
+    } else if (q.includes('ongkir') || q.includes('biaya logistik') || q.includes('freight') || q.includes('tarif kargo') || q.includes('kontainer') || q.includes('trucking') || q.includes('lcl') || q.includes('fcl')) {
+      reply = `${ctxPrefix}Estimasi Biaya Logistik Kargo Ekspor Tangsel:
+- Modul **Logistik & Estimasi Biaya** kami telah mengintegrasikan kalkulator multimoda untuk 8 pelabuhan global tujuan utama ekspor (Singapura, Shanghai, Tokyo, Los Angeles, Rotterdam, Dubai, Sydney, Douala).
+- Meliputi kalkulasi **Inland Trucking** (Pick-up van s/d Trailer kontainer 40ft) dari sentra IKM Tangsel ke Pelabuhan Tanjung Priok atau Bandara Soekarno-Hatta (CGK).
+- Anda dapat langsung membuka menu navigasi **Logistik & Kargo** di bilah samping untuk melakukan simulasi real-time berbasis bobot dan dimensi kargo.`;
+      citations = [{
+        title: 'Simulator Logistik & Kargo Multimoda Tangsel',
+        source: 'Disperindag Tangsel & Standar Freight Forwarding 2026'
+      }];
+    } else if (q.includes('kopi') || q.includes('eudr') || q.includes('eropa') || (selectedShipment?.id === 'shipment-01' && (q.includes('deforestasi') || q.includes('traces') || q.includes('mrl') || q.includes('residu') || q.includes('phytosanitary')))) {
       reply = `${ctxPrefix}Untuk ekspor Kopi Robusta (${selectedShipment?.exporterName || 'Koperasi Kopi Robusta Ciputat'}) ke Uni Eropa berdasarkan regulasi EUDR (Regulation 2023/1115):
 1. **Bukti Bebas Deforestasi**: Wajib melampirkan data geolocation poligon GPS kebun budidaya petani (cut-off date 31 Des 2020).
 2. **Due Diligence Statement (DDS)**: Diunggah melalui sistem TRACES-NT Uni Eropa sebelum kargo sandar di Rotterdam.
@@ -325,10 +377,15 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
         source: kbHit.sumberRegulasi
       }];
     } else {
-      reply = `${ctxPrefix}Berdasarkan basis pengetahuan regulasi ekspor Disperindag Tangsel: Setiap pengapalan komoditas memerlukan verifikasi NIB kepabeanan, standar mutu sertifikasi teknis (SNI/BPOM/Halal/Organik), dan kelengkapan dokumen pelayaran (Invoice, Packing List, Certificate of Origin). Silakan gunakan salah satu pertanyaan cepat yang tersedia untuk petunjuk rinci per komoditas.`;
+      reply = `${ctxPrefix}Berdasarkan standar perdagangan internasional & fasilitasi Disperindag Tangsel: Setiap pengapalan komoditas ekspor memerlukan pemenuhan 3 pilar:
+1. **Legalitas & NIB Kepabeanan**: Terdaftar di portal OSS RBA dan CEISA Bea Cukai.
+2. **Standar Mutu Khusus Negara Tujuan**: Pengujian laboratorium ISO 17025 (bebas cemaran/residu), sertifikat Halal/Organik, dan izin impor negara mitra.
+3. **Trisula Dokumen Pelayaran**: Commercial Invoice, Packing List, Bill of Lading / Air Waybill, serta Certificate of Origin (SKA / COO).
+
+Silakan tanyakan detail HS Code komoditas Anda atau pilih salah satu pertanyaan cepat yang tersedia.`;
       citations = [{
-        title: 'Tata Laksana Kepabeanan Pemberitahuan Ekspor Barang (PEB)',
-        source: 'Peraturan Dirjen Bea dan Cukai No. PER-07/BC/2023'
+        title: 'Standar Operasional Prosedur Ekspor Terpadu Tangsel',
+        source: 'Disperindag Tangsel & Kementerian Perdagangan RI'
       }];
     }
 
@@ -350,50 +407,77 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
     setInputPrompt('');
     setIsTyping(true);
 
-    let replyData: { reply: string; citations: { title: string; source: string }[] };
+    let replyData: { reply: string; citations: { title: string; source: string }[]; sourceType: 'live' | 'knowledge_base' };
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 6000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 12000);
 
-    try {
-      const response = await fetch('https://veylo.163.61.44.41.sslip.io/app/api/trade-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          message: query,
-          history: messages.slice(-4).map(m => ({
-            speaker: m.sender === 'user' ? 'user' : 'advisor',
-            text: m.text
-          }))
-        })
-      });
-      if (!response.ok) throw new Error('Live advisor unavailable');
-      const data = await response.json();
-      if (!data?.reply || typeof data.reply !== 'string') throw new Error('Live advisor returned no reply');
+    let liveSuccess = false;
+    const endpoints = [
+      '/api/trade-chat',
+      'https://veylo.163.61.44.41.sslip.io/app/api/trade-chat'
+    ];
+
+    for (const url of endpoints) {
+      if (liveSuccess) break;
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify({
+            message: selectedShipment
+              ? `[Konteks Kargo: ${selectedShipment.productName} (HS: ${selectedShipment.hsCode}) ke ${selectedShipment.destinationCountry}]\n\n${query}`
+              : query,
+            history: messages.slice(-4).map(m => ({
+              speaker: m.sender === 'user' ? 'user' : 'advisor',
+              text: m.text
+            }))
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.reply && typeof data.reply === 'string') {
+            replyData = {
+              reply: data.reply,
+              sourceType: 'live',
+              citations: [
+                {
+                  title: `Veylo AI Trade Intelligence · ${data.recommendedView ? 'Panel ' + data.recommendedView : 'Konsultasi Ekspor'}`,
+                  source: data.recommendedRoute ? `Rute Rekomendasi: ${data.recommendedRoute}` : 'Live OpenRouter Model'
+                }
+              ]
+            };
+            liveSuccess = true;
+            break;
+          }
+        }
+      } catch {
+        // Try fallback endpoint or offline
+      }
+    }
+    window.clearTimeout(timeoutId);
+
+    if (!liveSuccess) {
+      const offline = buildOfflineAdvisorReply(query);
       replyData = {
-        reply: data.reply,
-        citations: [{
-          title: 'Referensi Regulasi Ekspor',
-          source: 'Tangsel Export AI'
-        }]
+        ...offline,
+        sourceType: 'knowledge_base'
       };
-    } catch {
-      replyData = buildOfflineAdvisorReply(query);
-    } finally {
-      window.clearTimeout(timeoutId);
     }
 
-      const aiMsg: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        sender: 'ai',
-        text: replyData.reply,
-        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
-        citations: replyData.citations,
-        contextTag: selectedShipment?.label
-      };
+    const aiMsg: ChatMessage = {
+      id: `ai-${Date.now()}`,
+      sender: 'ai',
+      text: replyData.reply,
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+      citations: replyData.citations,
+      contextTag: selectedShipment?.label,
+      sourceType: replyData.sourceType
+    };
 
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
+    setMessages(prev => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
   const filteredKb = REGULASI_KB_DATA.filter(item => {
@@ -462,9 +546,11 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
             <div className="flex h-[min(66dvh,700px)] min-h-[540px] flex-col bg-slate-50/50">
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600" />
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-600 animate-pulse" />
                   <span className="truncate text-sm font-semibold text-slate-900">Asisten Regulasi Ekspor Tangsel</span>
-                  <span className="hidden text-xs text-slate-400 sm:inline">Referensi terkurasi</span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
+                    <Zap size={11} className="text-emerald-600" /> Live AI Engine
+                  </span>
                 </div>
                 <button type="button" onClick={handleResetChat} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900">
                   <RotateCcw size={14}/> Reset
@@ -477,7 +563,25 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                     <div key={m.id} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {m.sender === 'ai' && <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800"><Bot size={18}/></div>}
                       <div className={`max-w-[88%] rounded-xl px-4 py-3 text-sm leading-6 sm:max-w-[82%] ${m.sender === 'user' ? 'bg-emerald-700 text-white' : 'border border-slate-200 bg-white text-slate-800'}`}>
-                        {m.contextTag && m.sender === 'ai' && <div className="mb-2 flex items-center gap-1.5 border-b border-slate-100 pb-2 text-xs font-semibold text-emerald-800"><Package size={13}/><span className="truncate">{m.contextTag}</span></div>}
+                        {m.sender === 'ai' && (
+                          <div className="mb-2 flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 text-[11px]">
+                            {m.contextTag ? (
+                              <div className="flex items-center gap-1.5 font-semibold text-emerald-800 truncate">
+                                <Package size={12}/>
+                                <span className="truncate">{m.contextTag}</span>
+                              </div>
+                            ) : (
+                              <span className="font-semibold text-slate-500">Konsultasi Ekspor</span>
+                            )}
+                            <span className={`shrink-0 rounded px-1.5 py-0.5 font-medium ${
+                              m.sourceType === 'live'
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {m.sourceType === 'live' ? '⚡ Live AI Advisor' : '📚 Basis Regulasi'}
+                            </span>
+                          </div>
+                        )}
                         <div>{renderMessageText(m.text)}</div>
                         {m.citations && m.citations.length > 0 && (
                           <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
@@ -502,6 +606,7 @@ ${kbHit.dokumenWajib.slice(0, 4).map((doc, index) => `${index + 1}. ${doc}`).joi
                   )}
 
                   {isTyping && <div className="flex items-center gap-2 text-sm text-slate-500"><span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600"/> Menyiapkan jawaban berdasarkan referensi regulasi...</div>}
+                  <div ref={messagesEndRef} />
                 </div>
               </div>
 

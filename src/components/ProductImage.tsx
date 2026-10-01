@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Package } from 'lucide-react';
+import { ImageOff } from 'lucide-react';
 
 export interface ProductImageProps {
   src?: string;
@@ -18,9 +18,9 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   if (!src || error) {
     return (
       <div className={`flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-4 ${className}`}>
-        <Package size={32} className="text-slate-400 mb-1" />
+        <ImageOff size={30} className="text-slate-400 mb-2" />
         <span className="text-[11px] text-slate-500 font-medium text-center line-clamp-1">
-          {alt || 'Produk Ekspor Tangsel'}
+          Foto resmi belum dapat dimuat
         </span>
       </div>
     );

@@ -23,7 +23,7 @@ import {
   Video,
   Bot
 } from 'lucide-react';
-import { IKM_DATABASE, type IkmItem, type ProductItem } from '../data/ikmData';
+import { OFFICIAL_KIOSK_PRODUCTS, type OfficialCatalogCategory, type OfficialKioskProduct } from '../data/officialKioskCatalog';
 import { DESTINATION_PORTS, calculateLogisticsEstimate } from '../data/logisticsRates';
 import { ProductImage } from './ProductImage';
 import { CountryFlag } from './CountryFlag';
@@ -33,9 +33,11 @@ export const BoothKioskView: React.FC = () => {
   const [lang, setLang] = useState<'ID' | 'EN'>('ID');
   const [kioskMode, setKioskMode] = useState<'CATALOG' | 'SELF_AUDIT' | 'LOGISTICS'>('CATALOG');
   const [search, setSearch] = useState('');
-  const [selectedZone, setSelectedZone] = useState<string>('ALL');
-  const [selectedProduct, setSelectedProduct] = useState<{ ikm: IkmItem; product: ProductItem } | null>(null);
+  const [selectedZone, setSelectedZone] = useState<OfficialCatalogCategory | 'ALL'>('ALL');
+  const [selectedProduct, setSelectedProduct] = useState<OfficialKioskProduct | null>(null);
   const [inquirySent, setInquirySent] = useState(false);
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const [inquiryError, setInquiryError] = useState('');
   const [buyerName, setBuyerName] = useState('');
   const [buyerCountry, setBuyerCountry] = useState('');
   const [buyerContact, setBuyerContact] = useState('');
@@ -68,62 +70,81 @@ export const BoothKioskView: React.FC = () => {
   const [quickPackages, setQuickPackages] = useState(5);
   const [quickMode, setQuickMode] = useState<'AIR_EXPRESS' | 'OCEAN_LCL'>('AIR_EXPRESS');
 
-  // Flatten products
-  const allProducts: { ikm: IkmItem; product: ProductItem }[] = [];
-  IKM_DATABASE.forEach(ikm => {
-    ikm.products.forEach(p => {
-      allProducts.push({ ikm, product: p });
-    });
-  });
-
-  const filtered = allProducts.filter(({ ikm, product }) => {
+  const filtered = OFFICIAL_KIOSK_PRODUCTS.filter(product => {
     const matchZone = selectedZone === 'ALL' || product.category === selectedZone;
-    const matchSearch = product.name.toLowerCase().includes(search.toLowerCase()) ||
-                        ikm.namaUsaha.toLowerCase().includes(search.toLowerCase()) ||
-                        product.description.toLowerCase().includes(search.toLowerCase()) ||
-                        product.hsCode.includes(search);
+    const query = search.trim().toLowerCase();
+    const matchSearch = !query ||
+      product.name.toLowerCase().includes(query) ||
+      product.ownerName.toLowerCase().includes(query) ||
+      (product.businessName || '').toLowerCase().includes(query) ||
+      product.description.toLowerCase().includes(query);
     return matchZone && matchSearch;
   });
 
   const getProductVeyloUrl = (
-    ikm: IkmItem,
-    product: ProductItem,
+    product: OfficialKioskProduct,
     buyer?: { name?: string; country?: string }
   ) => getVeyloRoomUrl({
-    ikmId: ikm.id,
-    ikmName: ikm.namaUsaha,
+    ikmId: product.id,
+    ikmName: product.businessName || product.ownerName,
     productId: product.id,
     productName: product.name,
-    fobPriceUsd: product.fobPriceUsd,
-    hsCode: product.hsCode,
     buyerName: buyer?.name,
     buyerCountry: buyer?.country,
   });
 
-  const getProductAdvisorUrl = (ikm: IkmItem, product: ProductItem) => {
+  const getProductAdvisorUrl = (product: OfficialKioskProduct) => {
     const params = new URLSearchParams({
-      source: 'kiosk',
-      ikmId: ikm.id,
-      ikmName: ikm.namaUsaha,
+      source: 'rumah-kurasi',
+      ikmId: product.id,
+      ikmName: product.businessName || product.ownerName,
       productId: product.id,
       productName: product.name,
-      hsCode: product.hsCode,
-      fob: String(product.fobPriceUsd),
-      certs: product.certifications.join('|')
+      sourceUrl: product.detailUrl
     });
     return `/ai-advisor?${params.toString()}`;
   };
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setInquirySent(true);
-    setTimeout(() => {
-      setInquirySent(false);
-      setSelectedProduct(null);
+    if (!selectedProduct || inquirySubmitting) return;
+
+    setInquirySubmitting(true);
+    setInquiryError('');
+    setInquirySent(false);
+
+    try {
+      const response = await fetch('https://n8n.163.61.44.41.sslip.io/webhook/tangsel-export-inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          buyerName: buyerName.trim(),
+          buyerCountry: buyerCountry.trim(),
+          buyerContact: buyerContact.trim(),
+          ikmId: selectedProduct.id,
+          ikmName: selectedProduct.businessName || selectedProduct.ownerName,
+          productId: selectedProduct.id,
+          productName: selectedProduct.name,
+          hsCode: '',
+          fobPriceUsd: 0,
+          source: 'kiosk-rumah-kurasi'
+        })
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error('Inquiry belum dapat disimpan.');
+
+      setInquirySent(true);
       setBuyerName('');
       setBuyerCountry('');
       setBuyerContact('');
-    }, 2500);
+    } catch {
+      setInquiryError(lang === 'ID'
+        ? 'Permintaan belum terkirim. Periksa koneksi lalu coba lagi.'
+        : 'The request could not be sent. Check your connection and try again.');
+    } finally {
+      setInquirySubmitting(false);
+    }
   };
 
   const handleRunSelfAudit = (e: React.FormEvent) => {
@@ -173,7 +194,7 @@ export const BoothKioskView: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6 text-slate-900">
       {/* Kiosk Hero Topbar */}
       <div className="rounded-xl bg-white border border-slate-200 p-4 sm:p-6 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -232,7 +253,7 @@ export const BoothKioskView: React.FC = () => {
             </button>
 
             <a
-              href={selectedProduct ? getProductVeyloUrl(selectedProduct.ikm, selectedProduct.product) : getVeyloRoomUrl({})}
+              href={selectedProduct ? getProductVeyloUrl(selectedProduct) : getVeyloRoomUrl({})}
               target="_blank"
               rel="noopener noreferrer"
               className="min-h-11 px-3 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold transition flex items-center justify-center gap-1.5"
@@ -241,12 +262,6 @@ export const BoothKioskView: React.FC = () => {
               <span>Veylo Room</span>
             </a>
 
-            <a
-              href="/command-center"
-              className="min-h-11 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition flex items-center justify-center"
-            >
-              ← Dashboard
-            </a>
           </div>
         </div>
       </div>
@@ -299,7 +314,7 @@ export const BoothKioskView: React.FC = () => {
               <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder={lang === 'ID' ? 'Cari produk ekspor, rempah, batik, kopi, bambu, atau HS Code...' : 'Search export commodities, coffee, textiles, bamboo, or HS Code...'}
+                placeholder={lang === 'ID' ? 'Cari produk, pemilik, atau nama usaha terkurasi...' : 'Search verified products, owners, or businesses...'}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-600 text-sm shadow-xs font-medium"
@@ -309,11 +324,9 @@ export const BoothKioskView: React.FC = () => {
             {/* Category Zones */}
             <div className="flex flex-wrap gap-2 text-xs">
               {[
-                { id: 'ALL', labelId: 'Semua Kategori', labelEn: 'All Categories' },
-                { id: 'food_beverage', labelId: 'Food & Beverage', labelEn: 'Food & Beverage' },
-                { id: 'fashion_kerajinan', labelId: 'Fashion & Kerajinan', labelEn: 'Fashion & Handcraft' },
-                { id: 'furniture_dekor', labelId: 'Furniture & Dekorasi', labelEn: 'Furniture & Decor' },
-                { id: 'manufaktur', labelId: 'Manufaktur Presisi', labelEn: 'Precision Manufacturing' },
+                { id: 'ALL' as const, labelId: 'Semua', labelEn: 'All' },
+                { id: 'pangan' as const, labelId: 'Pangan', labelEn: 'Food' },
+                { id: 'non-pangan' as const, labelId: 'Non-Pangan', labelEn: 'Non-Food' },
               ].map(zone => (
                 <button
                   key={zone.id}
@@ -330,74 +343,85 @@ export const BoothKioskView: React.FC = () => {
             </div>
           </div>
 
-          {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filtered.map(({ ikm, product }) => (
-              <div
+          <div className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 px-4 py-3 text-sm text-slate-700 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="font-semibold text-emerald-900">Katalog terverifikasi.</span>{' '}
+              {lang === 'ID'
+                ? 'Produk dan foto pada bagian ini bersumber dari portal resmi Rumah Kurasi Tangerang Selatan.'
+                : 'Products and photos in this section are sourced from the official South Tangerang Rumah Kurasi portal.'}
+            </div>
+            <a
+              href="https://kurasi.tangerangselatankota.go.id/produk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 font-semibold text-emerald-800 hover:underline"
+            >
+              {lang === 'ID' ? 'Lihat katalog resmi ↗' : 'Open official catalog ↗'}
+            </a>
+          </div>
+
+          {/* Verified Product Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+            {filtered.map(product => (
+              <article
                 key={product.id}
-                className="rounded-xl bg-white border border-slate-200 overflow-hidden flex flex-col justify-between hover:border-emerald-400 transition group"
+                className="overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-emerald-400 group"
               >
-                <div>
-                  <div className="h-48 w-full bg-slate-100 relative overflow-hidden">
-                    <ProductImage
-                      src={product.photoUrl}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    />
-                    <div className="absolute top-3 left-3 flex gap-2">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase shadow-xs ${
-                        ikm.grade === 'A' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
-                      }`}>
-                        Grade {ikm.grade}
+                <div className="relative h-52 w-full overflow-hidden bg-slate-100">
+                  <ProductImage
+                    src={product.imageUrl}
+                    alt={`Foto resmi ${product.name}`}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-emerald-700 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+                      Terverifikasi Rumah Kurasi
+                    </span>
+                    {product.market === 'Ekspor' && (
+                      <span className="rounded-full bg-slate-900/85 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                        Pasar Ekspor
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-slate-900/80 backdrop-blur-md text-xs font-mono text-cyan-200 font-semibold">
-                        HS: {product.hsCode}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-3 right-3 px-3 py-1 rounded-xl bg-white/90 backdrop-blur-md text-emerald-800 font-extrabold text-sm border border-slate-200 shadow-xs">
-                      ${product.fobPriceUsd.toFixed(2)} USD <span className="text-xs text-slate-500 font-normal">FOB</span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 sm:p-5 space-y-3">
-                    <div>
-                      <div className="text-xs text-emerald-700 font-bold uppercase tracking-wider">{ikm.brand}</div>
-                      <h3 className="text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">
-                        {product.name}
-                      </h3>
-                      <div className="text-xs text-slate-500 font-medium mt-0.5">
-                        {ikm.namaUsaha} • {ikm.kecamatan}, Tangsel
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                      {product.description}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-slate-50 text-sm text-slate-700">
-                      <div>
-                        <span className="text-slate-500 block text-xs">{lang === 'ID' ? 'Kapasitas:' : 'Capacity:'}</span>
-                        <strong className="text-slate-900">{product.capacityPerMonth}</strong>
-                      </div>
-                      <div>
-                        <span className="text-slate-500 block text-xs">Min. Order (MOQ):</span>
-                        <strong className="text-slate-900">{product.moq}</strong>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-                      {product.certifications.map((c, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-emerald-50 text-xs font-bold text-emerald-800 border border-emerald-200">
-                          ✓ {c}
-                        </span>
-                      ))}
-                    </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="p-5 pt-0 space-y-2">
+                <div className="space-y-3 p-4 sm:p-5">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                      {product.category === 'pangan' ? (lang === 'ID' ? 'Pangan' : 'Food') : (lang === 'ID' ? 'Non-Pangan' : 'Non-Food')}
+                    </div>
+                    <h3 className="mt-1 text-base font-bold leading-6 text-slate-950">{product.name}</h3>
+                    <p className="mt-1 text-xs font-medium text-slate-500">
+                      {product.businessName ? `${product.businessName} · ` : ''}{product.ownerName}
+                    </p>
+                  </div>
+
+                  <p className="line-clamp-3 text-sm leading-6 text-slate-600">{product.description}</p>
+
+                  <div className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-xs">
+                    <div>
+                      <span className="block text-slate-400">{lang === 'ID' ? 'Status' : 'Status'}</span>
+                      <strong className="mt-1 block text-slate-800">{product.market || 'Terkurasi'}</strong>
+                    </div>
+                    <div>
+                      <span className="block text-slate-400">{lang === 'ID' ? 'Kapasitas' : 'Capacity'}</span>
+                      <strong className="mt-1 block text-slate-800">{product.capacity || (lang === 'ID' ? 'Lihat sumber resmi' : 'See official source')}</strong>
+                    </div>
+                  </div>
+
                   <a
-                    href={getProductAdvisorUrl(ikm, product)}
+                    href={product.detailUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-emerald-800"
+                  >
+                    {lang === 'ID' ? 'Buka detail di Rumah Kurasi' : 'Open Rumah Kurasi detail'} <ArrowRight size={13}/>
+                  </a>
+                </div>
+
+                <div className="space-y-2 border-t border-slate-100 p-4 sm:p-5">
+                  <a
+                    href={getProductAdvisorUrl(product)}
                     className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-900 transition hover:border-emerald-400 hover:bg-emerald-100"
                   >
                     <Bot size={16} />
@@ -406,26 +430,33 @@ export const BoothKioskView: React.FC = () => {
                   </a>
                   <div className="flex items-center gap-2">
                     <a
-                      href={getProductVeyloUrl(ikm, product)}
+                      href={getProductVeyloUrl(product)}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Buka Ruang Negosiasi Veylo"
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-800 text-slate-700 hover:text-white transition"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-800 hover:text-white"
                     >
                       <Video size={16} />
                     </a>
                     <button
-                      onClick={() => setSelectedProduct({ ikm, product })}
-                      className="flex-1 min-h-11 px-4 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm transition flex items-center justify-center gap-2"
+                      type="button"
+                      onClick={() => { setSelectedProduct(product); setInquirySent(false); setInquiryError(''); }}
+                      className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800"
                     >
-                      <span>{lang === 'ID' ? 'Request Pertemuan / Sampel' : 'Request Meeting / Sample'}</span>
+                      <span>{lang === 'ID' ? 'Hubungi Booth / Request Sampel' : 'Contact Booth / Request Sample'}</span>
                       <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
+
+          {filtered.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+              {lang === 'ID' ? 'Produk terverifikasi tidak ditemukan untuk pencarian ini.' : 'No verified products match this search.'}
+            </div>
+          )}
         </div>
       )}
 
@@ -650,8 +681,8 @@ export const BoothKioskView: React.FC = () => {
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-              <div className="font-bold text-slate-900">{selectedProduct.product.name}</div>
-              <div className="text-slate-500 font-medium">{selectedProduct.ikm.namaUsaha} (Kec. {selectedProduct.ikm.kecamatan})</div>
+              <div className="font-bold text-slate-900">{selectedProduct.name}</div>
+              <div className="text-slate-500 font-medium">{selectedProduct.businessName || selectedProduct.ownerName}</div>
             </div>
 
             {inquirySent ? (
@@ -662,8 +693,8 @@ export const BoothKioskView: React.FC = () => {
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed font-medium">
                   {lang === 'ID'
-                    ? 'Petugas booth Disperindag Tangsel akan menghubungi nomor kontak Anda untuk penjadwalan pertemuan bisnis.'
-                    : 'Our booth trade officer will contact you shortly to schedule an in-person meeting.'}
+                    ? 'Permintaan sudah masuk ke daftar tindak lanjut booth Disperindag Tangsel. Kontak Anda tersimpan untuk proses follow-up.'
+                    : 'Your request has been saved to the booth follow-up list for further contact.'}
                 </p>
               </div>
             ) : (
@@ -710,9 +741,15 @@ export const BoothKioskView: React.FC = () => {
                   />
                 </div>
 
+                {inquiryError && (
+                  <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                    {inquiryError}
+                  </div>
+                )}
+
                 <div className="pt-2">
                   <a
-                    href={getProductVeyloUrl(selectedProduct.ikm, selectedProduct.product, { name: buyerName, country: buyerCountry })}
+                    href={getProductVeyloUrl(selectedProduct, { name: buyerName, country: buyerCountry })}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mb-2 w-full py-3 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2"
@@ -722,10 +759,13 @@ export const BoothKioskView: React.FC = () => {
                   </a>
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2"
+                    disabled={inquirySubmitting}
+                    className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2 disabled:cursor-wait disabled:opacity-60"
                   >
                     <Send size={14} />
-                    {lang === 'ID' ? 'Kirimkan Permintaan Pertemuan' : 'Submit Meeting Request'}
+                    {inquirySubmitting
+                      ? (lang === 'ID' ? 'Mengirim...' : 'Sending...')
+                      : (lang === 'ID' ? 'Kirimkan Permintaan Pertemuan' : 'Submit Meeting Request')}
                   </button>
                 </div>
               </form>
@@ -753,59 +793,21 @@ export const BoothKioskView: React.FC = () => {
 
             {/* QR Graphic Container */}
             <div className="flex flex-col items-center justify-center py-2 space-y-3">
-              <div className="p-4 bg-white rounded-2xl shadow-sm border-2 border-emerald-200 inline-block">
-                <svg className="w-48 h-48" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Top-Left Finder */}
-                  <rect x="10" y="10" width="30" height="30" rx="4" fill="#0f172a" />
-                  <rect x="16" y="16" width="18" height="18" fill="white" />
-                  <rect x="20" y="20" width="10" height="10" rx="2" fill="#059669" />
-
-                  {/* Top-Right Finder */}
-                  <rect x="80" y="10" width="30" height="30" rx="4" fill="#0f172a" />
-                  <rect x="86" y="16" width="18" height="18" fill="white" />
-                  <rect x="90" y="20" width="10" height="10" rx="2" fill="#059669" />
-
-                  {/* Bottom-Left Finder */}
-                  <rect x="10" y="80" width="30" height="30" rx="4" fill="#0f172a" />
-                  <rect x="16" y="86" width="18" height="18" fill="white" />
-                  <rect x="20" y="90" width="10" height="10" rx="2" fill="#059669" />
-
-                  {/* Timing & Data Patterns */}
-                  <rect x="45" y="15" width="6" height="6" fill="#0f172a" />
-                  <rect x="55" y="15" width="6" height="6" fill="#059669" />
-                  <rect x="65" y="15" width="6" height="6" fill="#0f172a" />
-
-                  <rect x="15" y="45" width="6" height="6" fill="#0f172a" />
-                  <rect x="15" y="55" width="6" height="6" fill="#059669" />
-                  <rect x="15" y="65" width="6" height="6" fill="#0f172a" />
-
-                  {/* Center Data Matrix Grid */}
-                  <rect x="45" y="45" width="8" height="8" rx="1" fill="#059669" />
-                  <rect x="57" y="45" width="8" height="8" rx="1" fill="#0f172a" />
-                  <rect x="69" y="45" width="8" height="8" rx="1" fill="#059669" />
-
-                  <rect x="45" y="57" width="8" height="8" rx="1" fill="#0f172a" />
-                  <rect x="57" y="57" width="8" height="8" rx="1" fill="#059669" />
-                  <rect x="69" y="57" width="8" height="8" rx="1" fill="#0f172a" />
-
-                  <rect x="45" y="69" width="8" height="8" rx="1" fill="#059669" />
-                  <rect x="57" y="69" width="8" height="8" rx="1" fill="#0f172a" />
-                  <rect x="69" y="69" width="8" height="8" rx="1" fill="#059669" />
-
-                  {/* Alignment Details */}
-                  <rect x="85" y="85" width="16" height="16" rx="3" fill="#0f172a" />
-                  <rect x="89" y="89" width="8" height="8" fill="white" />
-                  <rect x="91" y="91" width="4" height="4" fill="#059669" />
-                </svg>
+              <div className="rounded-2xl border-2 border-emerald-200 bg-white p-4 shadow-sm">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&ecc=M&data=${encodeURIComponent(kioskContinuationUrl)}`}
+                  alt={lang === 'ID' ? 'QR Code aktif menuju Kiosk Tangsel Export AI' : 'Live QR code to Tangsel Export AI Kiosk'}
+                  className="h-48 w-48 object-contain sm:h-56 sm:w-56"
+                />
               </div>
 
               <div className="space-y-1">
                 <p className="font-bold text-slate-800 text-xs">
-                  {lang === 'ID' ? 'Arahkan Kamera HP ke QR Code' : 'Point Your Phone Camera at QR Code'}
+                  {lang === 'ID' ? 'Scan QR aktif ini dari kamera HP' : 'Scan this live QR code with your phone'}
                 </p>
                 <p className="text-slate-500 text-xs max-w-xs mx-auto">
                   {lang === 'ID'
-                    ? 'Katalog interaktif & fitur self-audit IKM akan terbuka di browser smartphone Anda.'
+                    ? 'QR ini berisi tautan Kiosk yang aktif, bukan ilustrasi. Halaman yang sama akan terbuka di browser HP Anda.'
                     : 'The interactive catalog will open directly on your mobile browser.'}
                 </p>
               </div>

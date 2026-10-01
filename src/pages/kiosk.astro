@@ -1,26 +1,12 @@
 ---
-import '../styles/global.css';
+import DashboardLayout from '../layouts/DashboardLayout.astro';
 import { BoothKioskView } from '../components/BoothKioskView';
 ---
 
-<!doctype html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Interactive Booth Kiosk — Trade Expo Indonesia 2026 | Disperindag Tangsel</title>
-    <link rel="icon" type="image/png" href="/branding/logo-tangsel.png?v=3" />
-    <link rel="shortcut icon" type="image/png" href="/branding/logo-tangsel.png?v=3" />
-    <link rel="apple-touch-icon" href="/branding/logo-tangsel.png?v=3" />
-    <meta name="theme-color" content="#047857" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen">
-    <BoothKioskView client:only="react" />
-  </body>
-</html>
+<DashboardLayout
+  title="Kiosk Booth TEI"
+  subtitle="Katalog produk terkurasi, self-audit IKM, estimasi logistik, dan tindak lanjut buyer Trade Expo Indonesia 2026"
+  currentPath="/kiosk"
+>
+  <BoothKioskView client:only="react" />
+</DashboardLayout>

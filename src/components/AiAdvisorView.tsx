@@ -369,7 +369,8 @@ export const AiAdvisorView: React.FC = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('source') !== 'kiosk') return;
+    const source = params.get('source');
+    if (source !== 'kiosk' && source !== 'rumah-kurasi') return;
 
     const productName = params.get('productName')?.trim();
     if (!productName) return;

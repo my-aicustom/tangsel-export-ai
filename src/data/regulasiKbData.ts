@@ -84,5 +84,21 @@ export const REGULASI_KB_DATA: RegulasiKbItem[] = [
     ],
     sumberRegulasi: 'US 21 CFR Part 108 & 113 Acidified & Low-Acid Canned Foods',
     tags: ['FDA', 'FCE/SID', 'Retort', 'Pangan Olahan', 'Amerika Serikat']
+  },
+  {
+    id: 'reg-06',
+    judul: 'Tarif Logistik & Pengapalan Ekspor Resmi TEI 2026 (FCL & LCL)',
+    kategori: 'semua_kategori',
+    negaraTujuan: 'Singapura, Malaysia, Taiwan, Thailand, Korea, Vietnam, China, Kamboja, Filipina',
+    ringkasan: 'Acuan resmi freight forwarding TEI 2026 berlaku 1-14 Oktober 2026 untuk kargo dari Taman Tekno BSD Serpong, Tangerang Selatan menuju Pelabuhan Tanjung Priok. Tarif mencakup ocean freight FCL 20ft/40ft, LCL minimum 2 CBM, trucking EMKL Taman Tekno-Priok, handling, dokumen, fumigasi bila diperlukan, storage estimasi, dan PPN 1,1%.',
+    dokumenWajib: [
+      'Quotation freight forwarding TEI 2026',
+      'Pemberitahuan Ekspor Barang (PEB)',
+      'Commercial Invoice & Packing List',
+      'Bill of Lading (B/L)',
+      'Dokumen fumigasi bila komoditas atau buyer mensyaratkan'
+    ],
+    sumberRegulasi: 'TEI 2026 Official Forwarding Rate, valid 1-14 Oktober 2026',
+    tags: ['TEI 2026', 'Freight', 'FCL', 'LCL', 'EMKL', 'Tanjung Priok']
   }
 ];

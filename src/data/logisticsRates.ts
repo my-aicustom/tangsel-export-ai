@@ -16,6 +16,89 @@ export interface DestinationPort {
   customsRequirements?: string[];
 }
 
+export interface Tei2026FclOceanRate {
+  route: string;
+  destination: string;
+  country: string;
+  usd20ft: number;
+  usd40ft: number;
+}
+
+export interface Tei2026LclOceanRate {
+  route: string;
+  destination: string;
+  country: string;
+  usdPerCbm: number;
+  minimumCbm: number;
+}
+
+export const TEI_2026_OFFICIAL_RATES = {
+  source: 'TEI 2026 Official Forwarding Rate (1-14 Oct 2026, Taman Tekno BSD - Tg Priok)',
+  validity: '1-14 October 2026',
+  origin: 'Taman Tekno BSD Serpong, Tangerang Selatan',
+  gatewayPort: 'Pelabuhan Tanjung Priok, Jakarta',
+  tax: {
+    name: 'PPN',
+    rate: 0.011
+  },
+  fclOceanFreightUsd: [
+    { route: 'JKT - SINGAPORE', destination: 'Singapore', country: 'Singapore', usd20ft: 300, usd40ft: 450 },
+    { route: 'JKT - PORT KLANG (PKL)', destination: 'Port Klang', country: 'Malaysia', usd20ft: 300, usd40ft: 450 },
+    { route: 'JKT - KAOHSIUNG', destination: 'Kaohsiung', country: 'Taiwan', usd20ft: 300, usd40ft: 500 },
+    { route: 'JKT - KEELUNG', destination: 'Keelung', country: 'Taiwan', usd20ft: 340, usd40ft: 500 },
+    { route: 'JKT - TAICHUNG', destination: 'Taichung', country: 'Taiwan', usd20ft: 440, usd40ft: 550 },
+    { route: 'JKT - LATKRABANG', destination: 'Lat Krabang', country: 'Thailand', usd20ft: 550, usd40ft: 750 },
+    { route: 'JKT - LAEM CHABANG', destination: 'Laem Chabang', country: 'Thailand', usd20ft: 500, usd40ft: 700 },
+    { route: 'JKT - BANGKOK', destination: 'Bangkok', country: 'Thailand', usd20ft: 525, usd40ft: 725 },
+    { route: 'JKT - PUSAN', destination: 'Busan/Pusan', country: 'Korea', usd20ft: 275, usd40ft: 425 },
+    { route: 'JKT - INCHEON', destination: 'Incheon', country: 'Korea', usd20ft: 350, usd40ft: 475 },
+    { route: 'JKT - HO CHI MINH', destination: 'Ho Chi Minh', country: 'Vietnam', usd20ft: 300, usd40ft: 450 },
+    { route: 'JKT - HAIPHONG', destination: 'Haiphong', country: 'Vietnam', usd20ft: 350, usd40ft: 500 },
+    { route: 'JKT - NANSHA / SHEKOU', destination: 'Nansha / Shekou', country: 'China', usd20ft: 325, usd40ft: 480 },
+    { route: 'JKT - NINGBO / SHANGHAI', destination: 'Ningbo / Shanghai', country: 'China', usd20ft: 325, usd40ft: 480 },
+    { route: 'JKT - XIAMEN / QINGDAO', destination: 'Xiamen / Qingdao', country: 'China', usd20ft: 300, usd40ft: 480 },
+    { route: 'JKT - SIHANOUKVILLE', destination: 'Sihanoukville', country: 'Cambodia', usd20ft: 850, usd40ft: 900 },
+    { route: 'JKT - DAVAO', destination: 'Davao', country: 'Philippines', usd20ft: 300, usd40ft: 450 }
+  ] satisfies Tei2026FclOceanRate[],
+  lclOceanFreightUsd: [
+    { route: 'JKT - SINGAPORE', destination: 'Singapore', country: 'Singapore', usdPerCbm: 20, minimumCbm: 2 },
+    { route: 'JKT - PORT KLANG (PKL)', destination: 'Port Klang', country: 'Malaysia', usdPerCbm: 30, minimumCbm: 2 },
+    { route: 'JKT - KAOHSIUNG', destination: 'Kaohsiung', country: 'Taiwan', usdPerCbm: 35, minimumCbm: 2 },
+    { route: 'JKT - KEELUNG', destination: 'Keelung', country: 'Taiwan', usdPerCbm: 40, minimumCbm: 2 },
+    { route: 'JKT - TAICHUNG', destination: 'Taichung', country: 'Taiwan', usdPerCbm: 45, minimumCbm: 2 },
+    { route: 'JKT - LATKRABANG', destination: 'Lat Krabang', country: 'Thailand', usdPerCbm: 50, minimumCbm: 2 },
+    { route: 'JKT - LAEM CHABANG', destination: 'Laem Chabang', country: 'Thailand', usdPerCbm: 50, minimumCbm: 2 },
+    { route: 'JKT - BANGKOK', destination: 'Bangkok', country: 'Thailand', usdPerCbm: 55, minimumCbm: 2 },
+    { route: 'JKT - PUSAN', destination: 'Busan/Pusan', country: 'Korea', usdPerCbm: 55, minimumCbm: 2 },
+    { route: 'JKT - INCHEON', destination: 'Incheon', country: 'Korea', usdPerCbm: 50, minimumCbm: 2 },
+    { route: 'JKT - HO CHI MINH', destination: 'Ho Chi Minh', country: 'Vietnam', usdPerCbm: 40, minimumCbm: 2 },
+    { route: 'JKT - HAIPHONG', destination: 'Haiphong', country: 'Vietnam', usdPerCbm: 45, minimumCbm: 2 },
+    { route: 'JKT - NANSHA / SHEKOU', destination: 'Nansha / Shekou', country: 'China', usdPerCbm: 45, minimumCbm: 2 },
+    { route: 'JKT - NINGBO / SHANGHAI', destination: 'Ningbo / Shanghai', country: 'China', usdPerCbm: 50, minimumCbm: 2 },
+    { route: 'JKT - XIAMEN / QINGDAO', destination: 'Xiamen / Qingdao', country: 'China', usdPerCbm: 50, minimumCbm: 2 }
+  ] satisfies Tei2026LclOceanRate[],
+  emklFclUsd: {
+    trucking20ftPerTrip: 200,
+    trucking40ftPerTrip: 300,
+    handling20ftPerContainer: 40,
+    handling40ftPerContainer: 50,
+    fumigation20ftPerContainer: 200,
+    fumigation40ftPerContainer: 300,
+    adminDocumentSealEdiPerContainer: 130,
+    storage20ftEstimatePerContainer: 68,
+    storage40ftEstimatePerContainer: 80,
+    liftoffInsuranceOther: 'At cost'
+  },
+  emklLclUsd: {
+    trucking1To5CbmPerTrip: 150,
+    trucking5To10CbmPerTrip: 230,
+    handling1To5Cbm: 35,
+    handling5To10Cbm: 40,
+    fumigationIfAny: 175,
+    otherInsurance: 'At cost'
+  }
+} as const;
+
 export const DESTINATION_PORTS: DestinationPort[] = [
   {
     id: "port-sin",
@@ -27,7 +110,7 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     unLocode: "SGSIN",
     portType: "MULTIMODAL",
     airBaseRatePerKg: 4.8,
-    oceanBaseRatePerCbm: 42,
+    oceanBaseRatePerCbm: 20,
     transitDaysAir: "1-2 Hari",
     transitDaysOcean: "2-4 Hari",
     flag: "🇸🇬",
@@ -38,143 +121,283 @@ export const DESTINATION_PORTS: DestinationPort[] = [
     ]
   },
   {
+    id: "port-pkl",
+    country: "Malaysia",
+    countryCode: "MY",
+    airCode: "KUL",
+    name: "Port Klang (PKL) / Kuala Lumpur Airport (KUL)",
+    region: "ASEAN & Asia Hub",
+    unLocode: "MYPKG",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 4.9,
+    oceanBaseRatePerCbm: 30,
+    transitDaysAir: "1-2 Hari",
+    transitDaysOcean: "3-5 Hari",
+    flag: "🇲🇾",
+    customsRequirements: [
+      "Malaysia Customs K1/K2 Declaration",
+      "SST/GST import compliance when applicable",
+      "Certificate of Origin Form D (ATIGA)"
+    ]
+  },
+  {
+    id: "port-khh",
+    country: "Taiwan",
+    countryCode: "TW",
+    airCode: "KHH",
+    name: "Port of Kaohsiung / Kaohsiung Airport (KHH)",
+    region: "East Asia Pacific",
+    unLocode: "TWKHH",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.4,
+    oceanBaseRatePerCbm: 35,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "7-10 Hari",
+    flag: "🇹🇼",
+    customsRequirements: [
+      "Taiwan Customs import declaration",
+      "Bureau of Animal and Plant Health Inspection when applicable",
+      "Commercial Invoice & Packing List"
+    ]
+  },
+  {
+    id: "port-kee",
+    country: "Taiwan",
+    countryCode: "TW",
+    airCode: "TPE",
+    name: "Port of Keelung / Taoyuan Airport (TPE)",
+    region: "East Asia Pacific",
+    unLocode: "TWKEL",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.5,
+    oceanBaseRatePerCbm: 40,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "7-10 Hari",
+    flag: "🇹🇼",
+    customsRequirements: [
+      "Taiwan Customs import declaration",
+      "Commodity inspection where required",
+      "Commercial Invoice & Packing List"
+    ]
+  },
+  {
+    id: "port-rmq",
+    country: "Taiwan",
+    countryCode: "TW",
+    airCode: "RMQ",
+    name: "Port of Taichung / Taichung Airport (RMQ)",
+    region: "East Asia Pacific",
+    unLocode: "TWTXG",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.6,
+    oceanBaseRatePerCbm: 45,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "8-11 Hari",
+    flag: "🇹🇼",
+    customsRequirements: [
+      "Taiwan Customs import declaration",
+      "Commodity inspection where required",
+      "Commercial Invoice & Packing List"
+    ]
+  },
+  {
+    id: "port-lkb",
+    country: "Thailand",
+    countryCode: "TH",
+    airCode: "BKK",
+    name: "Lat Krabang ICD / Bangkok Airport (BKK)",
+    region: "ASEAN & Mekong",
+    unLocode: "THLKR",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 5.2,
+    oceanBaseRatePerCbm: 50,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "5-8 Hari",
+    flag: "🇹🇭",
+    customsRequirements: [
+      "Thai Customs import declaration",
+      "FDA Thailand registration for food/cosmetics where applicable",
+      "Certificate of Origin Form D (ATIGA)"
+    ]
+  },
+  {
+    id: "port-lch",
+    country: "Thailand",
+    countryCode: "TH",
+    airCode: "BKK",
+    name: "Laem Chabang Port / Bangkok Airport (BKK)",
+    region: "ASEAN & Mekong",
+    unLocode: "THLCH",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 5.2,
+    oceanBaseRatePerCbm: 50,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "5-8 Hari",
+    flag: "🇹🇭",
+    customsRequirements: [
+      "Thai Customs import declaration",
+      "FDA Thailand registration for food/cosmetics where applicable",
+      "Certificate of Origin Form D (ATIGA)"
+    ]
+  },
+  {
+    id: "port-bkk",
+    country: "Thailand",
+    countryCode: "TH",
+    airCode: "BKK",
+    name: "Bangkok Port / Suvarnabhumi Airport (BKK)",
+    region: "ASEAN & Mekong",
+    unLocode: "THBKK",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 5.2,
+    oceanBaseRatePerCbm: 55,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "5-8 Hari",
+    flag: "🇹🇭",
+    customsRequirements: [
+      "Thai Customs import declaration",
+      "FDA Thailand registration for food/cosmetics where applicable",
+      "Certificate of Origin Form D (ATIGA)"
+    ]
+  },
+  {
+    id: "port-pus",
+    country: "Korea",
+    countryCode: "KR",
+    airCode: "PUS",
+    name: "Busan/Pusan Port / Gimhae Airport (PUS)",
+    region: "Northeast Asia",
+    unLocode: "KRPUS",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.9,
+    oceanBaseRatePerCbm: 55,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "8-12 Hari",
+    flag: "🇰🇷",
+    customsRequirements: [
+      "Korea Customs import declaration",
+      "MFDS import notification for food/cosmetics where applicable",
+      "Certificate of Origin Form AK"
+    ]
+  },
+  {
+    id: "port-icn",
+    country: "Korea",
+    countryCode: "KR",
+    airCode: "ICN",
+    name: "Incheon Port / Incheon Airport (ICN)",
+    region: "Northeast Asia",
+    unLocode: "KRINC",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.8,
+    oceanBaseRatePerCbm: 50,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "8-12 Hari",
+    flag: "🇰🇷",
+    customsRequirements: [
+      "Korea Customs import declaration",
+      "MFDS import notification for food/cosmetics where applicable",
+      "Certificate of Origin Form AK"
+    ]
+  },
+  {
+    id: "port-sgn",
+    country: "Vietnam",
+    countryCode: "VN",
+    airCode: "SGN",
+    name: "Ho Chi Minh Port / Tan Son Nhat Airport (SGN)",
+    region: "ASEAN & Mekong",
+    unLocode: "VNSGN",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 5.4,
+    oceanBaseRatePerCbm: 40,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "5-8 Hari",
+    flag: "🇻🇳",
+    customsRequirements: [
+      "Vietnam Customs import declaration",
+      "Import permit or product registration where applicable",
+      "Certificate of Origin Form D (ATIGA)"
+    ]
+  },
+  {
+    id: "port-hph",
+    country: "Vietnam",
+    countryCode: "VN",
+    airCode: "HAN",
+    name: "Haiphong Port / Noi Bai Airport (HAN)",
+    region: "ASEAN & Mekong",
+    unLocode: "VNHPH",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 5.7,
+    oceanBaseRatePerCbm: 45,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "6-9 Hari",
+    flag: "🇻🇳",
+    customsRequirements: [
+      "Vietnam Customs import declaration",
+      "Import permit or product registration where applicable",
+      "Certificate of Origin Form D (ATIGA)"
+    ]
+  },
+  {
+    id: "port-nsa",
+    country: "China",
+    countryCode: "CN",
+    airCode: "CAN",
+    name: "Nansha / Shekou Ports / Guangzhou Airport (CAN)",
+    region: "East Asia Hub",
+    unLocode: "CNNSA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 6.1,
+    oceanBaseRatePerCbm: 45,
+    transitDaysAir: "2-3 Hari",
+    transitDaysOcean: "7-10 Hari",
+    flag: "🇨🇳",
+    customsRequirements: [
+      "GACC Registration Decree 248/249",
+      "China Customs import declaration",
+      "Certificate of Origin Form E (ACFTA)"
+    ]
+  },
+  {
     id: "port-sha",
     country: "China",
     countryCode: "CN",
     airCode: "PVG",
-    name: "Port of Shanghai (Yangshan) / Pudong Airport (PVG)",
+    name: "Ningbo / Shanghai Ports / Pudong Airport (PVG)",
     region: "East Asia Hub",
     unLocode: "CNSHA",
     portType: "MULTIMODAL",
     airBaseRatePerKg: 6.2,
-    oceanBaseRatePerCbm: 58,
+    oceanBaseRatePerCbm: 50,
     transitDaysAir: "2-3 Hari",
     transitDaysOcean: "8-12 Hari",
     flag: "🇨🇳",
     customsRequirements: [
       "GACC Registration Decree 248/249",
-      "AQSIQ Phytosanitary Certificate",
+      "China Customs import declaration",
       "Certificate of Origin Form E (ACFTA)"
     ]
   },
   {
-    id: "port-tyo",
-    country: "Japan",
-    countryCode: "JP",
-    airCode: "NRT",
-    name: "Port of Yokohama / Tokyo Narita Airport (NRT)",
-    region: "East Asia Pacific",
-    unLocode: "JPYOK",
+    id: "port-xmn",
+    country: "China",
+    countryCode: "CN",
+    airCode: "XMN",
+    name: "Xiamen / Qingdao Ports / Xiamen Airport (XMN)",
+    region: "East Asia Hub",
+    unLocode: "CNXMN",
     portType: "MULTIMODAL",
-    airBaseRatePerKg: 7.8,
-    oceanBaseRatePerCbm: 75,
-    transitDaysAir: "2-4 Hari",
-    transitDaysOcean: "10-14 Hari",
-    flag: "🇯🇵",
+    airBaseRatePerKg: 6.2,
+    oceanBaseRatePerCbm: 50,
+    transitDaysAir: "2-3 Hari",
+    transitDaysOcean: "8-12 Hari",
+    flag: "🇨🇳",
     customsRequirements: [
-      "MHLW Food Sanitation Act Notification",
-      "MAFF Plant Quarantine Inspection",
-      "EPA Form AJ / IJEPA"
-    ]
-  },
-  {
-    id: "port-lax",
-    country: "United States",
-    countryCode: "US",
-    airCode: "LAX",
-    name: "Port of Los Angeles (POLA) / LAX Airport",
-    region: "North America",
-    unLocode: "USLAX",
-    portType: "MULTIMODAL",
-    airBaseRatePerKg: 12.5,
-    oceanBaseRatePerCbm: 145,
-    transitDaysAir: "3-5 Hari",
-    transitDaysOcean: "22-28 Hari",
-    flag: "🇺🇸",
-    customsRequirements: [
-      "US FDA Facility Registration & Prior Notice",
-      "ISF 10+2 Filing (Laut)",
-      "Lacey Act Declaration (Kayu/Bambu)"
-    ]
-  },
-  {
-    id: "port-rtm",
-    country: "Netherlands",
-    countryCode: "NL",
-    airCode: "AMS",
-    name: "Port of Rotterdam (RTM) / Amsterdam Schiphol (AMS)",
-    region: "European Union",
-    unLocode: "NLRTM",
-    portType: "MULTIMODAL",
-    airBaseRatePerKg: 11.2,
-    oceanBaseRatePerCbm: 120,
-    transitDaysAir: "3-5 Hari",
-    transitDaysOcean: "24-28 Hari",
-    flag: "🇳🇱",
-    customsRequirements: [
-      "EU Deforestation Regulation (EUDR) Due Diligence",
-      "REX System Statement on Origin",
-      "CE Mark (Teknik/Alat)"
-    ]
-  },
-  {
-    id: "port-dxb",
-    country: "United Arab Emirates",
-    countryCode: "AE",
-    airCode: "DXB",
-    name: "Port of Jebel Ali / Dubai World Central (DWC)",
-    region: "Middle East & GCC",
-    unLocode: "AEJEA",
-    portType: "MULTIMODAL",
-    airBaseRatePerKg: 8.9,
-    oceanBaseRatePerCbm: 85,
-    transitDaysAir: "2-4 Hari",
-    transitDaysOcean: "14-18 Hari",
-    flag: "🇦🇪",
-    customsRequirements: [
-      "ESMA Halal Halal National Mark Verification",
-      "MoIAT ECAS Conformity",
-      "Bilingual Arabic-English Labels"
-    ]
-  },
-  {
-    id: "port-syd",
-    country: "Australia",
-    countryCode: "AU",
-    airCode: "SYD",
-    name: "Port Botany (Sydney) / Sydney Kingsford Smith (SYD)",
-    region: "Oceania",
-    unLocode: "AUSYD",
-    portType: "MULTIMODAL",
-    airBaseRatePerKg: 9.8,
-    oceanBaseRatePerCbm: 95,
-    transitDaysAir: "3-5 Hari",
-    transitDaysOcean: "12-16 Hari",
-    flag: "🇦🇺",
-    customsRequirements: [
-      "BICON Biosecurity Import Conditions",
-      "DAFF Inspection Notice",
-      "IA-CEPA Origin Declaration"
-    ]
-  },
-  {
-    id: "port-dla",
-    country: "Cameroon",
-    countryCode: "CM",
-    airCode: "DLA",
-    name: "Port of Douala (DLA) / Douala International Airport",
-    region: "West Africa",
-    unLocode: "CMDLA",
-    portType: "MULTIMODAL",
-    airBaseRatePerKg: 14.8,
-    oceanBaseRatePerCbm: 165,
-    transitDaysAir: "4-7 Hari",
-    transitDaysOcean: "28-35 Hari",
-    flag: "🇨🇲",
-    customsRequirements: [
-      "ANOR PECAE Pre-Shipment Conformity",
-      "Bilingual French-English Invoices",
-      "ECTN / BESC Electronic Cargo Tracking"
+      "GACC Registration Decree 248/249",
+      "China Customs import declaration",
+      "Certificate of Origin Form E (ACFTA)"
     ]
   }
 ];
@@ -184,7 +407,7 @@ export const ORIGIN_PORTS = {
   airport: { locode: 'IDCGK', name: 'Soekarno-Hatta International Airport', province: 'Tangerang, Banten' }
 };
 
-export type TruckVehicleType = 'PICKUP_VAN' | 'CDD_4T' | 'FUSO_10T' | 'TRAILER_20FT' | 'TRAILER_40FT';
+export type TruckVehicleType = 'LCL_1_5_CBM' | 'LCL_5_10_CBM' | 'TRAILER_20FT' | 'TRAILER_40FT';
 
 export interface InlandTruckingRate {
   type: TruckVehicleType;
@@ -200,68 +423,56 @@ export interface InlandTruckingRate {
 
 export const INLAND_TRUCKING_RATES: InlandTruckingRate[] = [
   {
-    type: 'PICKUP_VAN',
-    label: 'Pickup / Blind Van (1-2 CBM)',
-    capacityCbm: 2,
-    capacityWeightKg: 800,
-    costIdrPriok: 450000,
-    costIdrCgk: 350000,
-    costUsdPriok: 25.02,
-    costUsdCgk: 19.46,
-    description: 'Cocok untuk sampel kargo & LCL kecil dari sentra IKM Tangsel'
+    type: 'LCL_1_5_CBM',
+    label: 'LCL Trucking Taman Tekno - Priok (1-5 CBM)',
+    capacityCbm: 5,
+    capacityWeightKg: 5000,
+    costIdrPriok: 2697750,
+    costIdrCgk: 2697750,
+    costUsdPriok: 150,
+    costUsdCgk: 150,
+    description: 'Tarif resmi EMKL TEI 2026 untuk LCL 1-5 CBM dari Taman Tekno BSD ke Tanjung Priok'
   },
   {
-    type: 'CDD_4T',
-    label: 'Colt Diesel Double (CDD 14 CBM / 4 Ton)',
-    capacityCbm: 14,
-    capacityWeightKg: 4000,
-    costIdrPriok: 1200000,
-    costIdrCgk: 950000,
-    costUsdPriok: 66.72,
-    costUsdCgk: 52.82,
-    description: 'Armada standar LCL agregat antar gudang Tangsel ke CFS Priok'
-  },
-  {
-    type: 'FUSO_10T',
-    label: 'Fuso Heavy Box (30 CBM / 10 Ton)',
-    capacityCbm: 30,
-    capacityWeightKg: 10000,
-    costIdrPriok: 2200000,
-    costIdrCgk: 1800000,
-    costUsdPriok: 122.32,
-    costUsdCgk: 100.08,
-    description: 'Muatan partai besar konsolidasi sentra industri Serpong/Setu'
+    type: 'LCL_5_10_CBM',
+    label: 'LCL Trucking Taman Tekno - Priok (5-10 CBM)',
+    capacityCbm: 10,
+    capacityWeightKg: 8000,
+    costIdrPriok: 4136550,
+    costIdrCgk: 4136550,
+    costUsdPriok: 230,
+    costUsdCgk: 230,
+    description: 'Tarif resmi EMKL TEI 2026 untuk LCL 5-10 CBM dari Taman Tekno BSD ke Tanjung Priok'
   },
   {
     type: 'TRAILER_20FT',
-    label: 'Trailer Kontainer 20ft (FCL Haulage)',
+    label: 'Trailer Kontainer 20ft Taman Tekno - Priok',
     capacityCbm: 28,
     capacityWeightKg: 21000,
-    costIdrPriok: 2800000,
-    costIdrCgk: 2800000,
-    costUsdPriok: 155.68,
-    costUsdCgk: 155.68,
-    description: 'Haulage kontainer 20ft dari depo Jakarta ke pabrik Tangsel bolak-balik'
+    costIdrPriok: 3597000,
+    costIdrCgk: 3597000,
+    costUsdPriok: 200,
+    costUsdCgk: 200,
+    description: 'Tarif resmi EMKL TEI 2026 untuk trucking FCL 20ft dari Taman Tekno BSD ke Tanjung Priok'
   },
   {
     type: 'TRAILER_40FT',
-    label: 'Trailer Kontainer 40ft (FCL Haulage)',
+    label: 'Trailer Kontainer 40ft Taman Tekno - Priok',
     capacityCbm: 58,
     capacityWeightKg: 26000,
-    costIdrPriok: 3800000,
-    costIdrCgk: 3800000,
-    costUsdPriok: 211.28,
-    costUsdCgk: 211.28,
-    description: 'Haulage kontainer 40ft High Cube untuk ekspor volume tinggi'
+    costIdrPriok: 5395500,
+    costIdrCgk: 5395500,
+    costUsdPriok: 300,
+    costUsdCgk: 300,
+    description: 'Tarif resmi EMKL TEI 2026 untuk trucking FCL 40ft dari Taman Tekno BSD ke Tanjung Priok'
   }
 ];
 
 export function getRecommendedTruck(cbm: number, weightKg: number): InlandTruckingRate {
-  if (cbm <= 2 && weightKg <= 800) return INLAND_TRUCKING_RATES[0];
-  if (cbm <= 14 && weightKg <= 4000) return INLAND_TRUCKING_RATES[1];
-  if (cbm <= 30 && weightKg <= 10000) return INLAND_TRUCKING_RATES[2];
-  if (cbm <= 33 && weightKg <= 21000) return INLAND_TRUCKING_RATES[3];
-  return INLAND_TRUCKING_RATES[4];
+  if (cbm <= 5 && weightKg <= 5000) return INLAND_TRUCKING_RATES[0];
+  if (cbm <= 10 && weightKg <= 8000) return INLAND_TRUCKING_RATES[1];
+  if (cbm <= 33 && weightKg <= 21000) return INLAND_TRUCKING_RATES[2];
+  return INLAND_TRUCKING_RATES[3];
 }
 
 export interface LogisticsSimulationParams {
@@ -331,8 +542,10 @@ export interface SideBySideComparisonResult {
 }
 
 export const LOGISTICS_RATE_META = {
-  source: 'Disperindag Tangsel & Standar Freight Forwarding 2026',
-  version: '2026.09'
+  source: 'TEI 2026 Official Forwarding Rate (1-14 Oct 2026, Taman Tekno BSD - Tg Priok)',
+  version: '2026.10.tei-official',
+  validity: TEI_2026_OFFICIAL_RATES.validity,
+  tax: 'PPN 1.1%'
 };
 
 export function calculateSideBySideComparison(
@@ -388,7 +601,7 @@ export function calculateSideBySideComparison(
   };
 
   // 2. OCEAN LCL CALCULATION
-  const oceanBillableCbm = Math.max(totalCbm, totalActualWeight / 1000, 1.0);
+  const oceanBillableCbm = Math.max(totalCbm, totalActualWeight / 1000, 2.0);
   const oceanBaseFreight = oceanBillableCbm * port.oceanBaseRatePerCbm;
   const oceanFuelSurcharge = oceanBaseFreight * 0.12; // 12% BAF / Bunker Surcharge
   const oceanCustoms = 65.00; // CFS handling + Customs export clearance

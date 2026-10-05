@@ -33,8 +33,8 @@ export interface Tei2026LclOceanRate {
 }
 
 export const TEI_2026_OFFICIAL_RATES = {
-  source: 'TEI 2026 Official Forwarding Rate (1-14 Oct 2026, Taman Tekno BSD - Tg Priok)',
-  validity: '1-14 October 2026',
+  source: 'TEI 2026 Official Forwarding Rate (Valid 1-31 Oct 2026, Taman Tekno BSD - Tg Priok)',
+  validity: '1-31 October 2026 (Ocean FCL Lock Rate)',
   origin: 'Taman Tekno BSD Serpong, Tangerang Selatan',
   gatewayPort: 'Pelabuhan Tanjung Priok, Jakarta',
   tax: {
@@ -58,7 +58,21 @@ export const TEI_2026_OFFICIAL_RATES = {
     { route: 'JKT - NINGBO / SHANGHAI', destination: 'Ningbo / Shanghai', country: 'China', usd20ft: 325, usd40ft: 480 },
     { route: 'JKT - XIAMEN / QINGDAO', destination: 'Xiamen / Qingdao', country: 'China', usd20ft: 300, usd40ft: 480 },
     { route: 'JKT - SIHANOUKVILLE', destination: 'Sihanoukville', country: 'Cambodia', usd20ft: 850, usd40ft: 900 },
-    { route: 'JKT - DAVAO', destination: 'Davao', country: 'Philippines', usd20ft: 300, usd40ft: 450 }
+    { route: 'JKT - DAVAO', destination: 'Davao', country: 'Philippines', usd20ft: 300, usd40ft: 450 },
+    // Rute Baru Non-Asia (India, Afrika, UAE) — Forwarder TEI 2026 Update
+    { route: 'JKT - NHAVASEVA', destination: 'Nhava Sheva (JNPT Mumbai)', country: 'India', usd20ft: 2350, usd40ft: 2950 },
+    { route: 'JKT - MUNDRA', destination: 'Mundra', country: 'India', usd20ft: 2350, usd40ft: 2950 },
+    { route: 'JKT - HAZIRA', destination: 'Hazira', country: 'India', usd20ft: 2500, usd40ft: 3150 },
+    { route: 'JKT - CHENNAI', destination: 'Chennai', country: 'India', usd20ft: 2550, usd40ft: 3150 },
+    { route: 'JKT - TUTICORIN', destination: 'Tuticorin', country: 'India', usd20ft: 2550, usd40ft: 3150 },
+    { route: 'JKT - APAPA', destination: 'Apapa (Lagos)', country: 'Nigeria', usd20ft: 4500, usd40ft: 5650 },
+    { route: 'JKT - TINCAN', destination: 'Tin Can Island (Lagos)', country: 'Nigeria', usd20ft: 4500, usd40ft: 5650 },
+    { route: 'JKT - ONNE', destination: 'Onne', country: 'Nigeria', usd20ft: 4500, usd40ft: 5650 },
+    { route: 'JKT - LEKKI', destination: 'Lekki Deep Sea', country: 'Nigeria', usd20ft: 4500, usd40ft: 5650 },
+    { route: 'JKT - DURBAN', destination: 'Durban', country: 'South Africa', usd20ft: 3950, usd40ft: 5400 },
+    { route: 'JKT - CAPETOWN', destination: 'Cape Town', country: 'South Africa', usd20ft: 3950, usd40ft: 5400 },
+    { route: 'JKT - MOMBASA', destination: 'Mombasa', country: 'Kenya', usd20ft: 3750, usd40ft: 5750 },
+    { route: 'JKT - JEBEL ALI', destination: 'Jebel Ali (Dubai)', country: 'United Arab Emirates', usd20ft: 5500, usd40ft: 6850 }
   ] satisfies Tei2026FclOceanRate[],
   lclOceanFreightUsd: [
     { route: 'JKT - SINGAPORE', destination: 'Singapore', country: 'Singapore', usdPerCbm: 20, minimumCbm: 2 },
@@ -77,6 +91,17 @@ export const TEI_2026_OFFICIAL_RATES = {
     { route: 'JKT - NINGBO / SHANGHAI', destination: 'Ningbo / Shanghai', country: 'China', usdPerCbm: 50, minimumCbm: 2 },
     { route: 'JKT - XIAMEN / QINGDAO', destination: 'Xiamen / Qingdao', country: 'China', usdPerCbm: 50, minimumCbm: 2 }
   ] satisfies Tei2026LclOceanRate[],
+  reeferSurchargeUsd: {
+    usd20ft: 500,
+    usd40ft: 800,
+    gensetPerContainer: 250,
+    note: 'Tarif kontainer pendingin: surcharge reefer (+USD 500/20ft, +USD 800/40ft) ditambah sewa genset USD 250 per kontainer'
+  },
+  lclGuidelines: {
+    maxWeightRatioKgPerCbm: 800,
+    fumigationNotice: 'Fumigasi & karantina dapat difasilitasi forwarder dengan syarat shipper (IKM) wajib memiliki izin karantina mandiri serta akses akun SKA/Phyto',
+    fobVsCfrWarning: 'Incoterm CFR/CIF sudah all-in termasuk handling pelayaran. Untuk Incoterm FOB Priok, local charges pelayaran (THC, doc fee pelayaran, seal) belum termasuk dalam tarif dasar forwarder dan akan ditagihkan tersendiri'
+  },
   emklFclUsd: {
     trucking20ftPerTrip: 200,
     trucking40ftPerTrip: 300,
@@ -84,6 +109,9 @@ export const TEI_2026_OFFICIAL_RATES = {
     handling40ftPerContainer: 50,
     fumigation20ftPerContainer: 200,
     fumigation40ftPerContainer: 300,
+    phytosanitary20ftPerContainer: 250,
+    phytosanitary40ftPerContainer: 350,
+    gensetPerContainer: 250,
     adminDocumentSealEdiPerContainer: 130,
     storage20ftEstimatePerContainer: 68,
     storage40ftEstimatePerContainer: 80,
@@ -399,6 +427,131 @@ export const DESTINATION_PORTS: DestinationPort[] = [
       "China Customs import declaration",
       "Certificate of Origin Form E (ACFTA)"
     ]
+  },
+  {
+    id: "port-nsa",
+    country: "India",
+    countryCode: "IN",
+    airCode: "BOM",
+    name: "Nhava Sheva (JNPT Mumbai) / Mumbai Airport (BOM)",
+    region: "South Asia Hub",
+    unLocode: "INNSA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 7.2,
+    oceanBaseRatePerCbm: 85,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "12-16 Hari",
+    flag: "🇮🇳",
+    customsRequirements: [
+      "ICEGATE Indian Customs Bill of Entry",
+      "FSSAI Clearance for Food & Beverages",
+      "Certificate of Origin Form AIFTA (ASEAN-India)",
+      "Phytosanitary Certificate for agricultural goods"
+    ]
+  },
+  {
+    id: "port-maa",
+    country: "India",
+    countryCode: "IN",
+    airCode: "MAA",
+    name: "Chennai Port / Chennai Airport (MAA)",
+    region: "South Asia Hub",
+    unLocode: "INMAA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 7.4,
+    oceanBaseRatePerCbm: 90,
+    transitDaysAir: "2-4 Hari",
+    transitDaysOcean: "10-14 Hari",
+    flag: "🇮🇳",
+    customsRequirements: [
+      "ICEGATE Bill of Entry declaration",
+      "FSSAI Food Import Clearance",
+      "Certificate of Origin Form AIFTA"
+    ]
+  },
+  {
+    id: "port-jea",
+    country: "United Arab Emirates",
+    countryCode: "AE",
+    airCode: "DXB",
+    name: "Jebel Ali Port / Dubai International (DXB)",
+    region: "Middle East & GCC",
+    unLocode: "AEJEA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 8.5,
+    oceanBaseRatePerCbm: 110,
+    transitDaysAir: "1-3 Hari",
+    transitDaysOcean: "14-18 Hari",
+    flag: "🇦🇪",
+    customsRequirements: [
+      "Dubai Customs Mirsal II Declaration",
+      "Halal Certification recognized by MOIAT/ESMA",
+      "Certificate of Origin (Kadin/Kemendag)",
+      "Commercial Invoice & Packing List attested"
+    ]
+  },
+  {
+    id: "port-app",
+    country: "Nigeria",
+    countryCode: "NG",
+    airCode: "LOS",
+    name: "Apapa / Tin Can / Lekki Ports (Lagos)",
+    region: "West Africa Hub",
+    unLocode: "NGAPP",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 11.5,
+    oceanBaseRatePerCbm: 145,
+    transitDaysAir: "4-6 Hari",
+    transitDaysOcean: "28-35 Hari",
+    flag: "🇳🇬",
+    customsRequirements: [
+      "SONCAP Certificate (Standards Organisation of Nigeria)",
+      "Form M & PAAR (Pre-Arrival Assessment Report)",
+      "NAFDAC registration for food, cosmetics & drugs",
+      "Clean Report of Inspection (CRI)"
+    ]
+  },
+  {
+    id: "port-dur",
+    country: "South Africa",
+    countryCode: "ZA",
+    airCode: "DUR",
+    name: "Port of Durban / King Shaka Airport (DUR)",
+    region: "Southern Africa Hub",
+    unLocode: "ZADUR",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 10.8,
+    oceanBaseRatePerCbm: 135,
+    transitDaysAir: "3-5 Hari",
+    transitDaysOcean: "22-26 Hari",
+    flag: "🇿🇦",
+    customsRequirements: [
+      "SARS Customs Electronic EDI Declaration",
+      "DAFF Agricultural Permit where applicable",
+      "NRCS Letter of Authority (LOA) for regulated products",
+      "Certificate of Origin"
+    ]
+  },
+  {
+    id: "port-mba",
+    country: "Kenya",
+    countryCode: "KE",
+    airCode: "NBO",
+    name: "Port of Mombasa / Nairobi Airport (NBO)",
+    region: "East Africa Corridor",
+    unLocode: "KEMBA",
+    portType: "MULTIMODAL",
+    airBaseRatePerKg: 9.8,
+    oceanBaseRatePerCbm: 125,
+    transitDaysAir: "3-5 Hari",
+    transitDaysOcean: "20-25 Hari",
+    flag: "🇰🇪",
+    customsRequirements: [
+      "KEBS PVoC (Pre-Export Verification of Conformity)",
+      "IDF (Import Declaration Form) Kenya Revenue Authority",
+      "Certificate of Conformity (CoC)",
+      "Phytosanitary Certificate for agro produce"
+    ]
   }
 ];
 
@@ -600,8 +753,8 @@ export function calculateSideBySideComparison(
     logisticsCostPercentageOfFob: airPctFob
   };
 
-  // 2. OCEAN LCL CALCULATION
-  const oceanBillableCbm = Math.max(totalCbm, totalActualWeight / 1000, 2.0);
+  // 2. OCEAN LCL CALCULATION (TEI 2026 Ratio: 1 CBM = 800 KGS)
+  const oceanBillableCbm = Math.max(totalCbm, totalActualWeight / 800, 2.0);
   const oceanBaseFreight = oceanBillableCbm * port.oceanBaseRatePerCbm;
   const oceanFuelSurcharge = oceanBaseFreight * 0.12; // 12% BAF / Bunker Surcharge
   const oceanCustoms = 65.00; // CFS handling + Customs export clearance
@@ -672,7 +825,7 @@ export function calculateLogisticsEstimate(
       incotermDesc = 'Ex Works: Pembeli menanggung biaya pengiriman internasional dan risiko mulai dari pintu pabrik/IKM Tangsel.';
       break;
     case 'FOB':
-      incotermDesc = 'Free on Board: Penjual (IKM Tangsel) menanggung biaya sampai muat di kapal/pesawat di Jakarta (CGK/Tanjung Priok). Freight internasional ditanggung Buyer.';
+      incotermDesc = 'Free on Board: Penjual (IKM Tangsel) menanggung biaya sampai barang on board di kapal (Tanjung Priok). Perhatian: local charges pelayaran (THC Priok, doc fee pelayaran, seal) belum termasuk dalam tarif dasar forwarder dan ditagihkan tersendiri. Freight internasional ditanggung Buyer.';
       break;
     case 'CIF':
       incotermDesc = 'Cost, Insurance & Freight: Penjual (IKM Tangsel) menanggung biaya freight kargo dan asuransi pelayaran sampai di pelabuhan/bandara tujuan buyer.';

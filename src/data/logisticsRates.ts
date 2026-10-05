@@ -34,7 +34,7 @@ export interface Tei2026LclOceanRate {
 
 export const TEI_2026_OFFICIAL_RATES = {
   source: 'TEI 2026 Official Forwarding Rate (Valid 1-31 Oct 2026, Taman Tekno BSD - Tg Priok)',
-  validity: '1-31 October 2026 (Ocean FCL Lock Rate)',
+  validity: '1-31 October 2026 (All Rates 100% Locked: Ocean FCL, LCL & EMKL Trucking)',
   origin: 'Taman Tekno BSD Serpong, Tangerang Selatan',
   gatewayPort: 'Pelabuhan Tanjung Priok, Jakarta',
   tax: {
@@ -89,7 +89,11 @@ export const TEI_2026_OFFICIAL_RATES = {
     { route: 'JKT - HAIPHONG', destination: 'Haiphong', country: 'Vietnam', usdPerCbm: 45, minimumCbm: 2 },
     { route: 'JKT - NANSHA / SHEKOU', destination: 'Nansha / Shekou', country: 'China', usdPerCbm: 45, minimumCbm: 2 },
     { route: 'JKT - NINGBO / SHANGHAI', destination: 'Ningbo / Shanghai', country: 'China', usdPerCbm: 50, minimumCbm: 2 },
-    { route: 'JKT - XIAMEN / QINGDAO', destination: 'Xiamen / Qingdao', country: 'China', usdPerCbm: 50, minimumCbm: 2 }
+    { route: 'JKT - XIAMEN / QINGDAO', destination: 'Xiamen / Qingdao', country: 'China', usdPerCbm: 50, minimumCbm: 2 },
+    // Rute LCL Non-Asia (Transshipment via Singapore/PKL — Forwarder TEI 2026 Definitive Quote: USD 65-150/CBM)
+    { route: 'JKT - INDIA (NHAVA SHEVA / CHENNAI)', destination: 'Nhava Sheva / Chennai', country: 'India', usdPerCbm: 75, minimumCbm: 2 },
+    { route: 'JKT - JEBEL ALI (DUBAI)', destination: 'Jebel Ali (Dubai)', country: 'United Arab Emirates', usdPerCbm: 95, minimumCbm: 2 },
+    { route: 'JKT - AFRICA HUB (LAGOS / DURBAN)', destination: 'Lagos / Durban', country: 'Nigeria / South Africa', usdPerCbm: 135, minimumCbm: 2 }
   ] satisfies Tei2026LclOceanRate[],
   reeferSurchargeUsd: {
     usd20ft: 500,
@@ -97,25 +101,46 @@ export const TEI_2026_OFFICIAL_RATES = {
     gensetPerContainer: 250,
     note: 'Tarif kontainer pendingin: surcharge reefer (+USD 500/20ft, +USD 800/40ft) ditambah sewa genset USD 250 per kontainer'
   },
+  shippingLineLocalChargesFobUsd: {
+    thc20ft: 95,
+    thc40ft: 145,
+    docFeeRange: 'USD 10-20',
+    docFeeEstimate: 15,
+    sealFeeRange: 'USD 15-20',
+    sealFeeEstimate: 17.5,
+    total20ftEstimate: 127.5,
+    total40ftEstimate: 177.5,
+    note: 'Local charges resmi pelayaran untuk penawaran FOB Priok: THC ($95/20ft, $145/40ft) + Doc Fee ($10-20) + Seal ($15-20)'
+  },
+  depoLoLoStorageUsd: {
+    liftOn20ft: 55,
+    liftOn40ft: 70,
+    storage20ftEstimate: 50,
+    storage40ftEstimate: 70,
+    note: 'Biaya depo kontainer resmi Priok: Lift On ($55/20ft, $70/40ft) dan Storage ($50/20ft, $70/40ft)'
+  },
   lclGuidelines: {
     maxWeightRatioKgPerCbm: 800,
+    nonAsiaRateRangeUsd: 'USD 65 - 150 / CBM (min 2 CBM)',
     fumigationNotice: 'Fumigasi & karantina dapat difasilitasi forwarder dengan syarat shipper (IKM) wajib memiliki izin karantina mandiri serta akses akun SKA/Phyto',
-    fobVsCfrWarning: 'Incoterm CFR/CIF sudah all-in termasuk handling pelayaran. Untuk Incoterm FOB Priok, local charges pelayaran (THC, doc fee pelayaran, seal) belum termasuk dalam tarif dasar forwarder dan akan ditagihkan tersendiri'
+    fobVsCfrWarning: 'Incoterm CFR/CIF sudah all-in termasuk handling pelayaran. Untuk Incoterm FOB Priok, local charges pelayaran (THC $95/20ft $145/40ft, doc fee $10-20, seal $15-20) belum termasuk dalam tarif dasar forwarder dan akan ditagihkan tersendiri'
   },
   emklFclUsd: {
     trucking20ftPerTrip: 200,
     trucking40ftPerTrip: 300,
     handling20ftPerContainer: 40,
     handling40ftPerContainer: 50,
+    liftOn20ftPerContainer: 55,
+    liftOn40ftPerContainer: 70,
+    storage20ftEstimatePerContainer: 50,
+    storage40ftEstimatePerContainer: 70,
     fumigation20ftPerContainer: 200,
     fumigation40ftPerContainer: 300,
     phytosanitary20ftPerContainer: 250,
     phytosanitary40ftPerContainer: 350,
     gensetPerContainer: 250,
     adminDocumentSealEdiPerContainer: 130,
-    storage20ftEstimatePerContainer: 68,
-    storage40ftEstimatePerContainer: 80,
-    liftoffInsuranceOther: 'At cost'
+    insuranceAtCost: 'At cost'
   },
   emklLclUsd: {
     trucking1To5CbmPerTrip: 150,
